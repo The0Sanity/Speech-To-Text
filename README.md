@@ -78,7 +78,13 @@ Geliştiriciler ve kaynak kod üzerinden çalıştırmak isteyenler için:
 
 Geliştirme süreci planlı sürümler halinde yürütülmektedir. v2.0.0 sürümüne kadar eklenecek tüm özellikler aşağıda listelenmiştir:
 
-### v1.0.4 — Flet İkonları ve Varlık Bütünlüğü (Mevcut Sürüm)
+### v1.0.7 — Minimalist Arayüz, Standart Yapılandırma ve Kararlılık (Mevcut Sürüm)
+- [x] Tamamen minimalist "SesMetin Pro" pencere başlığı ve sadeleştirilmiş üst çubuk.
+- [x] Standart OS kullanıcı dizini (`%APPDATA%\SesMetinPro\config.json`) depolaması ve sıfır gevşek dosya garantisi.
+- [x] Zengin Markdown destekli ve donmayan akıcı ilerleme çubuklu otomatik güncelleme sistemi.
+- [x] Süreç kilitlenmesini önleyen güvenli güncelleme uygulayıcısı (`os._exit(0)`).
+
+### v1.0.4 — Flet İkonları ve Varlık Bütünlüğü
 - [x] Flet materyal ve cupertino ikon kaynakları (icons.json) paketleme ve çalışma zamanı kendini onarma koruması.
 - [x] Faster-Whisper (silero_vad_v6.onnx) ve CTranslate2 yerel varlıkları PyInstaller veri toplama kancasıyla güvenceye alındı.
 - [x] GitHub API HTTP 304 (Not Modified) önbellek çözümlemesi ve tek tıkla canlı güncelleme denetimi (force refresh).

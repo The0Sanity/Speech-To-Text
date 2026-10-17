@@ -56,6 +56,8 @@ class TestLicenseAndGitHygiene(unittest.TestCase):
             "CLAUDE.md",
             "GEMINI.md",
             "temp/.gitkeep",
+            "settings.json",
+            "config.json",
         ]
         for unwanted in unwanted_tracked:
             self.assertNotIn(

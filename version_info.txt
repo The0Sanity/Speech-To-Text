@@ -4,8 +4,8 @@
 # http://msdn.microsoft.com/en-us/library/ms772219.aspx
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 4, 0),
-    prodvers=(1, 0, 4, 0),
+    filevers=(1, 0, 7, 0),
+    prodvers=(1, 0, 7, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -21,12 +21,12 @@ VSVersionInfo(
           [
             StringStruct('CompanyName', 'The0Sanity'),
             StringStruct('FileDescription', 'SesMetin Pro - Speech-To-Text AI Desktop Application'),
-            StringStruct('FileVersion', '1.0.4.0'),
+            StringStruct('FileVersion', '1.0.7.0'),
             StringStruct('InternalName', 'SpeechToText'),
             StringStruct('LegalCopyright', 'Copyright (c) 2026 The0Sanity. All rights reserved.'),
             StringStruct('OriginalFilename', 'SpeechToText.exe'),
             StringStruct('ProductName', 'SesMetin Pro'),
-            StringStruct('ProductVersion', '1.0.4.0')
+            StringStruct('ProductVersion', '1.0.7.0')
           ]
         )
       ]

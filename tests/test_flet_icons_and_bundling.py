@@ -33,14 +33,14 @@ class TestFletIconsAndBundling(unittest.TestCase):
             "SpeechToText.spec must collect data files for 'faster_whisper'",
         )
 
-    def test_app_version_bumped_to_104(self):
+    def test_app_version_bumped_to_107(self):
         """Verify version consistency across configuration and PE metadata."""
         config_content = self.config_file.read_text(encoding="utf-8")
-        self.assertIn('APP_VERSION = "1.0.4"', config_content, "src/config.py APP_VERSION must be 1.0.4")
+        self.assertIn('APP_VERSION = "1.0.7"', config_content, "src/config.py APP_VERSION must be 1.0.7")
 
         version_info_content = self.version_info_file.read_text(encoding="utf-8")
-        self.assertIn("(1, 0, 4, 0)", version_info_content, "version_info.txt must be 1.0.4.0")
-        self.assertIn("'1.0.4.0'", version_info_content, "version_info.txt StringFileInfo must be 1.0.4.0")
+        self.assertIn("(1, 0, 7, 0)", version_info_content, "version_info.txt must be 1.0.7.0")
+        self.assertIn("'1.0.7.0'", version_info_content, "version_info.txt StringFileInfo must be 1.0.7.0")
 
     def test_runtime_icons_self_healing_resilience(self):
         """Verify that Flet icons remain functional and do not raise FileNotFoundError."""

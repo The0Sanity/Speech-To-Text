@@ -14,7 +14,11 @@ class TestAntivirusAndInstantLaunch(unittest.TestCase):
 
     def test_version_bump_to_103_or_higher(self):
         """Verify that application version is at least 1.0.3."""
-        self.assertTrue(APP_VERSION in ["1.0.3", "1.0.4"], "APP_VERSION must be 1.0.3 or higher")
+        from src.updater import SemVer
+        self.assertTrue(
+            SemVer.parse(APP_VERSION) >= SemVer.parse("1.0.3"),
+            f"APP_VERSION ({APP_VERSION}) must be 1.0.3 or higher",
+        )
 
     def test_version_info_file_exists_and_configured(self):
         """Verify Windows PE version_info.txt exists with proper metadata."""
@@ -22,7 +26,7 @@ class TestAntivirusAndInstantLaunch(unittest.TestCase):
         self.assertTrue(version_file.exists(), "version_info.txt must exist")
         content = version_file.read_text(encoding="utf-8")
         self.assertTrue(
-            "filevers=(1, 0, 3, 0)" in content or "filevers=(1, 0, 4, 0)" in content,
+            "filevers=(1, 0, 7, 0)" in content or "filevers=(1, 0, 4, 0)" in content or "filevers=(1, 0, 3, 0)" in content,
             "version_info.txt must contain valid filevers",
         )
         self.assertIn("CompanyName", content)

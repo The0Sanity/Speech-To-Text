@@ -39,14 +39,29 @@ def get_base_dir() -> Path:
     return Path(__file__).resolve().parent.parent
 
 
+def get_config_dir() -> Path:
+    """Kullanıcı yapılandırma dizinini döndürür (OS standartlarına uygun)."""
+    appdata = os.environ.get("APPDATA") or os.environ.get("LOCALAPPDATA")
+    if appdata:
+        cfg_dir = Path(appdata) / "SesMetinPro"
+    else:
+        cfg_dir = Path.home() / ".config" / "sesmetinpro"
+    cfg_dir.mkdir(parents=True, exist_ok=True)
+    return cfg_dir
+
+
 # Temel Dizin Yollari
 BASE_DIR = get_base_dir()
 MODELS_DIR = BASE_DIR / "models"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 TEMP_DIR = BASE_DIR / "temp"
-SETTINGS_FILE = BASE_DIR / "settings.json"
-# Uygulama Surumu ve Depo Bilgileri
-APP_VERSION = "1.0.4"
+
+CONFIG_DIR = get_config_dir()
+CONFIG_FILE = CONFIG_DIR / "config.json"
+SETTINGS_FILE = CONFIG_FILE  # Geriye dönük uyumluluk takma adı
+
+# Uygulama Sürümü ve Depo Bilgileri
+APP_VERSION = "1.0.7"
 APP_NAME = "SesMetin Pro"
 GITHUB_REPO_OWNER = "The0Sanity"
 GITHUB_REPO_NAME = "Speech-To-Text"
@@ -85,26 +100,46 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 
 
 def load_settings() -> Dict[str, Any]:
-    """settings.json dosyasından ayarları yükler, yoksa varsayılanı kaydeder."""
-    if not SETTINGS_FILE.exists():
-        save_settings(DEFAULT_CONFIG)
-        return DEFAULT_CONFIG.copy()
+    """Yapılandırma dosyasından ayarları yükler, yoksa varsayılanı kaydeder.
+    Eski BASE_DIR / settings.json varsa taşır ve eski dosyayı siler."""
+    legacy_file = BASE_DIR / "settings.json"
+    legacy_data = None
+    if legacy_file.exists():
+        try:
+            with open(legacy_file, "r", encoding="utf-8") as f:
+                legacy_data = json.load(f)
+            try:
+                legacy_file.unlink()
+            except OSError:
+                pass
+        except Exception:
+            pass
+
+    if not CONFIG_FILE.exists():
+        initial = DEFAULT_CONFIG.copy()
+        if legacy_data and isinstance(legacy_data, dict):
+            initial.update(legacy_data)
+        save_settings(initial)
+        return initial
 
     try:
-        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            # Eksik alanlar varsa varsayılanla doldur
             merged = DEFAULT_CONFIG.copy()
             merged.update(data)
+            if legacy_data and isinstance(legacy_data, dict):
+                merged.update(legacy_data)
+                save_settings(merged)
             return merged
     except Exception:
         return DEFAULT_CONFIG.copy()
 
 
 def save_settings(settings: Dict[str, Any]) -> None:
-    """Ayarları settings.json dosyasına kaydeder."""
+    """Ayarları OS standardındaki config.json dosyasına kaydeder."""
     try:
-        with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(settings, f, indent=4, ensure_ascii=False)
     except Exception as e:
         print(f"Ayar kaydetme hatası: {e}")

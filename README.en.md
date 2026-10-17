@@ -78,7 +78,13 @@ For developers or advanced users running from the source repository:
 
 Project development is organized into focused release milestones. The roadmap below tracks upcoming features up to version v2.0.0:
 
-### v1.0.4 — Flet Icons & Asset Integrity (Current Release)
+### v1.0.7 — Minimalist UI, OS Config Storage & Stability (Current Release)
+- [x] Strict minimalist "SesMetin Pro" window title bar and clean header ergonomics.
+- [x] OS-standard configuration storage (`%APPDATA%\SesMetinPro\config.json`) with zero workspace clutter.
+- [x] Rich Markdown release notes dialog and responsive, throttled download progress bar.
+- [x] Deadlock-free self-updater process termination (`os._exit(0)`).
+
+### v1.0.4 — Flet Icons & Asset Integrity
 - [x] Flet material and cupertino icon assets (icons.json) bundling with runtime self-healing protection.
 - [x] Faster-Whisper (silero_vad_v6.onnx) and CTranslate2 native assets secured with PyInstaller data hooks.
 - [x] GitHub API HTTP 304 (Not Modified) cache resolution and one-click live update check (force refresh).

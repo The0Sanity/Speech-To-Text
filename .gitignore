@@ -18,6 +18,8 @@ models/
 build/
 dist/
 *.zip
+settings.json
+config.json
 
 # AI Assistant and local instruction files
 CLAUDE.md

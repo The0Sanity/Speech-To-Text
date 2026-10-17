@@ -3,6 +3,27 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.7] - 2026-10-17
+
+### Added / Yenilikler
+- **OS-Standard Configuration Storage / Standart Yapilandirma Dizini**:
+  - Relocated settings from loose `settings.json` in the executable folder to OS-standard user profile directory (`%APPDATA%\SesMetinPro\config.json` on Windows, `~/.config/sesmetinpro/config.json` on Unix).
+  - Automatically migrates existing settings and deletes the legacy `settings.json` file to keep the application directory clean and clutter-free.
+- **Markdown Rendering in Patch Notes Modal / Surum Notlarinda Markdown Destegi**:
+  - Implemented scrollable `ft.Markdown` rendering in the update notification dialog with selectable text, preserving headers, lists, code blocks, and formatting.
+
+### Changed / Degisiklikler
+- **Minimalist Window and Header Title / Minimalist Baslik**:
+  - Simplified application title bar and main window header strictly to `"SesMetin Pro"`, eliminating secondary subtitle clutter while retaining the official GitHub attribution link.
+- **Synchronized Version Metadata / Surum Senkronizasyonu**:
+  - Synchronized version `1.0.7` across `src/config.py`, `src/__init__.py`, and Windows PE metadata `version_info.txt`.
+
+### Fixed / Duzeltmeler
+- **Auto-Updater Process Deadlock / Guncelleme Surec Kilitlenmesi**:
+  - Resolved deadlock where background threads kept the process alive after downloading updates by utilizing `os._exit(0)` when spawning the updater batch script.
+- **Update Dialog Button Toggles / Guncelleme Buton Durumlari**:
+  - Corrected button visibility transitions during active downloads, ensuring cancel and update buttons toggle smoothly without frozen states.
+
 ---
 
 ## [v1.0.6] - 2026-10-17

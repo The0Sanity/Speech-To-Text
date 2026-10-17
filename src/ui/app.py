@@ -740,11 +740,6 @@ class FletSpeechToTextApp:
                         weight=ft.FontWeight.BOLD,
                         color=TEXT_MAIN,
                     ),
-                    ft.Text(
-                        value="| Türkçe Ses Tanıma ve Konuşmacı Ayrıştırma İstasyonu",
-                        size=12,
-                        color=TEXT_SUBTLE,
-                    ),
                     ft.Container(expand=True),
                     ft.TextButton(
                         content=ft.Row(
@@ -1990,7 +1985,7 @@ class FletSpeechToTextApp:
 
 def run_flet_app(page: ft.Page):
     """Flet masaüstü pencere başlatıcısı ve anında ön plana getirme."""
-    page.title = f"SesMetin Pro - Turkce STT ve Konusmaci Ayrastirma (v{FletSpeechToTextApp.APP_VERSION})"
+    page.title = "SesMetin Pro"
     page.bgcolor = BG_APP
     page.padding = 0
     page.spacing = 0

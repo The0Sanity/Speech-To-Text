@@ -38,6 +38,7 @@ class TestReadmeAndRoadmap(unittest.TestCase):
             for v in versions:
                 self.assertIn(v, content, f"{name} must document {v}")
             if name.startswith("README"):
+                self.assertIn("v1.0.7", content, f"{name} must document current version v1.0.7")
                 self.assertIn("- [x]", content, f"{name} must use completed markdown checklist items")
                 self.assertIn("- [ ]", content, f"{name} must use pending markdown checklist items")
 
