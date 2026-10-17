@@ -41,7 +41,7 @@ if exist "venv\Scripts\python.exe" (
 
 :CHECK_DEPS
 :: 3. Bagimliliklar kurulu mu kontrol et
-%PY% -c "import customtkinter, faster_whisper, soundfile, yt_dlp" >nul 2>&1
+%PY% -c "import flet, customtkinter, faster_whisper, soundfile, yt_dlp" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     goto :RUN_APP
 )

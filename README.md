@@ -2,10 +2,10 @@
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![UI: CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter%20v2.0-blueviolet.svg)](https://github.com/TomSchimansky/CustomTkinter)
+[![UI: Flet Desktop](https://img.shields.io/badge/UI-Flet%20Flutter%20Native-0078d4.svg)](https://flet.dev)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-The0Sanity%2FSpeech--To--Text-success.svg)](https://github.com/The0Sanity/Speech-To-Text.git)
 
-MP4 ve MP3 (ve diğer tüm video/ses) dosyalarınızı **tamamen yerel (offline)** olarak Türkçe metne dönüştüren, ortamdaki farklı konuşmacıları otomatik tespit edip **"X1", "X2"** şeklinde etiketleyen minimalist ve sade bir masaüstü uygulamasıdır.
+MP4 ve MP3 (ve diğer tüm video/ses) dosyalarınızı **tamamen yerel (offline)** olarak Türkçe metne dönüştüren, ortamdaki farklı konuşmacıları otomatik tespit edip **"X1", "X2"** şeklinde etiketleyen, Flet ve Flutter motoruyla çalışan modern, minimalist bir masaüstü uygulamasıdır.
 
 Intel Core i3 CPU ve 8 GB RAM gibi standart donanımlarda yüksek performans ve düşük bellek tüketimi için **CPU INT8 (CTranslate2)** optimizasyonuna sahiptir.
 
@@ -13,16 +13,19 @@ Intel Core i3 CPU ve 8 GB RAM gibi standart donanımlarda yüksek performans ve 
 
 ## Temel Özellikler
 
-- **Minimalist Arayüz Tasarımı:**
-  - **Karanlık ve Aydınlık Tema:** Gece modu ve Gündüz modu arasında tek tıkla geçiş.
-  - **Çok Adımlı İlerleme Göstergesi (Process Stepper):** 5 aşamalı boru hattını (Medya Hazırlığı, İyileştirme, Whisper STT, Konuşmacı Ayrımı, Hizalama) sade metinlerle izleme.
+- **Modern Flet Masaüstü Arayüzü:**
+  - **Windows 11 Fluent Dark Tasarım:** Flutter GPU donanım hızlandırmalı 60 FPS akıcı render.
+  - **Sıfır Emoji İlkesi:** Kurumsal, sade ve profesyonel tipografi ve simgeler.
+  - **Salt Tıklanabilir Açılır Menüler:** Model, dil, VAD ve konuşmacı açılır menüleri yalnızca tıklanabilir, elle yazmaya kapalıdır.
+  - **Duyarlı ve Akıllı Pencere Düzeni:** Minimum 960x640 boyut garantisi, otomatik ekran ortalama ve yumuşak açılış geçişi.
+  - **Çok Adımlı İlerleme Göstergesi (Process Stepper):** 5 aşamalı boru hattını (Medya Hazırlığı, İyileştirme, Whisper STT, Konuşmacı Ayrımı, Hizalama) canlı izleme.
   - **Canlı Metrik Şeridi (Stats Ribbon):** Toplam konuşma süresi, konuşmacı sayısı, toplam kelime adedi ve WPM (dakika başına kelime) göstergeleri.
-  - **Entegre Ses Önizleme (Audio Player Bar):** Yüklenen veya indirilen ses dosyasını arayüzden doğrudan dinleme, duraklatma ve kontrol etme.
+  - **Entegre Ses Oynatıcı Barı (Audio Player Bar):** Yüklenen veya indirilen ses dosyasını arayüzden doğrudan dinleme, duraklatma ve zaman kontrolü.
 - **Gelişmiş Transkript Düzenleme:**
-  - **Canlı Arama ve Filtreleme:** Metin, konuşmacı veya zaman damgasına göre anında eşleşme sayımı ve süzme.
-  - **Bul ve Değiştir (Find & Replace):** Transkript genelinde kelimeleri tek tek veya topluca tek tıkla değiştirme.
-  - **Konuşmacı Yönetim Paneli (Speaker Manager):** Her konuşmacının toplam konuşma süresini ve konuşma sayısını görüntüleme, isimleri tek ekrandan kolayca güncelleme.
-  - **Hızlı Segment Kopyalama:** Her konuşma kartındaki kopyalama butonu ve bildirim balonları (Toast).
+  - **Canlı Arama ve Filtreleme:** Metin veya konuşmacıya göre anında eşleşme sayımı ve süzme.
+  - **Bul ve Değiştir (Find & Replace):** Transkript genelinde kelimeleri topluca tek tıkla değiştirme.
+  - **Konuşmacı Yönetim Paneli (Speaker Manager):** Konuşmacı isimlerini tek ekrandan kolayca güncelleme.
+  - **Hızlı Segment Kopyalama:** Her konuşma kartındaki kopyalama butonu ve bildirim balonları.
 - **Kapsamlı Dışa Aktarım Desteği (6 Format):**
   - **`.txt`**: Zaman damgalı, temiz ve okunabilir transkript raporu.
   - **`.srt`**: Standart video oynatıcılar ve YouTube için altyazı.
@@ -30,7 +33,7 @@ Intel Core i3 CPU ve 8 GB RAM gibi standart donanımlarda yüksek performans ve 
   - **`.json`**: Detaylı zamanlama ve kelime analizi içeren tam meta veri JSON'ı.
   - **`.csv`**: Excel / Sheets uyumlu tablolu döküm.
   - **`.md`**: Obsidian, Notion ve GitHub uyumlu sade Markdown belgesi.
-  - **Panoya Kopyalama**: Biçimlendirilmiş tek tıkla pano aktarımı.
+  - **Panoya Kopyala**: Biçimlendirilmiş tek tıkla pano aktarımı.
 - **100% Çevrimdışı (Offline):** İnternet bağlantısı veya bulut API'si gerektirmeden doğrudan bilgisayarınızın işlemcisi üzerinde çalışır.
 - **YouTube Otomatik İndirme:** YouTube linki girildiğinde `yt-dlp` ile sesi otomatik indirir ve transkribe eder.
 - **Tüm Medya Formatları Desteği:** FFmpeg entegrasyonu ile `.mp4`, `.mp3`, `.wav`, `.m4a`, `.aac`, `.mkv`, `.flac`, `.ogg` dosyalarını otomatik dönüştürür.
@@ -48,18 +51,19 @@ Intel Core i3 CPU ve 8 GB RAM gibi standart donanımlarda yüksek performans ve 
 
 ### 1. Tek Tıkla Başlatma (Sıfır Kurulum Zahmeti)
 `run.bat` dosyasına çift tıklamanız yeterlidir.
-- Sanal ortam (`venv`) ve gerekli kütüphaneler yoksa arka planda otomatik olarak kurulur.
-- Bağımlılıklar zaten yüklüyse doğrudan uygulama başlatılır. Manuel ortam (`env`) yapılandırma gereksinimi kaldırılmıştır.
+- Sanal ortam (`venv`) ve gerekli kütüphaneler (`flet`, `faster_whisper` vb.) yoksa arka planda otomatik olarak kurulur.
+- Bağımlılıklar zaten yüklüyse doğrudan modern Flet uygulaması başlatılır. Manuel ortam (`env`) yapılandırma gereksinimi kaldırılmıştır.
 
 ### 2. Komut Satırından Başlatma
 PowerShell veya Terminal üzerinden:
 ```powershell
 .\run.bat
 ```
-veya
+veya doğrudan Python ile:
 ```powershell
 python main.py
 ```
+*(Gerek duyulursa `--gui=tk` parametresi ile CustomTkinter arayüzü de çalıştırılabilir).*
 
 ---
 
@@ -73,33 +77,13 @@ python main.py
 
 ---
 
-## Kullanım Rehberi
-
-1. **Uygulamayı Başlatın:** `run.bat` dosyasını çalıştırın.
-2. **Girdi Belirleyin:**
-   - **Yerel Dosya:** "Yerel Dosya" sekmesinden bilgisayarınızdaki bir video veya ses dosyasını seçin. "Önizle" butonu ile ses dosyasını dinleyebilirsiniz.
-   - **YouTube:** "YouTube" sekmesine video bağlantısını yapıştırın ve "Bilgi Al" butonuna basın.
-3. **Ayarları Yapılandırın:**
-   - **Whisper Modeli:** `small (Dengeli - Hızlı)`, `medium (Yüksek Doğruluk)` veya `large-v3-turbo (En Yüksek Kalite)`.
-   - **VAD Hassasiyeti:** `Yüksek (Fısıltı/Hızlı)` veya `Normal (Standart)`.
-   - **Ses Ön-İyileştirme:** Gürültü ve arka plan seslerini filtrelemek için açık tutulması önerilir.
-   - **Konuşmacı Sayısı:** Tek kişi için "1", mülakat için "2" veya otomatik tespit.
-4. **İşlemi Başlatın:** "Transkripsiyonu Başlat" butonuna tıklayın. Süreç göstergesi ile her aşamayı canlı izleyin.
-5. **İnceleyin ve Düzenleyin:**
-   - Segment metinlerini doğrudan kutucuklardan düzenleyebilirsiniz.
-   - İsim değiştirmek için konuşmacı rozetine tıklayabilir veya "Konuşmacıları Yönet" penceresini kullanabilirsiniz.
-   - "Bul & Değiştir" ile transkriptteki kelimeleri tek seferde güncelleyin.
-6. **Dışa Aktarın:** Alt bardaki butonlar (`TXT`, `SRT`, `VTT`, `JSON`, `CSV`, `MD`) veya "Panoya Kopyala" ile çıktınızı kaydedin.
-
----
-
 ## Proje Mimarisi
 
 ```
 Speech-To-Text/
-├── main.py                  # Uygulama giriş noktası ve FFmpeg ortam yapılandırması
+├── main.py                  # Uygulama giriş noktası ve UI başlatıcı
 ├── settings.json            # Kullanıcı tercihleri ve yapılandırma
-├── requirements.txt         # Bağımlılık listesi
+├── requirements.txt         # Bağımlılık listesi (Flet, Faster-Whisper vb.)
 ├── run.bat                  # Tek tıkla otomatik bağımlılık kontrolü ve başlatma betiği
 ├── PRODUCT.md               # Ürün ve tasarım manifestosu
 ├── src/
@@ -112,11 +96,16 @@ Speech-To-Text/
 │   ├── text_postprocessor.py# Türkçe karakter, noktalama ve halüsinasyon filtresi
 │   ├── transcriber.py       # CTranslate2 optimize Faster-Whisper motoru
 │   ├── youtube_downloader.py# yt-dlp tabanlı YouTube ses indirici
-│   └── ui/
-│       ├── app.py           # Minimalist CustomTkinter masaüstü arayüzü
-│       ├── components.py    # Sade kartlar, stepper, metrikler, ses oynatıcı ve diyaloglar
-│       └── style.py         # Tasarım tokenleri, renk paletleri ve tema sistemi
-└── tests/                   # Kapsamlı birim ve entegrasyon testleri
+│   ├── ui_flet/             # Modern Flet (Flutter) Masaüstü Arayüzü
+│   │   ├── __init__.py      # Modül başlatıcı
+│   │   ├── app.py           # Ana uygulama penceresi, kontroller ve boru hattı bağlantısı
+│   │   ├── components.py    # MetricCard, ProcessStepper, AudioPlayerBar, TurnCard
+│   │   └── theme.py         # Windows 11 Fluent dark renk paleti ve konuşmacı renkleri
+│   └── ui/                  # CustomTkinter arayüzü (yedek/legacy mod)
+│       ├── app.py           # CustomTkinter masaüstü arayüzü
+│       ├── components.py    # Kartlar, stepper, metrikler, ses oynatıcı
+│       └── style.py         # Tema tokenleri ve palet
+└── tests/                   # Kapsamlı birim ve entegrasyon testleri (52 test)
 ```
 
 ---
