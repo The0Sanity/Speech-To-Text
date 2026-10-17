@@ -216,16 +216,28 @@ class SpeakerDiarizer:
             return None
 
     def _estimate_f0(self, chunk: np.ndarray, sample_rate: int) -> float:
-        """Otokorelasyon yöntemiyle temel ses perdesini (F0 / Pitch) yaklaşık olarak hesaplar."""
-        # 70 Hz ile 400 Hz aralığı
+        """Otokorelasyon yöntemiyle temel ses perdesini (F0 / Pitch) optimize edilmiş pencere ile hesaplar."""
         min_lag = int(sample_rate / 400)
         max_lag = int(sample_rate / 70)
 
-        corr = np.correlate(chunk, chunk, mode="full")
-        corr = corr[len(corr) // 2 :]
+        if len(chunk) < max_lag * 2:
+            return 150.0
+
+        # Hesaplama karmaşıklığını O(N^2) yerine O(N log N) / sabit pencere ile sınırla
+        win_size = min(len(chunk), 2048)
+        start_idx = (len(chunk) - win_size) // 2
+        sig = chunk[start_idx : start_idx + win_size]
+
+        try:
+            from scipy.signal import fftconvolve
+            corr = fftconvolve(sig, sig[::-1], mode="full")
+            corr = corr[len(corr) // 2 :]
+        except Exception:
+            corr = np.correlate(sig[:max_lag * 2], sig[:max_lag * 2], mode="full")
+            corr = corr[len(corr) // 2 :]
 
         if len(corr) <= max_lag:
-            return 150.0  # Varsayılan insan perdesi
+            return 150.0
 
         segment_corr = corr[min_lag:max_lag]
         if len(segment_corr) == 0:

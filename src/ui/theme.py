@@ -27,6 +27,14 @@ DANGER_HOVER = "#be123c"
 SUCCESS = "#10b981"
 WARNING = "#f59e0b"
 
+# Geriye dönük uyumluluk ve genel tasarım takma adları (Aliases)
+PRIMARY = ACCENT_PRIMARY
+ACCENT = ACCENT_PRIMARY
+BORDER_MUTED = BORDER_CARD
+BORDER_SUBTLE = BORDER_CARD
+STATUS_ERROR = DANGER
+ERROR = DANGER
+
 # Konuşmacı Ayrıştırma Renk Paleti
 SPEAKER_COLORS: List[str] = [
     "#38bdf8",  # Açık Mavi

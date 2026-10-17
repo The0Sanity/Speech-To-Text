@@ -79,13 +79,11 @@ _CURRENCIES: Dict[str, str] = {
     "sterlin": "GBP",
 }
 
-# Dolgu sözcük kalıpları (yalnızca tam sözcük olarak eşleşir)
+# Dolgu sözcük kalıpları (yalnızca fonetik duraksama sesleri; anlamlı sözcükler 'şey' ve 'yani' korunur)
 _DISFLUENCIES = [
     r"\bı+[ıhm]*\b",
     r"\be+[emh]*\b",
     r"\bhmm+\b",
-    r"\bşey\b",
-    r"\byani\b",
     r"\bımm+\b",
 ]
 
@@ -287,3 +285,15 @@ def apply_turkish_itn(
         result = normalize_turkish_numbers(result)
 
     return result
+
+
+class InverseTextNormalizer:
+    """Türkçe ters metin normalizasyonu (ITN) sarmalayıcı sınıfı."""
+
+    @staticmethod
+    def clean_disfluencies(text: str) -> str:
+        return remove_turkish_disfluencies(text)
+
+    @staticmethod
+    def normalize(text: str, **kwargs) -> str:
+        return apply_turkish_itn(text, **kwargs)

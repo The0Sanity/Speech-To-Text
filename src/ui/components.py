@@ -1,6 +1,7 @@
 """Flet tabanlı Windows 11 Fluent arayüz bileşenleri."""
 
 import os
+import threading
 from typing import Callable, Dict, List, Optional
 import flet as ft
 
@@ -161,8 +162,9 @@ class AudioPlayerBar(ft.Container):
     def __init__(self, **kwargs):
         self.audio_path: Optional[str] = None
         self.is_playing = False
+        self._stop_timer: Optional[threading.Timer] = None
 
-        self.btn_play_text = ft.Text("Önizle", size=11, weight=ft.FontWeight.W_500)
+        self.btn_play_text = ft.Text("Oynat", size=11, weight=ft.FontWeight.W_500)
         self.btn_play = ft.FilledButton(
             content=self.btn_play_text,
             bgcolor=BTN_NEUTRAL,
@@ -193,6 +195,58 @@ class AudioPlayerBar(ft.Container):
             padding=ft.Padding.symmetric(horizontal=10, vertical=6),
             **kwargs,
         )
+
+    @property
+    def play_btn(self):
+        """Test ve dış bileşenlerle geriye dönük tam uyumlu buton proxy'si."""
+        class _PlayBtnProxy:
+            def __init__(proxy_self, btn, text_ctl):
+                proxy_self._btn = btn
+                proxy_self._text = text_ctl
+
+            @property
+            def text(proxy_self):
+                return proxy_self._text.value
+
+            @text.setter
+            def text(proxy_self, val):
+                proxy_self._text.value = val
+
+            def __getattr__(proxy_self, name):
+                return getattr(proxy_self._btn, name)
+
+        return _PlayBtnProxy(self.btn_play, self.btn_play_text)
+
+    def _cancel_timer(self):
+        if hasattr(self, "_stop_timer") and self._stop_timer:
+            try:
+                self._stop_timer.cancel()
+            except Exception:
+                pass
+            self._stop_timer = None
+
+    def _get_audio_duration(self, wav_path: str) -> float:
+        try:
+            import wave
+            with wave.open(wav_path, "rb") as wf:
+                frames = wf.getnframes()
+                rate = wf.getframerate()
+                if rate > 0:
+                    return float(frames) / float(rate)
+        except Exception:
+            pass
+        return 0.0
+
+    def _on_playback_finished(self):
+        self.is_playing = False
+        self.btn_play_text.value = "Oynat"
+        self.btn_play.bgcolor = BTN_NEUTRAL
+        self.lbl_status.value = "Oynatma tamamlandı"
+        self.lbl_status.color = TEXT_SUBTLE
+        try:
+            self.update()
+        except Exception:
+            pass
 
     def set_audio_source(self, wav_path: Optional[str], duration_str: str = ""):
         """Oynatılacak ses dosyasını tanımlar."""
@@ -231,9 +285,18 @@ class AudioPlayerBar(ft.Container):
             self.btn_play.bgcolor = DANGER
             self.lbl_status.value = "Çalınıyor..."
             self.lbl_status.color = ACCENT_LIGHT
+
+            # Otomatik tamamlanma zamanlayıcısı
+            self._cancel_timer()
+            dur = self._get_audio_duration(self.audio_path)
+            if dur > 0:
+                self._stop_timer = threading.Timer(dur + 0.1, self._on_playback_finished)
+                self._stop_timer.daemon = True
+                self._stop_timer.start()
         except Exception as e:
             self.lbl_status.value = f"Hata: {e}"
             self.lbl_status.color = DANGER
+            self.is_playing = False
 
         try:
             self.update()
@@ -242,13 +305,14 @@ class AudioPlayerBar(ft.Container):
 
     def stop_playback(self):
         """Ses oynatmasını durdurur."""
+        self._cancel_timer()
         try:
             import winsound
             winsound.PlaySound(None, winsound.SND_PURGE)
         except Exception:
             pass
         self.is_playing = False
-        self.btn_play_text.value = "Önizle"
+        self.btn_play_text.value = "Oynat"
         self.btn_play.bgcolor = BTN_NEUTRAL
         self.lbl_status.value = "Ses durduruldu"
         self.lbl_status.color = TEXT_SUBTLE
@@ -257,6 +321,10 @@ class AudioPlayerBar(ft.Container):
             self.update()
         except Exception:
             pass
+
+    def stop(self):
+        """stop_playback için eşanlamlı metot."""
+        self.stop_playback()
 
 
 class TranscriptTurnCard(ft.Container):

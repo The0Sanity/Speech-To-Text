@@ -1,6 +1,7 @@
 """Faster-Whisper tabanlı Türkçe konuşma tanıma (Speech-To-Text) modülü."""
 
 import os
+import threading
 import time
 import zlib
 from pathlib import Path
@@ -134,6 +135,7 @@ class WhisperTranscriber:
         apply_itn: bool = True,
         clean_disfluencies: bool = True,
         progress_callback: Optional[Callable[[float, str, Optional[Dict[str, Any]]], None]] = None,
+        cancel_event: Optional[threading.Event] = None,
     ) -> List[Dict[str, Any]]:
         """
         Verilen ses dosyasını metne dönüştürür.
@@ -214,6 +216,9 @@ class WhisperTranscriber:
         collected_segments: List[Dict[str, Any]] = []
 
         for seg_idx, segment in enumerate(segments_generator):
+            if cancel_event and cancel_event.is_set():
+                break
+
             text_cleaned = segment.text.strip()
             if not text_cleaned:
                 continue
@@ -247,7 +252,6 @@ class WhisperTranscriber:
                 "compression_ratio": round(comp_ratio, 3),
             }
             collected_segments.append(seg_dict)
-            rolling_context = f"{rolling_context} {text_cleaned}".strip()
 
             # İlerleme hesabı (toplam ses süresine göre %15 ile %75 arası STT aşamasıdır)
             if audio_dur > 0 and progress_callback:

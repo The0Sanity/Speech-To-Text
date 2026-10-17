@@ -169,10 +169,16 @@ class TestTurkishInverseTextNormalization(unittest.TestCase):
         self.assertEqual(normalize_turkish_currencies("yirmi euro"), "20 EUR")
 
     def test_remove_turkish_disfluencies(self):
-        """Dolgu sözcüklerin ('ııı', 'eee', 'şey', vb.) temizlenmesini test eder."""
-        raw = "Ben ııı bugün şey projeyi yani tamamladım."
+        """Dolgu seslerin ('ııı', 'eee', vb.) temizlenmesini ve anlamlı sözcüklerin ('şey', 'yani') korunmasını test eder."""
+        raw = "Ben ııı bugün eee projeyi hmmm tamamladım."
         cleaned = remove_turkish_disfluencies(raw)
         self.assertEqual(cleaned, "Ben bugün projeyi tamamladım.")
+
+        # Anlamlı sözcüklerin korunduğunu doğrula
+        text_with_valid_words = "En önemli şey sağlıktır yani bu böyledir."
+        cleaned_valid = remove_turkish_disfluencies(text_with_valid_words)
+        self.assertIn("şey", cleaned_valid)
+        self.assertIn("yani", cleaned_valid)
 
     def test_apply_turkish_itn_integrated(self):
         """Tüm ITN kurallarının birleşik metin üzerindeki etkisini test eder."""

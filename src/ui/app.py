@@ -50,6 +50,7 @@ from src.ui.components import (
     TranscriptTurnCard,
 )
 from src.ui.theme import (
+    ACCENT,
     ACCENT_HOVER,
     ACCENT_LIGHT,
     ACCENT_PRIMARY,
@@ -57,9 +58,11 @@ from src.ui.theme import (
     BG_CARD,
     BG_CARD_SECONDARY,
     BORDER_CARD,
+    BORDER_SUBTLE,
     BTN_NEUTRAL,
     BTN_NEUTRAL_HOVER,
     DANGER,
+    ERROR,
     INPUT_BG,
     INPUT_BORDER,
     SUCCESS,
@@ -93,8 +96,17 @@ class FletSpeechToTextApp:
         self.transcribed_data: List[Dict[str, Any]] = []
         self.is_processing = False
         self.cancel_requested = False
+        self.cancel_event = threading.Event()
         self.current_input_mode = "file"  # "file" veya "youtube"
         self.updater = AutoUpdater(current_version=self.APP_VERSION)
+
+        if self.page:
+            self.page.bgcolor = BG_APP
+            if hasattr(self.page, "window") and self.page.window:
+                try:
+                    self.page.window.opacity = 1.0
+                except Exception:
+                    pass
 
         self._init_controls()
 
@@ -889,17 +901,17 @@ class FletSpeechToTextApp:
         self._safe_update(self.lbl_yt_title)
 
         def _worker():
-            success, info, err = get_youtube_video_info(url)
-            if success and info:
+            try:
+                info = get_youtube_video_info(url)
                 self.youtube_info = info
                 self.lbl_yt_title.value = info.get("title", "Bilinmeyen Başlık")
-                duration_sec = info.get("duration", 0)
+                duration_sec = int(info.get("duration", 0) or 0)
                 dur_str = f"{duration_sec // 60}:{duration_sec % 60:02d}"
                 self.lbl_yt_meta.value = f"Kanal: {info.get('uploader', '-')} | Süre: {dur_str}"
                 self.lbl_status.value = f"YouTube hazır: {info.get('title')}"
-            else:
+            except Exception as err:
                 self.lbl_yt_title.value = "Hata oluştu"
-                self.lbl_yt_meta.value = clean_error_message(err or "Bilinmeyen hata")
+                self.lbl_yt_meta.value = clean_error_message(str(err) or "Bilinmeyen hata")
                 self.lbl_status.value = "YouTube bilgisi alınamadı."
 
             self._safe_update(self.lbl_yt_title)
@@ -953,10 +965,11 @@ class FletSpeechToTextApp:
                 def yt_prog(pct, msg):
                     self._update_progress(0.05 + (pct * 0.10), f"1/5: {msg}")
 
-                dl_ok, wav_path, dl_err = download_youtube_audio(media_source, progress_callback=yt_prog)
-                if not dl_ok or not wav_path:
+                try:
+                    wav_path, _ = download_youtube_audio(media_source, progress_callback=yt_prog)
+                    temp_wav = wav_path
+                except Exception as dl_err:
                     raise RuntimeError(f"YouTube sesi indirilemedi: {clean_error_message(dl_err)}")
-                temp_wav = wav_path
             else:
                 try:
                     temp_wav = extract_audio_to_wav(
@@ -1019,6 +1032,7 @@ class FletSpeechToTextApp:
                 apply_itn=bool(self.chk_itn.value),
                 clean_disfluencies=bool(self.chk_disfluencies.value),
                 progress_callback=whisper_progress,
+                cancel_event=self.cancel_event,
             )
 
             if not stt_segments:
@@ -1090,9 +1104,9 @@ class FletSpeechToTextApp:
             self.stepper.reset()
             self._show_toast(f"Hata: {str(e)}", is_error=True)
         finally:
-            if temp_wav and temp_wav != self.selected_file_path:
+            if temp_wav and temp_wav != self.selected_file_path and temp_wav != self.active_wav_path:
                 cleanup_temp_file(temp_wav)
-            if enhanced_wav:
+            if enhanced_wav and enhanced_wav != self.active_wav_path:
                 cleanup_temp_file(enhanced_wav)
             self.is_processing = False
             self.btn_start.disabled = False
@@ -1111,6 +1125,8 @@ class FletSpeechToTextApp:
         """Devam eden işlemi iptal eder."""
         if self.is_processing:
             self.cancel_requested = True
+            if hasattr(self, "cancel_event"):
+                self.cancel_event.set()
             self.lbl_status.value = "İptal ediliyor, lütfen bekleyin..."
             self._safe_update(self.lbl_status)
 
@@ -1289,6 +1305,8 @@ class FletSpeechToTextApp:
         )
 
         if self.page:
+            if hasattr(self.page, "overlay") and self.page.overlay is not None:
+                self.page.overlay = [ctl for ctl in self.page.overlay if not isinstance(ctl, ft.AlertDialog) or getattr(ctl, "open", False)]
             self.page.overlay.append(dialog)
             dialog.open = True
             self.page.update()
@@ -1351,6 +1369,8 @@ class FletSpeechToTextApp:
     def _show_toast(self, message: str, is_error: bool = False):
         """Kullanıcıya sade bilgi bildirimi (SnackBar) gösterir."""
         if self.page:
+            if hasattr(self.page, "overlay") and self.page.overlay is not None:
+                self.page.overlay = [ctl for ctl in self.page.overlay if not isinstance(ctl, ft.SnackBar)]
             snack = ft.SnackBar(
                 content=ft.Text(value=message, color=TEXT_MAIN, size=12),
                 bgcolor=DANGER if is_error else BTN_NEUTRAL,
@@ -1381,7 +1401,7 @@ class FletSpeechToTextApp:
 
     def _check_can_update(self) -> bool:
         """Aktif bir transkripsiyon işlemi olup olmadığını denetler."""
-        if getattr(self, "is_transcribing", False):
+        if getattr(self, "is_processing", False):
             self._show_toast("Transkripsiyon devam ederken güncelleme yapılamaz.", is_error=True)
             return False
         return True
@@ -1612,10 +1632,14 @@ class FletSpeechToTextApp:
 
         threading.Thread(target=_check, daemon=True).start()
 
-    def _show_ffmpeg_bootstrapper_dialog(self, bootstrapper):
+    def _show_ffmpeg_bootstrapper_dialog(self, bootstrapper=None):
         """FFmpeg eksik oldugunda tek tikla otomatik indirme ve ayiklama modali sunar."""
         if not self.page:
             return
+
+        if bootstrapper is None:
+            from src.bootstrapper import DependencyBootstrapper
+            bootstrapper = DependencyBootstrapper()
 
         progress_bar = ft.ProgressBar(value=0.0, visible=False, color=ACCENT, bgcolor=BORDER_SUBTLE)
         lbl_status = ft.Text(
@@ -1767,24 +1791,15 @@ def run_flet_app(page: ft.Page):
     app.start_background_update_check()
     app.check_and_prompt_prerequisites()
 
-    # Açılış yumuşak geçiş animasyonu ve pencerenin ön planda kalmasını pekiştirme
-    def _fade_in_worker():
-        try:
-            page.window.focused = True
-            if hasattr(page.window, "to_front"):
-                page.window.to_front()
-            for op in range(9, 11):
-                page.window.opacity = op / 10.0
-                page.update()
-                time.sleep(0.016)
-        except Exception:
-            try:
-                page.window.opacity = 1.0
-                page.update()
-            except Exception:
-                pass
-
-    threading.Thread(target=_fade_in_worker, daemon=True).start()
+    # Pencereyi odakla ve ön planda tut; pencere opaklığını 1.0 olarak sabit tut (DWM şeffaflık hatasını önler)
+    try:
+        page.window.opacity = 1.0
+        page.window.focused = True
+        if hasattr(page.window, "to_front"):
+            page.window.to_front()
+        page.update()
+    except Exception:
+        pass
 
 
 # Geriye dönük uyumluluk takma adı (alias)

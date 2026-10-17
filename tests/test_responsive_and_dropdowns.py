@@ -36,11 +36,11 @@ class TestResponsiveAndDropdowns(unittest.TestCase):
             self.assertFalse(hasattr(cmb, "entry_state") and cmb.entry_state == "normal")
 
     def test_02_app_has_opening_fade_in_animation(self):
-        """Uygulama açılışında pürüzsüz animasyon işlevi tanımlı olmalıdır."""
+        """Uygulama açılışında pürüzsüz animasyon işlevi tanımlı olmalı ve pencere opaklığı 1.0 olarak sabit tutulmalıdır."""
         import inspect
         source = inspect.getsource(run_flet_app)
-        self.assertIn("_fade_in_worker", source, "run_flet_app fonksiyonunda '_fade_in_worker' animasyonu bulunmalıdır.")
-        self.assertIn("opacity", source, "Açılış animasyonu sayfa opaklığını (opacity) kademeli artırmalıdır.")
+        self.assertIn("play_entrance_animation", source)
+        self.assertIn("opacity = 1.0", source)
 
     def test_03_responsive_window_minsize(self):
         """Dizüstü bilgisayarlar için pencere minimum boyutları 960x640 olmalıdır."""
