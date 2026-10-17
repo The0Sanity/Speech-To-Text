@@ -1,136 +1,119 @@
-# SesMetin Pro - Türkçe Ses Tanıma ve Konuşmacı Ayrıştırma (STT + Diarization)
+<div align="center">
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![UI: Flet Desktop](https://img.shields.io/badge/UI-Flet%20Flutter%20Native-0078d4.svg)](https://flet.dev)
-[![GitHub Repo](https://img.shields.io/badge/GitHub-The0Sanity%2FSpeech--To--Text-success.svg)](https://github.com/The0Sanity/Speech-To-Text.git)
+[ Türkçe ](README.md) • [ English ](README.en.md)
 
-MP4 ve MP3 (ve diğer tüm video/ses) dosyalarınızı **tamamen yerel (offline)** olarak Türkçe metne dönüştüren, ortamdaki farklı konuşmacıları otomatik tespit edip **"X1", "X2"** şeklinde etiketleyen, Flet ve Flutter motoruyla çalışan modern, minimalist bir masaüstü uygulamasıdır.
+# SesMetin Pro
 
-Intel Core i3 CPU ve 8 GB RAM gibi standart donanımlarda yüksek performans ve düşük bellek tüketimi için **CPU INT8 (CTranslate2)** optimizasyonuna sahiptir.
+### Çevrimdışı Türkçe Ses Tanıma, Konuşmacı Ayrıştırma ve Transkripsiyon Sistemi
+
+[![Sürüm](https://img.shields.io/github/v/release/The0Sanity/Speech-To-Text?color=2563EB&label=S%C3%BCr%C3%BCm)](https://github.com/The0Sanity/Speech-To-Text/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011-0078D4)](https://github.com/The0Sanity/Speech-To-Text/releases)
+[![Lisans](https://img.shields.io/badge/Lisans-MIT%20%2B%20G%C3%B6rsel%20At%C4%B1f-F59E0B)](LICENSE)
+[![Gizlilik](https://img.shields.io/badge/Gizlilik-100%25%20Yerel%20%26%20%C3%87evrimd%C4%B1%C5%9F%C4%B1-10B981)](https://github.com/The0Sanity/Speech-To-Text)
+[![Arayüz](https://img.shields.io/badge/Aray%C3%BCz-Flet%20Flutter%20Native-0284C7)](https://flet.dev)
+[![ASR Motoru](https://img.shields.io/badge/ASR-Faster--Whisper%20INT8-8B5CF6)](https://github.com/SYSTRAN/faster-whisper)
+[![GitHub](https://img.shields.io/badge/GitHub-The0Sanity%2FSpeech--To--Text-181717?logo=github)](https://github.com/The0Sanity/Speech-To-Text)
+
+</div>
 
 ---
 
-## Temel Özellikler
+## Genel Bakış
 
-- **Modern Flet Masaüstü Arayüzü:**
-  - **Windows 11 Fluent Dark Tasarım:** Flutter GPU donanım hızlandırmalı 60 FPS akıcı render.
-  - **Sıfır Emoji İlkesi:** Kurumsal, sade ve profesyonel tipografi ve simgeler.
-  - **Salt Tıklanabilir Açılır Menüler:** Model, dil, VAD ve konuşmacı açılır menüleri yalnızca tıklanabilir, elle yazmaya kapalıdır.
-  - **Duyarlı ve Akıllı Pencere Düzeni:** Minimum 960x640 boyut garantisi, otomatik ekran ortalama ve yumuşak açılış geçişi.
-  - **Çok Adımlı İlerleme Göstergesi (Process Stepper):** 5 aşamalı boru hattını (Medya Hazırlığı, İyileştirme, Whisper STT, Konuşmacı Ayrımı, Hizalama) canlı izleme.
-  - **Canlı Metrik Şeridi (Stats Ribbon):** Toplam konuşma süresi, konuşmacı sayısı, toplam kelime adedi ve WPM (dakika başına kelime) göstergeleri.
-  - **Entegre Ses Oynatıcı Barı (Audio Player Bar):** Yüklenen veya indirilen ses dosyasını arayüzden doğrudan dinleme, duraklatma ve zaman kontrolü.
-- **Gelişmiş Transkript Düzenleme:**
-  - **Canlı Arama ve Filtreleme:** Metin veya konuşmacıya göre anında eşleşme sayımı ve süzme.
-  - **Bul ve Değiştir (Find & Replace):** Transkript genelinde kelimeleri topluca tek tıkla değiştirme.
-  - **Konuşmacı Yönetim Paneli (Speaker Manager):** Konuşmacı isimlerini tek ekrandan kolayca güncelleme.
-  - **Hızlı Segment Kopyalama:** Her konuşma kartındaki kopyalama butonu ve bildirim balonları.
-- **Kapsamlı Dışa Aktarım Desteği (6 Format):**
-  - **`.txt`**: Zaman damgalı, temiz ve okunabilir transkript raporu.
-  - **`.srt`**: Standart video oynatıcılar ve YouTube için altyazı.
-  - **`.vtt`**: Modern web oynatıcıları ve HTML5 `<track>` için WebVTT altyazısı.
-  - **`.json`**: Detaylı zamanlama ve kelime analizi içeren tam meta veri JSON'ı.
-  - **`.csv`**: Excel / Sheets uyumlu tablolu döküm.
-  - **`.md`**: Obsidian, Notion ve GitHub uyumlu sade Markdown belgesi.
-  - **Panoya Kopyala**: Biçimlendirilmiş tek tıkla pano aktarımı.
-- **100% Çevrimdışı (Offline):** İnternet bağlantısı veya bulut API'si gerektirmeden doğrudan bilgisayarınızın işlemcisi üzerinde çalışır.
-- **YouTube Otomatik İndirme:** YouTube linki girildiğinde `yt-dlp` ile sesi otomatik indirir ve transkribe eder.
-- **Tüm Medya Formatları Desteği:** FFmpeg entegrasyonu ile `.mp4`, `.mp3`, `.wav`, `.m4a`, `.aac`, `.mkv`, `.flac`, `.ogg` dosyalarını otomatik dönüştürür.
-- **Ses Ön-İyileştirme (Audio Enhancement):** 
-  - 80Hz Yüksek Geçiren Filtre ile alt frekans dip gürültülerini ve uğultuları keser.
-  - Gürültü Kapısı (Noise Gate) ile sessiz bölümleri bastırır.
-  - Peak Normalizasyonu ile kısık ve patlayan sesleri dengeler.
-- **Hassas Ses Tespiti (VAD) ve Halüsinasyon Temizliği:**
-  - Hızlı ve fısıltılı konuşmaları kaçırmayan VAD eşiği.
-  - Tekrarlayan kelime/öbek hatalarını ve YouTube overlay kalıplarını temizler.
+SesMetin Pro, ses ve video kayıtlarınızı internet bağlantısına ihtiyaç duymadan, tamamen kendi bilgisayarınızda metne dönüştüren ve kayıttaki farklı konuşmacıları (X1, X2, vb.) otomatik olarak ayrıştıran modern bir masaüstü uygulamasıdır.
+
+Hiçbir ses veya metin verisi harici sunuculara veya bulut sağlayıcılarına gönderilmez; gizliliğiniz tamamen korunur. Standart tüketici donanımlarında (örneğin Intel Core i3 ve 8 GB RAM) yüksek performans, akıcı kullanım ve düşük bellek tüketimi için **CTranslate2 INT8** mimarisiyle optimize edilmiştir.
+
+---
+
+## Öne Çıkan Özellikler
+
+- **Windows 11 Fluent Dark Tasarım:** Flutter donanım hızlandırmalı modern masaüstü arayüzü, iskelet yükleme (skeleton shimmer) animasyonları ve duyarlı pencere kontrolü.
+- **100% Çevrimdışı ve Güvenli:** Tüm modeller yerel donanımınızda çalışır, internet gerektirmez ve veri gizliliğinizi garanti altına alır.
+- **Gelişmiş Ses İyileştirme:** 80 Hz yüksek geçiren filtre (alçak frekans ve uğultu kesici), gürültü kapısı (noise gate) ve tepe ses normalizasyonu ile stüdyo kalitesinde işleme.
+- **Akıllı Konuşmacı Ayrıştırma (Diarization):** Kayıttaki farklı kişileri otomatik tespit eder, etiketler ve tek ekrandan konuşmacı adlarını güncellemenize olanak tanır.
+- **YouTube ve Geniş Format Desteği:** YouTube video bağlantısı girildiğinde sesi otomatik indirir (`yt-dlp`). MP4, MP3, WAV, M4A, AAC, MKV, FLAC ve OGG formatlarını sorunsuz işler.
+- **Dahili FFmpeg Yöneticisi:** Sisteminizde FFmpeg kurulu olmasa dahi uygulama ilk açılışta gerekli bileşenleri otomatik yapılandırır.
+- **Zengin Dışa Aktarım Desteği:**
+  - Standart Metin Raporu (`.txt`)
+  - Standart Video Altyazısı (`.srt`)
+  - Web Uyumlu Altyazı (`.vtt`)
+  - Tam Zamanlama ve Meta Veri (`.json`)
+  - Tablo ve Veri Analitiği (`.csv`)
+  - Not Alma ve Dokümantasyon (`.md`)
+  - Tek Tıkla Panoya Kopyalama
+- **Kesintisiz Güncelleme Kontrolü:** Uygulama açılışında ve ayarlar sekmesinde GitHub Releases üzerinden yeni sürümleri otomatik kontrol eder.
 
 ---
 
 ## Hızlı Başlangıç
 
-### 1. Tek Tıkla Başlatma (Sıfır Kurulum Zahmeti)
-`run.bat` dosyasına çift tıklamanız yeterlidir.
-- Sanal ortam (`venv`) ve gerekli kütüphaneler (`flet`, `faster_whisper` vb.) yoksa arka planda otomatik olarak kurulur.
-- Bağımlılıklar zaten yüklüyse doğrudan modern Flet uygulaması başlatılır. Manuel ortam (`env`) yapılandırma gereksinimi kaldırılmıştır.
+### Seçenek 1: Bağımsız Uygulama (.exe) — Tavsiye Edilen
+
+Kurulum veya teknik konfigürasyon gerekmez:
+
+1. [GitHub Releases](https://github.com/The0Sanity/Speech-To-Text/releases) sayfasına gidin.
+2. En güncel sürümün altındaki `SpeechToText.exe` dosyasını indirin.
+3. İndirdiğiniz dosyaya çift tıklayarak doğrudan çalıştırın.
 
 > [!NOTE]
-> **Windows Defender SmartScreen ve Güvenlik Bildirimi:**
-> Açık kaynaklı ve bağımsız `.exe` yayınlarında Windows ilk açılışta *"Windows kişisel bilgisayarınızı korudu"* ekranı gösterebilir. Bu bilinen standart bir Windows koruma uyarısıdır. Uygulamayı başlatmak için **"Ek bilgi" (More info)** bağlantısına tıklayıp **"Yine de çalıştır" (Run anyway)** butonunu seçebilirsiniz. Uygulama UPX sıkıştırmasından arındırılmış, tam PE sürüm meta verileriyle donatılmış ve Authenticode ile dijital olarak imzalanmıştır.
+> **Windows SmartScreen Bilgilendirmesi:**
+> Açık kaynaklı ve bağımsız `.exe` yayınlarında Windows ilk açılışta *"Windows kişisel bilgisayarınızı korudu"* bildirimini gösterebilir. Bu, yeni derlenmiş bağımsız yazılımlarda standart bir Windows koruma uyarısıdır. Uygulamayı başlatmak için **"Ek bilgi" (More info)** bağlantısına tıklayıp **"Yine de çalıştır" (Run anyway)** butonunu seçebilirsiniz. Uygulamamız UPX sıkıştırmasından arındırılmış, geçerli PE sürüm meta verileriyle donatılmış ve Authenticode ile imzalanmıştır.
 
-### 2. Komut Satırından Başlatma
-PowerShell veya Terminal üzerinden:
-```powershell
-.\run.bat
-```
-veya doğrudan Python ile:
-```powershell
-python main.py
-```
-*(Gerek duyulursa `--gui=tk` parametresi ile CustomTkinter arayüzü de çalıştırılabilir).*
+### Seçenek 2: Kaynak Koddan Çalıştırma
 
----
+Geliştiriciler ve kaynak kod üzerinden çalıştırmak isteyenler için:
 
-## Kurulum ve Sistem Gereksinimleri
-
-- **Python:** 3.10 veya üzeri.
-- **FFmpeg:** Ses ve video dönüştürmeleri için sistemde FFmpeg bulunmalıdır. Kurulu değilse:
-  ```powershell
-  winget install Gyan.FFmpeg.Shared
-  ```
+1. Depoyu bilgisayarınıza klonlayın veya zip olarak indirin.
+2. Ana dizindeki `run.bat` dosyasına çift tıklayın.
+   - Sanal ortam (`venv`) ve gerekli kütüphaneler arka planda otomatik hazırlanır ve uygulama açılır.
+3. Dilerseniz terminal üzerinden de başlatabilirsiniz:
+   ```powershell
+   python main.py
+   ```
 
 ---
 
-## Proje Mimarisi
+## Sürüm Yol Haritası ve Yapılacaklar (Roadmap)
 
-```
-Speech-To-Text/
-├── main.py                  # Uygulama giriş noktası ve UI başlatıcı
-├── settings.json            # Kullanıcı tercihleri ve yapılandırma
-├── requirements.txt         # Bağımlılık listesi (Flet, Faster-Whisper vb.)
-├── run.bat                  # Tek tıkla otomatik bağımlılık kontrolü ve başlatma betiği
-├── docs/                    # Proje belgeleri ve mimari planları
-│   ├── NEXT_VERSIONS_ROADMAP.md # Gelecek surumler ve sifir kurulum mimari yol haritasi
-│   ├── PRODUCT.md           # Ürün ve tasarım manifestosu
-│   └── turkish_stt_diarization_plan.md # Mimari planlama dokümanı
-├── src/
-│   ├── aligner.py           # Metin-konuşmacı hizalama, istatistik ve arama motoru
-│   ├── audio_enhancer.py    # Gürültü filtresi, 80Hz yüksek geçiren filtre ve normalizasyon
-│   ├── audio_processor.py   # FFmpeg ses ayrıştırma ve medya analizleri
-│   ├── bootstrapper.py      # Otomatik bagimlilik ve FFmpeg kurulum yoneticisi
-│   ├── config.py            # Dizinler, kalici kayit ve ayar yoneticisi
-│   ├── diarizer.py          # Akustik ve Pyannote konuşmacı ayrıştırma motoru
-│   ├── exporter.py          # TXT, SRT, VTT, JSON, CSV ve Markdown dışa aktarıcılar
-│   ├── text_postprocessor.py# Türkçe karakter, noktalama ve halüsinasyon filtresi
-│   ├── transcriber.py       # CTranslate2 optimize Faster-Whisper motoru
-│   ├── updater.py           # Otomatik guncelleme motoru (GitHub Releases)
-│   ├── youtube_downloader.py# yt-dlp tabanlı YouTube ses indirici
-│   └── ui/                  # Modern Flet Masaustu Arayuzu
-│       ├── app.py           # Ana uygulama penceresi, kontroller ve boru hattı bağlantısı
-│       ├── components.py    # MetricCard, ProcessStepper, AudioPlayerBar, TurnCard
-│       ├── style.py         # Tema tokenleri ve palet
-│       └── theme.py         # Windows 11 Fluent dark renk paleti ve konuşmacı renkleri
-└── tests/                   # Kapsamlı birim ve entegrasyon testleri
-```
+Geliştirme süreci planlı sürümler halinde yürütülmektedir. v2.0.0 sürümüne kadar eklenecek tüm özellikler aşağıda listelenmiştir:
+
+### v1.0.3 — Kararlı Temel ve Hızlı Başlatma (Mevcut Sürüm)
+- [x] Tek parça bağımsız `SpeechToText.exe` dağıtımı (Python kurulumu gerektirmez).
+- [x] Anında başlatma optimizasyonu ve pencere önceliklendirmesi (arka planda bekleme sorunu giderildi).
+- [x] Flutter iskelet yükleme (skeleton shimmer) geçiş animasyonları.
+- [x] Antivirüs yanlış alarm (false-positive) koruması (UPX kaldırıldı, Authenticode dijital imza ve tam PE meta verisi eklendi).
+- [x] Dahili FFmpeg bootstrapper (sistemde FFmpeg bulunmadığında otomatik indirme ve yapılandırma).
+- [x] GitHub Releases tabanlı otomatik güncelleme motoru.
+
+### v1.1.0 — Model Merkezi ve Donanım Teşhisi (Planlanan)
+- [ ] Görsel Model Yöneticisi (Tiny, Base, Small, Medium modellerini tek tıkla indirme, silme ve disk alanı yönetimi).
+- [ ] Akıllı Donanım Teşhisi (NVIDIA CUDA / cuDNN ve CPU AVX2 donanımını otomatik algılama ve arayüzden çalışma modu seçimi).
+- [ ] Çift Paketleme Formatı (Taşınabilir tek parça Portable `.exe` ve standart Windows Kurulum Sihirbazı Setup `.exe`).
+- [ ] Toplu Dosya İşleme Kuyruğu (Birden fazla ses ve video dosyasını listeye ekleyerek sırayla otomatik transkribe etme).
+
+### v1.2.0 — Gerçek Zamanlı Canlı Konuşma ve Masaüstü Altyazı (Planlanan)
+- [ ] Canlı Mikrofon Girişi (Toplantı, ders ve canlı yayınları konuşulurken gerçek zamanlı metne dökme).
+- [ ] Masaüstü Yüzen Altyazı Çubuğu (Diğer uygulamaların üzerinde konumlanan şeffaf ve her zaman üstte altyazı şeridi).
+- [ ] Silero VAD Akıllı Parçalama (Cümle ortası kesilmeleri önleyen 400ms sessizlik tabanlı dinamik konuşma ayrımı).
+- [ ] Özel Fonetik Terim ve Kısaltma Sözlüğü (Sektörel ve teknik terimlerin tanıma doğruluğunu artıran kullanıcı sözlüğü).
+
+### v2.0.0 — Kurumsal Konuşma Zekası ve Yerel Özet (Hedef Sürüm)
+- [ ] Çapraz Dil Çevirisi (Türkçe konuşmaları gerçek zamanlı olarak İngilizce, Almanca, Fransızca ve İspanyolca altyazıya dönüştürme).
+- [ ] Kalıcı Konuşmacı Tanıma (Kullanıcı ses profillerini kaydederek gelecekteki kayıtlarda konuşmacıları otomatik eşleme).
+- [ ] Dahili Video Altyazı Gömücü (Oluşturulan altyazıları doğrudan videoya gömülü hardsub olarak render etme).
+- [ ] Sıfır Bulut Yerel LLM Toplantı Özeti (İnternet bağlantısı olmadan çalışan yerel yapay zeka ile toplantı notları, kararlar ve eylem planı çıkarma).
 
 ---
 
-## Testleri Çalıştırma
+## Lisans ve Zorunlu Görsel Atıf Şartı
 
-Tüm test paketini çalıştırmak için:
-```powershell
-.\venv\Scripts\python.exe -m unittest discover tests
-```
+Bu proje **MIT Lisansı ve Zorunlu Görsel Atıf Şartı** altında lisanslanmıştır.
 
----
+### Zorunlu Görsel Atıf Kuralı:
+Bu projenin kaynak kodunu, bileşenlerini, algoritmalarını veya türevlerini kendi projelerinde veya uygulamalarında kullanan tüm kişi ve kuruluşlar, oluşturdukları kullanıcı arayüzünün **ana ekranında veya üst menü çubuğunda** doğrudan görülebilecek şekilde bu depoya ([https://github.com/The0Sanity/Speech-To-Text](https://github.com/The0Sanity/Speech-To-Text)) tıklanabilir görsel bir atıf (bağlantı veya rozet) yerleştirmekle yükümlüdür.
 
-## Lisans ve Görsel Atıf Şartı (License & Visual Attribution)
+Bu atfı alt menülere gizlemek, görünmez yapmak veya kaldırmak lisans şartlarının ihlali anlamına gelir.
 
-Bu proje MIT Lisansı ve Zorunlu Görsel Atıf Şartı (MIT License with Prominent Visual Attribution Requirement) altında lisanslanmıştır.
-
-**Zorunlu Görsel Atıf Kuralı:**
-Bu projenin kaynak kodunu, bileşenlerini veya türevlerini kullanan tüm kişi ve kuruluşlar, kendi uygulamalarının veya kullanıcı arayüzlerinin **ana ekranında/üst menü çubuğunda** doğrudan görülebilecek şekilde bu depoya (`https://github.com/The0Sanity/Speech-To-Text`) tıklanabilir görsel bir atıf (link/badge) yerleştirmekle yükümlüdür. Bu atfı alt menülere, ayarlara veya görünmeyen köşelere gizlemek kesinlikle yasaktır.
-
-Detaylar için [LICENSE](LICENSE) belgesini inceleyiniz.
-Repo Adresi: `https://github.com/The0Sanity/Speech-To-Text`
-
+Ayrıntılı yasal şartlar için [LICENSE](LICENSE) belgesini inceleyebilirsiniz.  
+Depo Adresi: [https://github.com/The0Sanity/Speech-To-Text](https://github.com/The0Sanity/Speech-To-Text)
