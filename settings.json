@@ -1,0 +1,13 @@
+{
+    "model_size": "small",
+    "language": "tr",
+    "speaker_prefix": "X",
+    "min_speakers": null,
+    "max_speakers": null,
+    "hf_token": "",
+    "use_pyannote": false,
+    "theme": "dark",
+    "auto_merge_gap": 1.5,
+    "last_input_dir": "E:\\Speech-To-Text",
+    "last_output_dir": "E:\\Speech-To-Text\\outputs"
+}
