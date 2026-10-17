@@ -12,8 +12,14 @@ ENV/
 
 # Temporary and generated processing files
 temp/
+temp/*
 outputs/
 models/
+
+# AI Assistant and local instruction files
+CLAUDE.md
+GEMINI.md
+.system_generated/
 
 # Logs and databases
 *.log
