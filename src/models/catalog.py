@@ -31,7 +31,51 @@ class ModelSpecification:
 
 # SesMetin Pro Resmi ve Özel Model Kataloğu
 MODEL_CATALOG: Dict[str, ModelSpecification] = {
-    # ------------------ SesMetin Özel Türkçe Modelleri ------------------
+    # ------------------ SesMetin-v2 Sentetik Sesle Eğitilmiş Modeller ------------------
+    "sesmetin-v2-turbo": ModelSpecification(
+        model_id="sesmetin-v2-turbo",
+        name="SesMetin-v2 Turbo (Sentetik Sesle Güçlendirilmiş)",
+        category=ModelCategory.SESMETIN,
+        version="2.0.0",
+        size_mb=1550,
+        ram_req_gb=3.5,
+        wer_turkish="%3.6 WER",
+        description="Kokoro-82M sentetik Türkçe konuşma verisiyle ince ayar yapılmış yeni nesil turbo model. Teknik terimler ve sayılarda en yüksek doğruluk.",
+        is_proprietary=True,
+        ct2_quantization="int8",
+        repo_id="The0Sanity/sesmetin-v2-turbo-ct2",
+        system_prompt="Bu kayıt Türkçe konuşma içermektedir. Kokoro-82M sentetik veri setiyle eğitilmiş v2 mimarisi.",
+    ),
+    "sesmetin-v2-small": ModelSpecification(
+        model_id="sesmetin-v2-small",
+        name="SesMetin-v2 Small (Dengeli v2)",
+        category=ModelCategory.SESMETIN,
+        version="2.0.0",
+        size_mb=480,
+        ram_req_gb=2.0,
+        wer_turkish="%4.5 WER",
+        description="Kokoro-82M çok sesli sentetik konuşma verisiyle eğitilmiş dengeli v2 modeli. Standart işlemciler için önerilen ana model.",
+        is_proprietary=True,
+        ct2_quantization="int8",
+        repo_id="The0Sanity/sesmetin-v2-small-ct2",
+        system_prompt="Türkçe ses kaydı transkripsiyonu v2.",
+    ),
+    "sesmetin-v2-tiny": ModelSpecification(
+        model_id="sesmetin-v2-tiny",
+        name="SesMetin-v2 Tiny (Ultra Hızlı v2)",
+        category=ModelCategory.SESMETIN,
+        version="2.0.0",
+        size_mb=75,
+        ram_req_gb=0.8,
+        wer_turkish="%7.8 WER",
+        description="Sentetik konuşma verisiyle optimize edilmiş ultra hafif Türkçe modeli. Düşük bellekli sistemler için ideal.",
+        is_proprietary=True,
+        ct2_quantization="int8",
+        repo_id="The0Sanity/sesmetin-v2-tiny-ct2",
+        system_prompt="Hızlı Türkçe konuşma transkripsiyonu v2.",
+    ),
+
+    # ------------------ SesMetin-v1 Özel Türkçe Modelleri ------------------
     "sesmetin-v1-turbo": ModelSpecification(
         model_id="sesmetin-v1-turbo",
         name="SesMetin-v1 Turbo (Türkçe Optimize)",

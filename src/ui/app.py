@@ -176,6 +176,9 @@ class FletSpeechToTextApp:
 
         # 1. Sol Panel: Model ve Ayrıştırma Açılır Menüleri (Dropdown - Salt Okunur / Sadece Tıklanabilir)
         model_dropdown_options = [
+            ft.dropdown.Option("sesmetin-v2-turbo (Özel Türkçe v2 Turbo)"),
+            ft.dropdown.Option("sesmetin-v2-small (Özel Türkçe v2 Dengeli)"),
+            ft.dropdown.Option("sesmetin-v2-tiny (Özel Türkçe v2 Hızlı)"),
             ft.dropdown.Option("sesmetin-v1-turbo (Özel Türkçe Turbo)"),
             ft.dropdown.Option("sesmetin-v1-small (Özel Türkçe Dengeli)"),
             ft.dropdown.Option("sesmetin-v1-tiny (Özel Türkçe Ultra Hızlı)"),
@@ -1028,16 +1031,20 @@ class FletSpeechToTextApp:
         # 3. Model Kartları
         cards = []
 
-        # Bölüm A: SesMetin Özel Türkçe Modelleri
+        v2_models = [m for m in list_available_models(ModelCategory.SESMETIN) if m.version.startswith("2.")]
+        v1_models = [m for m in list_available_models(ModelCategory.SESMETIN) if m.version.startswith("1.")]
+        whisper_models = list_available_models(ModelCategory.WHISPER)
+
+        # Bölüm A: SesMetin-v2 Sentetik Sesle Güçlendirilmiş Modeller
         cards.append(
             ft.Row(
                 controls=[
                     ft.Icon(ft.Icons.AUTO_AWESOME, size=16, color=ACCENT_LIGHT),
-                    ft.Text("SesMetin Özel Türkçe Modelleri", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                    ft.Text("SesMetin-v2 Modelleri (Önerilen)", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
                     ft.Container(
-                        content=ft.Text("Özel Türkçe İnce Ayar (Fine-Tuning)", size=10, color=ACCENT_LIGHT, weight=ft.FontWeight.W_600),
+                        content=ft.Text("Kokoro-82M Sentetik Sesle Güçlendirilmiş", size=10, color=ACCENT_LIGHT, weight=ft.FontWeight.W_600),
                         bgcolor=INPUT_BG,
-                        border=ft.Border.all(1, INPUT_BORDER),
+                        border=ft.Border.all(1, ACCENT_PRIMARY),
                         border_radius=4,
                         padding=ft.Padding.symmetric(horizontal=8, vertical=2),
                     ),
@@ -1047,10 +1054,26 @@ class FletSpeechToTextApp:
             )
         )
 
-        for spec in list_available_models(ModelCategory.SESMETIN):
+        for spec in v2_models:
             cards.append(self._create_model_card(spec))
 
-        # Bölüm B: Standart Faster-Whisper Modelleri
+        # Bölüm B: SesMetin-v1 Modelleri
+        cards.append(ft.Container(height=6))
+        cards.append(
+            ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.WORKSPACE_PREMIUM, size=16, color=TEXT_MUTED),
+                    ft.Text("SesMetin-v1 Modelleri", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                ],
+                spacing=8,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        )
+
+        for spec in v1_models:
+            cards.append(self._create_model_card(spec))
+
+        # Bölüm C: Standart Faster-Whisper Modelleri
         cards.append(ft.Container(height=6))
         cards.append(
             ft.Row(
@@ -1063,7 +1086,7 @@ class FletSpeechToTextApp:
             )
         )
 
-        for spec in list_available_models(ModelCategory.WHISPER):
+        for spec in whisper_models:
             cards.append(self._create_model_card(spec))
 
         self.model_cards_column.controls = cards
@@ -1167,10 +1190,23 @@ class FletSpeechToTextApp:
                 padding=ft.Padding.symmetric(horizontal=6, vertical=2),
             )
 
+        if spec.version.startswith("2."):
+            badge_text = "v2 Sentetik Ses"
+            badge_color = ACCENT_LIGHT
+            badge_border = ACCENT_PRIMARY
+        elif spec.is_proprietary:
+            badge_text = "SesMetin-v1"
+            badge_color = ACCENT_LIGHT
+            badge_border = INPUT_BORDER
+        else:
+            badge_text = "Resmi Whisper"
+            badge_color = TEXT_MUTED
+            badge_border = INPUT_BORDER
+
         category_badge = ft.Container(
-            content=ft.Text("SesMetin Özel" if spec.is_proprietary else "Resmi Whisper", size=10, color=ACCENT_LIGHT if spec.is_proprietary else TEXT_MUTED),
+            content=ft.Text(badge_text, size=10, color=badge_color, weight=ft.FontWeight.W_600),
             bgcolor=INPUT_BG,
-            border=ft.Border.all(1, ACCENT_PRIMARY if spec.is_proprietary else INPUT_BORDER),
+            border=ft.Border.all(1, badge_border),
             border_radius=4,
             padding=ft.Padding.symmetric(horizontal=6, vertical=2),
         )
