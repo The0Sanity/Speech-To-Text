@@ -28,14 +28,18 @@ class TestReadmeAndRoadmap(unittest.TestCase):
             self.assertIn("English", content, f"{name} must contain 'English' language label")
 
     def test_roadmap_contains_versions_up_to_v200(self):
-        """Verify roadmap sections exist for v1.0.3, v1.1.0, v1.2.0, and v2.0.0 in README.md."""
-        content = self.readme_tr.read_text(encoding="utf-8")
-        self.assertIn("v1.0.3", content, "Roadmap must document v1.0.3")
-        self.assertIn("v1.1.0", content, "Roadmap must document planned v1.1.0")
-        self.assertIn("v1.2.0", content, "Roadmap must document planned v1.2.0")
-        self.assertIn("v2.0.0", content, "Roadmap must document target v2.0.0")
-        self.assertIn("- [x]", content, "Roadmap must use completed markdown checklist items")
-        self.assertIn("- [ ]", content, "Roadmap must use pending markdown checklist items")
+        """Verify roadmap sections exist for v1.0.3, v1.0.4, v1.1.0, v1.2.0, v1.3.0, v1.4.0, and v2.0.0 in READMEs and docs."""
+        roadmap_doc = self.root_dir / "docs" / "NEXT_VERSIONS_ROADMAP.md"
+        versions = ["v1.0.4", "v1.1.0", "v1.2.0", "v1.3.0", "v1.4.0", "v2.0.0"]
+
+        for path, name in [(self.readme_tr, "README.md"), (self.readme_en, "README.en.md"), (roadmap_doc, "NEXT_VERSIONS_ROADMAP.md")]:
+            self.assertTrue(path.exists(), f"{name} must exist")
+            content = path.read_text(encoding="utf-8")
+            for v in versions:
+                self.assertIn(v, content, f"{name} must document {v}")
+            if name.startswith("README"):
+                self.assertIn("- [x]", content, f"{name} must use completed markdown checklist items")
+                self.assertIn("- [ ]", content, f"{name} must use pending markdown checklist items")
 
     def test_no_low_level_test_commands(self):
         """Verify user-facing README does not clutter with unit test discovery commands."""

@@ -81,6 +81,7 @@ Geliştirme süreci planlı sürümler halinde yürütülmektedir. v2.0.0 sürü
 ### v1.0.4 — Flet İkonları ve Varlık Bütünlüğü (Mevcut Sürüm)
 - [x] Flet materyal ve cupertino ikon kaynakları (icons.json) paketleme ve çalışma zamanı kendini onarma koruması.
 - [x] Faster-Whisper (silero_vad_v6.onnx) ve CTranslate2 yerel varlıkları PyInstaller veri toplama kancasıyla güvenceye alındı.
+- [x] GitHub API HTTP 304 (Not Modified) önbellek çözümlemesi ve tek tıkla canlı güncelleme denetimi (force refresh).
 
 ### v1.0.3 — Kararlı Temel ve Hızlı Başlatma
 - [x] Tek parça bağımsız `SpeechToText.exe` dağıtımı (Python kurulumu gerektirmez).
@@ -90,23 +91,35 @@ Geliştirme süreci planlı sürümler halinde yürütülmektedir. v2.0.0 sürü
 - [x] Dahili FFmpeg bootstrapper (sistemde FFmpeg bulunmadığında otomatik indirme ve yapılandırma).
 - [x] GitHub Releases tabanlı otomatik güncelleme motoru.
 
-### v1.1.0 — Model Merkezi ve Donanım Teşhisi (Planlanan)
-- [ ] Görsel Model Yöneticisi (Tiny, Base, Small, Medium modellerini tek tıkla indirme, silme ve disk alanı yönetimi).
-- [ ] Akıllı Donanım Teşhisi (NVIDIA CUDA / cuDNN ve CPU AVX2 donanımını otomatik algılama ve arayüzden çalışma modu seçimi).
-- [ ] Çift Paketleme Formatı (Taşınabilir tek parça Portable `.exe` ve standart Windows Kurulum Sihirbazı Setup `.exe`).
-- [ ] Toplu Dosya İşleme Kuyruğu (Birden fazla ses ve video dosyasını listeye ekleyerek sırayla otomatik transkribe etme).
+### v1.1.0 — Model Merkezi, Önbellek Yönetimi ve Donanım Teşhisi (Planlanan)
+- [ ] Görsel Model Yöneticisi: Tiny, Base, Small, Medium ve Large modellerini arayüzden tek tıkla indirme, silme ve disk alanı yönetimi.
+- [ ] Akıllı Donanım Algılama: NVIDIA CUDA / cuDNN ve CPU AVX2 donanımlarını otomatik tespit edip arayüzden çalışma modu seçimi sağlama.
+- [ ] Çift Paketleme Formatı: Taşınabilir tek parça Portable `.exe` ve standart Windows Kurulum Sihirbazı Setup `.exe` seçenekleri.
+- [ ] Performans ve Bellek Göstergesi: Seçilen modelin VRAM ve RAM gereksinimlerini gerçek zamanlı gösteren donanım paneli.
 
-### v1.2.0 — Gerçek Zamanlı Canlı Konuşma ve Masaüstü Altyazı (Planlanan)
-- [ ] Canlı Mikrofon Girişi (Toplantı, ders ve canlı yayınları konuşulurken gerçek zamanlı metne dökme).
-- [ ] Masaüstü Yüzen Altyazı Çubuğu (Diğer uygulamaların üzerinde konumlanan şeffaf ve her zaman üstte altyazı şeridi).
-- [ ] Silero VAD Akıllı Parçalama (Cümle ortası kesilmeleri önleyen 400ms sessizlik tabanlı dinamik konuşma ayrımı).
-- [ ] Özel Fonetik Terim ve Kısaltma Sözlüğü (Sektörel ve teknik terimlerin tanıma doğruluğunu artıran kullanıcı sözlüğü).
+### v1.2.0 — Toplu Dosya Kuyruğu ve Ses DSP Ayarları (Planlanan)
+- [ ] Çoklu Dosya Kuyruğu: Birden fazla ses ve video dosyasını sürükle-bırak ile sıraya ekleyerek arka planda otomatik sırayla transkribe etme.
+- [ ] Ses Ön-İşleme Kontrolleri: Yüksek geçiren filtre (High-pass frekansı), Gürültü Kapısı (Noise Gate dB eşiği) ve EBU R128 hedef LUFS seviyesini özelleştirilebilir kaydırıcılar (sliders) ile ayarlama.
+- [ ] Toplu Dışa Aktarma: Kuyruktaki tüm medya dosyalarının transkriptlerini seçilen formatlarda tek tıkla topluca kaydetme.
+- [ ] Otomatik Dosya Adlandırma Şablonları: Çıktı dosyaları için özelleştirilebilir tarih, konuşmacı ve model adı şablonları.
 
-### v2.0.0 — Kurumsal Konuşma Zekası ve Yerel Özet (Hedef Sürüm)
-- [ ] Çapraz Dil Çevirisi (Türkçe konuşmaları gerçek zamanlı olarak İngilizce, Almanca, Fransızca ve İspanyolca altyazıya dönüştürme).
-- [ ] Kalıcı Konuşmacı Tanıma (Kullanıcı ses profillerini kaydederek gelecekteki kayıtlarda konuşmacıları otomatik eşleme).
-- [ ] Dahili Video Altyazı Gömücü (Oluşturulan altyazıları doğrudan videoya gömülü hardsub olarak render etme).
-- [ ] Sıfır Bulut Yerel LLM Toplantı Özeti (İnternet bağlantısı olmadan çalışan yerel yapay zeka ile toplantı notları, kararlar ve eylem planı çıkarma).
+### v1.3.0 — Gerçek Zamanlı Canlı Konuşma ve Masaüstü Altyazı Barı (Planlanan)
+- [ ] Canlı Mikrofon Girişi: Toplantı, ders, röportaj ve canlı yayınları konuşulduğu anda dairesel ses tamponu (circular audio buffer) ile gerçek zamanlı metne dökme.
+- [ ] Masaüstü Yüzen Altyazı Çubuğu: Diğer tüm pencerelerin üzerinde konumlanabilen, şeffaf, boyutu ayarlanabilir ve her zaman üstte (always-on-top) canlı altyazı şeridi.
+- [ ] Silero VAD Dinamik Duraklama Algılama: Cümle bölünmelerini önleyen 400ms - 600ms sessizlik tabanlı akıllı konuşma parçalama.
+- [ ] Çevrimdışı Canlı Dikte Modu: Mikrofonla konuşulanları doğrudan etkin metin düzenleyicisine veya panoya anlık aktarma.
+
+### v1.4.0 — Özel Fonetik Sözlük ve Gelişmiş Dışa Aktarım Stüdyosu (Planlanan)
+- [ ] Özel Fonetik Terim ve Kısaltma Sözlüğü: Tıp, hukuk, mühendislik gibi sektörel ve teknik terimlerin tanıma doğruluğunu artıran kullanıcı sözlüğü ve sözcük önyargısı (vocabulary bias).
+- [ ] Dolgu Sözcük Temizleme Ayarları: "ııı", "eee", "şey", "yani" gibi konuşma kusurlarını isteğe bağlı otomatik filtreleme veya koruma anahtarı.
+- [ ] Altyazı Önizleme ve Stillendirme Stüdyosu: SRT ve VTT altyazıları için yazı tipi boyutu, arka plan opaklığı, renk ve satır başı kelime limiti ayarlama.
+- [ ] Zaman Damgası İnce Ayar Editörü: Ses dalga formu üzerinde segment sınırlarını milisaniye hassasiyetinde kaydırma ve bölme/birleştirme aracı.
+
+### v2.0.0 — Kurumsal Konuşma Zekası ve Yerel LLM Özeti (Hedef Sürüm)
+- [ ] Çapraz Dil Canlı Çevirisi: Türkçe konuşmaları gerçek zamanlı olarak İngilizce, Almanca, Fransızca ve İspanyolca altyazıya dönüştürme.
+- [ ] Kalıcı Konuşmacı Tanıma (Ses Biyometrisi): Kullanıcı ses profillerini kaydederek gelecekteki kayıtlarda konuşmacıları (örneğin "Ahmet Bey", "Ayşe Hanım") otomatik eşleme.
+- [ ] Dahili Video Altyazı Gömücü (Hardsubbing): Oluşturulan altyazıları doğrudan videoya gömülü (hardsub) MP4 olarak render etme.
+- [ ] Sıfır Bulut Yerel LLM Toplantı Özeti: İnternet bağlantısı olmadan yerel yapay zeka modelleriyle toplantı notları, yönetici özeti, alınan kararlar ve eylem planı üretme.
 
 ---
 

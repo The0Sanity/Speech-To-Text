@@ -386,13 +386,18 @@ class AutoUpdater:
         self._cached_etag: Optional[str] = None
         self._cached_info: Optional[UpdateInfo] = None
 
-    def check_for_updates(self, timeout: int = 8) -> Optional[UpdateInfo]:
-        """GitHub Releases API uzerinden yeni yayinlari denetler."""
+    def check_for_updates(self, timeout: int = 8, force: bool = False) -> Optional[UpdateInfo]:
+        """GitHub Releases API uzerinden yeni yayinlari denetler.
+
+        Args:
+            timeout: Ag zaman asimi suresi (saniye).
+            force: True ise ETag onbellegini gormezden gelerek sunucudan canli veri ister.
+        """
         headers = {
             "User-Agent": f"{APP_NAME}-AutoUpdater/{self.current_version}",
             "Accept": "application/vnd.github.v3+json",
         }
-        if self._cached_etag:
+        if self._cached_etag and not force:
             headers["If-None-Match"] = self._cached_etag
 
         req = urllib.request.Request(self.api_url, headers=headers)
@@ -401,6 +406,9 @@ class AutoUpdater:
             with urllib.request.urlopen(req, timeout=timeout) as response:
                 status_code = getattr(response, "status", 200)
                 if status_code == 304 and self._cached_info:
+                    is_update = SemVer.parse(self._cached_info.version) > SemVer.parse(self.current_version)
+                    self._cached_info.is_update_available = is_update
+                    self._cached_info.status = CheckStatus.UPDATE_AVAILABLE if is_update else CheckStatus.UP_TO_DATE
                     return self._cached_info
 
                 etag = response.headers.get("ETag")
@@ -413,6 +421,17 @@ class AutoUpdater:
                 return info
 
         except urllib.error.HTTPError as he:
+            if he.code == 304:
+                # HTTP 304: Sunucu verisi degismedi (Not Modified). Bu bir hata degildir.
+                if self._cached_info:
+                    is_update = SemVer.parse(self._cached_info.version) > SemVer.parse(self.current_version)
+                    self._cached_info.is_update_available = is_update
+                    self._cached_info.status = CheckStatus.UPDATE_AVAILABLE if is_update else CheckStatus.UP_TO_DATE
+                    self._cached_info.error_message = None
+                    return self._cached_info
+                # Eger hafizada cached_info yoksa, etag'i temizleyip canli olarak tekrar cek
+                self._cached_etag = None
+                return self.check_for_updates(timeout=timeout, force=True)
             reset_ts = None
             try:
                 raw_reset = he.headers.get("X-RateLimit-Reset")
