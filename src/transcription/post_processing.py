@@ -64,6 +64,10 @@ _COMMON_IDIOMS: List[str] = [
     "üç beş", "uc bes",
     "bir iki",
     "dört bir yan", "dort bir yan",
+    "başka bir", "baska bir",
+    "herhangi bir",
+    "bir şey", "bir sey",
+    "birkaç", "birkac",
 ]
 
 _PHONETIC_REPLACEMENTS: List[Tuple[re.Pattern, str]] = [
@@ -128,20 +132,53 @@ class TurkishITNProcessor:
     @staticmethod
     def normalize_percentages(text: str) -> str:
         """Convert spoken percentages to standard symbols ('yüzde elli' -> '%50', 'yüzde sıfır nokta bir' -> '%0.1')."""
-        # Decimal percentages: "yüzde sıfır nokta bir" / "yuzde sifir nokta bir"
-        decimal_pat = r"\b(?:yüzde|yuzde)\s+(?:sıfır|sifir)\s+(?:nokta|virgül|virgul)\s+([a-zA-ZçğıöşüÇĞİÖŞÜ]+)\b"
-        def repl_dec(m: re.Match) -> str:
-            dec_word = m.group(1).lower()
-            if dec_word in _DIGITS:
-                return f"%0.{_DIGITS[dec_word]}"
-            return m.group(0)
-
-        text = re.sub(decimal_pat, repl_dec, text, flags=re.IGNORECASE)
-
-        # Standard integer percentages
         all_words = list(_DIGITS.keys()) + list(_TENS.keys()) + list(_SCALES.keys())
-        word_pat = r"(?:" + "|".join(all_words) + r")"
-        pat = rf"\b(?:yüzde|yuzde)\s+({word_pat}(?:\s+{word_pat})*)\b"
+        word_pat = r"(?:" + "|".join(all_words) + r"|\d+)"
+
+        # 1. Direct digit decimals: "yüzde 1.5" or "yüzde 0,1"
+        num_dec_pat = r"\b(?:yüzde|yuzde)\s*(\d+[.,]\d+)\b"
+        text = re.sub(num_dec_pat, lambda m: f"%{m.group(1).replace(',', '.')}", text, flags=re.IGNORECASE)
+
+        # 2. Spoken word decimal percentages: "yüzde [sayı] nokta/virgül [basamak]"
+        dec_pat = rf"\b(?:yüzde|yuzde)\s+({word_pat}(?:\s+{word_pat})*)\s+(?:nokta|virgül|virgul)\s+({word_pat}(?:\s+{word_pat})*)\b"
+
+        def repl_dec(m: re.Match) -> str:
+            int_part = m.group(1).strip()
+            dec_part = m.group(2).strip()
+
+            if int_part.isdigit():
+                int_val = int_part
+            else:
+                parsed_int = parse_turkish_number_words(int_part.split())
+                if parsed_int is not None:
+                    int_val = str(parsed_int)
+                else:
+                    return m.group(0)
+
+            if dec_part.isdigit():
+                dec_val = dec_part
+            else:
+                dec_words = dec_part.split()
+                if all(w.lower() in _DIGITS for w in dec_words):
+                    dec_val = "".join(str(_DIGITS[w.lower()]) for w in dec_words)
+                else:
+                    parsed_dec = parse_turkish_number_words(dec_words)
+                    if parsed_dec is not None:
+                        dec_val = str(parsed_dec)
+                    else:
+                        return m.group(0)
+
+            return f"%{int_val}.{dec_val}"
+
+        text = re.sub(dec_pat, repl_dec, text, flags=re.IGNORECASE)
+
+        # 3. Direct digit integers: "yüzde 50" -> "%50"
+        num_int_pat = r"\b(?:yüzde|yuzde)\s*(\d+)\b"
+        text = re.sub(num_int_pat, lambda m: f"%{m.group(1)}", text, flags=re.IGNORECASE)
+
+        # 4. Spoken integer percentages: "yüzde elli" -> "%50"
+        int_word_pat = r"(?:" + "|".join(all_words) + r")"
+        pat = rf"\b(?:yüzde|yuzde)\s+({int_word_pat}(?:\s+{int_word_pat})*)\b"
 
         def repl_pct(m: re.Match) -> str:
             words = m.group(1).strip().split()
@@ -273,8 +310,12 @@ def post_process_transcript(
     for idx, idiom in enumerate(_COMMON_IDIOMS):
         token = f"__IDIOM_PLACEHOLDER_{idx}__"
         pattern = re.compile(rf"\b{re.escape(idiom)}\b", re.IGNORECASE)
-        if pattern.search(res):
-            idiom_placeholders[token] = "üç beş kişi" if "kişi" in idiom or "kisi" in idiom else idiom
+        m = pattern.search(res)
+        if m:
+            if "kişi" in idiom or "kisi" in idiom:
+                idiom_placeholders[token] = "üç beş kişi"
+            else:
+                idiom_placeholders[token] = m.group(0)
             res = pattern.sub(token, res)
 
     # 2. Phonetic corrections

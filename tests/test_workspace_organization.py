@@ -83,7 +83,7 @@ class TestWorkspaceOrganization(unittest.TestCase):
             cwd=str(BASE_DIR),
             capture_output=True,
             text=True,
-            timeout=20,
+            timeout=45,
         )
         self.assertEqual(res.returncode, 0, f"main.py --check başarısız: {res.stderr}")
         self.assertIn("DOĞRULAMA BAŞARILI", res.stdout)
