@@ -54,6 +54,10 @@ Intel Core i3 CPU ve 8 GB RAM gibi standart donanımlarda yüksek performans ve 
 - Sanal ortam (`venv`) ve gerekli kütüphaneler (`flet`, `faster_whisper` vb.) yoksa arka planda otomatik olarak kurulur.
 - Bağımlılıklar zaten yüklüyse doğrudan modern Flet uygulaması başlatılır. Manuel ortam (`env`) yapılandırma gereksinimi kaldırılmıştır.
 
+> [!NOTE]
+> **Windows Defender SmartScreen ve Güvenlik Bildirimi:**
+> Açık kaynaklı ve bağımsız `.exe` yayınlarında Windows ilk açılışta *"Windows kişisel bilgisayarınızı korudu"* ekranı gösterebilir. Bu bilinen standart bir Windows koruma uyarısıdır. Uygulamayı başlatmak için **"Ek bilgi" (More info)** bağlantısına tıklayıp **"Yine de çalıştır" (Run anyway)** butonunu seçebilirsiniz. Uygulama UPX sıkıştırmasından arındırılmış, tam PE sürüm meta verileriyle donatılmış ve Authenticode ile dijital olarak imzalanmıştır.
+
 ### 2. Komut Satırından Başlatma
 PowerShell veya Terminal üzerinden:
 ```powershell

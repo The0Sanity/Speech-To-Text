@@ -33,7 +33,6 @@ from src.config import (
     save_settings,
 )
 from src.updater import AutoUpdater, CheckStatus, UpdateInfo
-from src.diarizer import SpeakerDiarizer
 from src.exporter import (
     export_to_csv,
     export_to_json,
@@ -42,11 +41,12 @@ from src.exporter import (
     export_to_txt,
     export_to_vtt,
 )
-from src.transcriber import WhisperTranscriber
 from src.ui.components import (
     AudioPlayerBar,
     MetricCard,
     ProcessStepper,
+    SkeletonCard,
+    SkeletonLoader,
     TranscriptTurnCard,
 )
 from src.ui.theme import (
@@ -927,6 +927,11 @@ class FletSpeechToTextApp:
         self.stepper.set_active_step(0)
         self.lbl_status.value = "İşlem başlatılıyor..."
 
+        # İskelet (Skeleton) yükleme animasyonunu transkript alanına yerleştir
+        self.transcript_column.controls.clear()
+        self.transcript_column.controls.append(SkeletonLoader(count=3))
+        self._safe_update(self.transcript_column)
+
         self._safe_update(self.btn_start)
         self._safe_update(self.btn_cancel)
         self._safe_update(self.progress_bar)
@@ -984,7 +989,7 @@ class FletSpeechToTextApp:
             if self.cancel_requested:
                 raise InterruptedError("İşlem kullanıcı tarafından iptal edildi.")
 
-            # Adım 3: Whisper STT
+            # Adım 3: Whisper STT (Tembel / İhtiyaç Anında Yükleme)
             self.stepper.set_active_step(2)
             raw_model = self.cmb_model.value or "small"
             model_key = raw_model.split()[0].lower()
@@ -994,6 +999,7 @@ class FletSpeechToTextApp:
             vad_choice = "high" if "yüksek" in raw_vad.lower() or "hassas" in raw_vad.lower() else "normal"
 
             self._update_progress(0.20, f"3/5: Whisper '{model_key}' modeli hazırlanıyor...")
+            from src.transcriber import WhisperTranscriber
             transcriber = WhisperTranscriber(model_size=model_key, cpu_threads=4)
 
             def whisper_progress(pct, msg, seg):
@@ -1023,7 +1029,7 @@ class FletSpeechToTextApp:
             if self.cancel_requested:
                 raise InterruptedError("İşlem kullanıcı tarafından iptal edildi.")
 
-            # Adım 4: Konuşmacı Ayrıştırma (Diarization)
+            # Adım 4: Konuşmacı Ayrıştırma (Diarization - Tembel / İhtiyaç Anında Yükleme)
             self.stepper.set_active_step(3)
             self._update_progress(0.78, "4/5: Konuşmacılar ayrıştırılıyor...")
 
@@ -1036,6 +1042,7 @@ class FletSpeechToTextApp:
                     num_spk = int(ch)
                     break
 
+            from src.diarizer import SpeakerDiarizer
             diarizer = SpeakerDiarizer(
                 speaker_prefix=prefix_val,
                 hf_token=self.settings.get("hf_token", ""),
@@ -1718,18 +1725,29 @@ class FletSpeechToTextApp:
 
 
 def run_flet_app(page: ft.Page):
-    """Flet masaüstü pencere başlatıcısı ve açılış animasyonu."""
+    """Flet masaüstü pencere başlatıcısı ve anında ön plana getirme."""
     page.title = f"SesMetin Pro - Turkce STT ve Konusmaci Ayrastirma (v{FletSpeechToTextApp.APP_VERSION})"
     page.bgcolor = BG_APP
     page.padding = 0
     page.spacing = 0
 
-    # Pencere Boyutları ve Ortalama
+    # Pencere Boyutları, Görünürlük ve Doğrudan Ön Planda Odaklanma
     try:
         page.window.width = 1180
         page.window.height = 840
         page.window.min_width = 960
         page.window.min_height = 640
+        page.window.visible = True
+        page.window.opacity = 1.0
+        page.window.focused = True
+        try:
+            if hasattr(page.window, "to_front"):
+                page.window.to_front()
+            elif hasattr(page.window, "bring_to_front"):
+                page.window.bring_to_front()
+        except Exception:
+            pass
+
         try:
             if hasattr(page, "run_task"):
                 page.run_task(page.window.center)
@@ -1737,8 +1755,6 @@ def run_flet_app(page: ft.Page):
                 page.window.center()
         except Exception:
             pass
-        # Başlangıç opaklığı
-        page.window.opacity = 0.0
         page.update()
     except Exception:
         pass
@@ -1751,10 +1767,13 @@ def run_flet_app(page: ft.Page):
     app.start_background_update_check()
     app.check_and_prompt_prerequisites()
 
-    # Açılış fade-in animasyonu (60 FPS pürüzsüz geçiş)
+    # Açılış yumuşak geçiş animasyonu ve pencerenin ön planda kalmasını pekiştirme
     def _fade_in_worker():
         try:
-            for op in range(1, 11):
+            page.window.focused = True
+            if hasattr(page.window, "to_front"):
+                page.window.to_front()
+            for op in range(9, 11):
                 page.window.opacity = op / 10.0
                 page.update()
                 time.sleep(0.016)

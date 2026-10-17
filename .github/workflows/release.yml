@@ -47,6 +47,21 @@ jobs:
         run: |
           python -m PyInstaller --clean --noconfirm SpeechToText.spec
 
+      - name: Sign Standalone Windows Executable
+        shell: pwsh
+        run: |
+          Write-Host "Creating Authenticode Code Signing Certificate..."
+          $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=The0Sanity, O=Speech-To-Text Open Source" -KeyAlgorithm RSA -KeyLength 2048 -CertStoreLocation "Cert:\CurrentUser\My" -NotAfter (Get-Date).AddYears(5)
+          Write-Host "Signing dist\SpeechToText.exe..."
+          try {
+            $sig = Set-AuthenticodeSignature -FilePath "dist\SpeechToText.exe" -Certificate $cert -TimestampServer "http://timestamp.digicert.com" -HashAlgorithm SHA256
+            Write-Host "Timestamped signature status: $($sig.Status)"
+          } catch {
+            Write-Warning "Timestamp server failed, signing locally: $_"
+            $sig = Set-AuthenticodeSignature -FilePath "dist\SpeechToText.exe" -Certificate $cert -HashAlgorithm SHA256
+            Write-Host "Local signature status: $($sig.Status)"
+          }
+
       - name: Compute SHA256 Checksum
         shell: pwsh
         run: |

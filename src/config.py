@@ -46,7 +46,7 @@ OUTPUTS_DIR = BASE_DIR / "outputs"
 TEMP_DIR = BASE_DIR / "temp"
 SETTINGS_FILE = BASE_DIR / "settings.json"
 # Uygulama Surumu ve Depo Bilgileri
-APP_VERSION = "1.0.2"
+APP_VERSION = "1.0.3"
 APP_NAME = "SesMetin Pro"
 GITHUB_REPO_OWNER = "The0Sanity"
 GITHUB_REPO_NAME = "Speech-To-Text"

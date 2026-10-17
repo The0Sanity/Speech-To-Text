@@ -348,3 +348,60 @@ class TranscriptTurnCard(ft.Container):
             self.update()
         except Exception:
             pass
+
+
+class SkeletonCard(ft.Container):
+    """Veri veya modeller yüklenirken modern iskelet (skeleton) yükleme göstergesi."""
+
+    def __init__(self, height: int = 68, **kwargs):
+        self.bar_header = ft.Container(
+            height=14,
+            width=140,
+            border_radius=4,
+            bgcolor=INPUT_BG,
+            animate_opacity=ft.Animation(600, ft.AnimationCurve.EASE_IN_OUT),
+        )
+        self.bar_line1 = ft.Container(
+            height=12,
+            border_radius=4,
+            bgcolor=INPUT_BG,
+            expand=True,
+            animate_opacity=ft.Animation(600, ft.AnimationCurve.EASE_IN_OUT),
+        )
+        self.bar_line2 = ft.Container(
+            height=12,
+            width=280,
+            border_radius=4,
+            bgcolor=INPUT_BG,
+            animate_opacity=ft.Animation(600, ft.AnimationCurve.EASE_IN_OUT),
+        )
+
+        super().__init__(
+            content=ft.Column(
+                controls=[
+                    self.bar_header,
+                    self.bar_line1,
+                    self.bar_line2,
+                ],
+                spacing=8,
+            ),
+            bgcolor=BG_CARD,
+            border=ft.Border.all(1, BORDER_CARD),
+            border_radius=6,
+            padding=ft.Padding.all(12),
+            margin=ft.Margin.only(bottom=8),
+            **kwargs,
+        )
+
+
+class SkeletonLoader(ft.Column):
+    """Çoklu iskelet satırlarını içeren animasyonlu yükleme göstergesi."""
+
+    def __init__(self, count: int = 3, **kwargs):
+        cards = [SkeletonCard() for _ in range(count)]
+        super().__init__(
+            controls=cards,
+            spacing=8,
+            expand=True,
+            **kwargs,
+        )
