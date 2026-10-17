@@ -25,6 +25,7 @@ models/
 .cursor/
 .gemini/
 .codex/
+.impeccable/
 *.exe
 *.swp
 *.swo
