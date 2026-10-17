@@ -223,21 +223,30 @@ class FletSpeechToTextApp:
         )
 
         # Giriş Bölümü Değiştirici Butonları
-        self.btn_tab_file = ft.FilledButton("Yerel Dosya", bgcolor=ACCENT_PRIMARY, color=TEXT_MAIN, height=30, on_click=lambda _: self._switch_input_mode("file"))
-        self.btn_tab_yt = ft.Button("YouTube", bgcolor=BTN_NEUTRAL, color=TEXT_MAIN, height=30, on_click=lambda _: self._switch_input_mode("youtube"))
+        self.btn_tab_file = ft.FilledButton(
+            content=ft.Text("Yerel Dosya", size=12, weight=ft.FontWeight.W_500),
+            bgcolor=ACCENT_PRIMARY,
+            color=TEXT_MAIN,
+            height=32,
+            on_click=lambda _: self._switch_input_mode("file"),
+        )
+        self.btn_tab_yt = ft.FilledButton(
+            content=ft.Text("YouTube", size=12, weight=ft.FontWeight.W_500),
+            bgcolor=BTN_NEUTRAL,
+            color=TEXT_MAIN,
+            height=32,
+            on_click=lambda _: self._switch_input_mode("youtube"),
+        )
 
         self.box_file_input = ft.Container(
             content=ft.Column(
                 controls=[
                     ft.FilledButton(
-                        "Dosya Seç (MP4 / MP3 / WAV)",
+                        content=ft.Text("Dosya Seç (MP4 / MP3 / WAV)", size=12, weight=ft.FontWeight.W_500),
                         bgcolor=ACCENT_PRIMARY,
                         color=TEXT_MAIN,
-                        height=34,
-                        on_click=lambda _: self.file_picker.pick_files(
-                            allow_multiple=False,
-                            allowed_extensions=["mp4", "mp3", "wav", "m4a", "aac", "mkv", "flac"],
-                        ),
+                        height=36,
+                        on_click=self._pick_file_dialog,
                     ),
                     ft.Container(
                         content=ft.Column(
@@ -260,8 +269,8 @@ class FletSpeechToTextApp:
                     ft.Row(
                         controls=[
                             self.yt_url_entry,
-                            ft.Button(
-                                "Bilgi Al",
+                            ft.FilledButton(
+                                content=ft.Text("Bilgi Al", size=11, weight=ft.FontWeight.W_500),
                                 bgcolor=BTN_NEUTRAL,
                                 color=TEXT_MAIN,
                                 height=34,
@@ -298,15 +307,18 @@ class FletSpeechToTextApp:
         )
 
         self.btn_start = ft.FilledButton(
-            "Transkripsiyonu Başlat",
+            content=ft.Text("Transkripsiyonu Başlat", size=13, weight=ft.FontWeight.BOLD),
             bgcolor=ACCENT_PRIMARY,
             color=TEXT_MAIN,
             height=38,
+            expand=True,
             on_click=lambda _: self.start_transcription(),
         )
 
-        self.btn_cancel = ft.OutlinedButton(
-            "İptal",
+        self.btn_cancel = ft.FilledButton(
+            content=ft.Text("İptal", size=12, weight=ft.FontWeight.W_500),
+            bgcolor=BTN_NEUTRAL,
+            color=TEXT_MAIN,
             height=38,
             width=70,
             disabled=True,
@@ -549,15 +561,15 @@ class FletSpeechToTextApp:
                     padding=ft.Padding.symmetric(horizontal=8, vertical=4),
                     expand=True,
                 ),
-                ft.Button(
-                    "Bul ve Değiştir",
+                ft.FilledButton(
+                    content=ft.Text("Bul ve Değiştir", size=12, weight=ft.FontWeight.W_500),
                     bgcolor=BTN_NEUTRAL,
                     color=TEXT_MAIN,
                     height=34,
                     on_click=lambda _: self._toggle_find_replace(),
                 ),
-                ft.Button(
-                    "Konuşmacı Yönetimi",
+                ft.FilledButton(
+                    content=ft.Text("Konuşmacı Yönetimi", size=12, weight=ft.FontWeight.W_500),
                     bgcolor=BTN_NEUTRAL,
                     color=TEXT_MAIN,
                     height=34,
@@ -572,19 +584,20 @@ class FletSpeechToTextApp:
                 self.lbl_total_turns,
                 ft.Container(expand=True),
                 ft.FilledButton(
-                    "Panoya Kopyala",
+                    content=ft.Text("Panoya Kopyala", size=12, weight=ft.FontWeight.W_500),
                     bgcolor=ACCENT_PRIMARY,
                     color=TEXT_MAIN,
-                    height=28,
+                    height=30,
+                    style=ft.ButtonStyle(padding=ft.Padding.symmetric(horizontal=14, vertical=2)),
                     on_click=lambda _: self.copy_to_clipboard(),
                 ),
                 *[
-                    ft.Button(
-                        fmt.upper(),
+                    ft.FilledButton(
+                        content=ft.Text(fmt.upper(), size=11, weight=ft.FontWeight.W_600),
                         bgcolor=BTN_NEUTRAL,
                         color=TEXT_MAIN,
-                        height=28,
-                        width=52,
+                        height=30,
+                        style=ft.ButtonStyle(padding=ft.Padding.symmetric(horizontal=12, vertical=2)),
                         on_click=lambda _, f=fmt: self.export_result(f),
                     )
                     for fmt in ["md", "vtt", "csv", "json", "srt", "txt"]
@@ -668,6 +681,26 @@ class FletSpeechToTextApp:
         )
 
     # ------------------ Dosya ve YouTube Olayları ------------------
+    def _pick_file_dialog(self, _=None):
+        """Dosya seçiciyi güvenli şekilde başlatır."""
+        async def _pick():
+            try:
+                await self.file_picker.pick_files(
+                    allow_multiple=False,
+                    allowed_extensions=["mp4", "mp3", "wav", "m4a", "aac", "mkv", "flac"],
+                )
+            except Exception:
+                pass
+
+        if self.page and hasattr(self.page, "run_task"):
+            self.page.run_task(_pick)
+        else:
+            try:
+                import asyncio
+                asyncio.create_task(_pick())
+            except Exception:
+                pass
+
     def _on_file_picked(self, e: ft.FilePickerResultEvent):
         """Kullanıcı dosya seçtiğinde tetiklenir."""
         if not e.files or len(e.files) == 0:
@@ -1179,7 +1212,8 @@ def run_flet_app(page: ft.Page):
         pass
 
     app = FletSpeechToTextApp(page)
-    page.overlay.append(app.file_picker)
+    if hasattr(page, "services") and app.file_picker not in page.services:
+        page.services.append(app.file_picker)
     page.add(app.build_layout())
 
     # Açılış fade-in animasyonu (60 FPS pürüzsüz geçiş)
