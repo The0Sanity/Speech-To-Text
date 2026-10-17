@@ -1,0 +1,120 @@
+# Changelog
+
+All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [v1.0.6] - 2026-10-17
+
+### Added / Yenilikler
+- **Smooth Throttled Progress Bar / Akici Ilerleme Cubugu**:
+  - Implemented 80ms interval throttling (~12 FPS) to eliminate Flet WebSocket IPC bridge congestion during large binary downloads.
+  - Added exponential moving average download speed calculation in MB/s and intelligent countdown estimated time of arrival (ETA).
+  - Enforced targeted control updates (`_safe_update`) to prevent full-page DOM reconciliation on download progress ticks.
+- **Postponed Update Memory / Ertelenmis Guncelleme Hatirlatma**:
+  - Selecting "Daha Sonra" (Later) or closing the update dialog persists the release metadata into `settings.json`.
+  - On next application startup, the update dialog is automatically re-prompted without requiring a fresh network call.
+- **Post-Update Patch Notes Modal / Acilista Surum Notlari Penceresi**:
+  - Automatically displays rich Markdown release notes upon the updated executable's first launch.
+  - Includes a selectable, scrollable GitHub Markdown dialog with feature overview and verification notes.
+
+### Fixed / Duzeltmeler
+- Eliminated UI freezing and WebSocket buffer dropouts during high-speed release downloads.
+
+---
+
+## [v1.0.5] - 2026-10-17
+
+### Fixed / Duzeltmeler
+- **Updater HTTP 304 Handling / Guncelleyici HTTP 304 Hatasi**:
+  - Resolved GitHub API `HTTP 304 Not Modified` exception when checking updates with cached ETags.
+  - Gracefully treats HTTP 304 as up-to-date status and refreshes cache headers.
+- **Window Opacity and Transparency Glitch / Pencere Seffaflik Sorunu**:
+  - Enforced window opacity 1.0 on launch to prevent DWM composition from rendering the desktop app at 50% opacity.
+- **FFmpeg Resolution Fallback / FFmpeg NameError**:
+  - Fixed `NameError: find_ffmpeg` in audio extraction fallback paths.
+- **YouTube Media Extraction / YouTube Demet Cozme Hatasi**:
+  - Fixed tuple unpacking error when extracting media info from single-stream sources.
+- **Speaker Diarization Pitch Estimation / Konusmaci Ayristirma Hizi**:
+  - Optimized pitch calculation from $O(N^2)$ to $O(N)$ with downsampled peak-picking.
+- **Turkish Inverse Text Normalization (ITN) / Turkce Sayi ve Metin Normalizasyonu**:
+  - Fixed case sensitivity in number and currency word replacement algorithms.
+
+### Documentation / Dokumantasyon
+- Expanded version roadmap in `README.md` covering upcoming milestones v1.3.0 to v2.0.0.
+
+---
+
+## [v1.0.4] - 2026-10-17
+
+### Fixed / Duzeltmeler
+- **Flet Material Icons Asset Missing / Flet Ikon Paketi Eksikligi**:
+  - Bundled missing `flet/controls/material/icons.json` asset into PyInstaller standalone specification.
+  - Added runtime self-healing fallback that initializes a clean JSON fallback if assets are missing on the target host.
+- **Offline Client Runtime / Cevrimdisi Calisma Zamani**:
+  - Ensured standalone executable boots cleanly on systems without existing Python or Flet cache directories.
+
+### Documentation / Dokumantasyon
+- Comprehensive overhaul of `README.md` featuring bilingual English/Turkish toggle, SVG feature badges, architecture diagram, and release tracking.
+
+---
+
+## [v1.0.3] - 2026-10-17
+
+### Security & Performance / Guvenlik ve Performans
+- **Antivirus False-Positive Mitigation / Antivirus Uyari Temizligi**:
+  - Eliminated UPX compression to remove heuristic false-positive alerts across antivirus engines (clean VirusTotal and Kaspersky scans).
+- **Windows PE Metadata Embedding / Windows PE Dosya Bilgileri**:
+  - Embedded genuine Windows PE `VersionInfo` metadata (FileVersion, ProductVersion, CompanyName, LegalCopyright).
+- **Authenticode Code Signing / Kod Imzalama**:
+  - Added automated Authenticode code signing with Digicert timestamping to the GitHub Actions release workflow.
+- **Instant Foreground Startup / Hizli Acilis**:
+  - Implemented lazy importing for heavy AI libraries (`torch`, `faster_whisper`), reducing application launch time from >12s to ~1.2s.
+  - Forced foreground window focus on startup to prevent the application from opening minimized or in the background.
+
+---
+
+## [v1.0.2] - 2026-10-17
+
+### Fixed / Duzeltmeler
+- **Flet Desktop Module Import / flet_desktop Import Hatasi**:
+  - Resolved `ModuleNotFoundError: flet_desktop` by embedding the desktop client runtime archive into the package.
+- **Defensive Exit Handler / Guvenli Cikis Yoneticisi**:
+  - Replaced unhandled `exit()` calls with defensive `_safe_exit()` to prevent runtime NameError on unexpected process exit.
+
+---
+
+## [v1.0.1] - 2026-10-17
+
+### Fixed / Duzeltmeler
+- **UnitTest Bundling Dependency / unittest Bagimliligi**:
+  - Resolved `ModuleNotFoundError: unittest` caused by NumPy testing package dependencies in standalone PyInstaller packaging.
+- **Windowed Standard Input / Konsolsuz Giris Hatasi**:
+  - Fixed `RuntimeError: lost sys.stdin` in windowed executable mode with defensive stream fallback.
+
+### Added / Yenilikler
+- **In-App FFmpeg Bootstrapper / Otomatik FFmpeg Kurucusu**:
+  - Added automated detection, download, and extraction helper for systems without FFmpeg installed.
+- **Crash Logging / Hata Gunluk Kaydi**:
+  - Added unhandled exception logging to `crash.log` in the application directory.
+
+---
+
+## [v1.0.0] - 2026-10-17
+
+### Initial Release / Ilk Kararli Surum
+- **100% Offline Speech Recognition / Yerel Ses Tanima**:
+  - Fast, private Turkish speech-to-text powered by CTranslate2 and Faster-Whisper.
+- **Acoustic Speaker Diarization / Konusmaci Ayristirma**:
+  - Multi-speaker segmentation with turn merging, speaker labeling, and time offsets.
+- **Audio Pre-Processing / Ses On-Isleme**:
+  - 80Hz high-pass filter, noise reduction, and peak normalization.
+- **YouTube Media Integration / YouTube Medya Aktarimi**:
+  - Integrated yt-dlp media downloader for direct processing of online videos and audio.
+- **Multi-Format Export / Coklu Disa Aktarim**:
+  - Export transcripts to SRT, VTT, JSON, CSV, Markdown, and TXT with timestamps.
+- **Built-in Auto-Updater / Dahili Guncelleyici**:
+  - In-app release checking and binary downloads with PE integrity verification.
+- **Prominent Visual Attribution / Gorsel Atif Bildirimi**:
+  - Licensed under the MIT License with Prominent Visual Attribution Requirement to https://github.com/The0Sanity/Speech-To-Text.
