@@ -1,6 +1,6 @@
 """Whisper metin segmentleri ile konuşmacı aralıklarını hizalama ve birleştirme modülü."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from src.audio_processor import format_time
 
 
@@ -120,3 +120,101 @@ def get_unique_speakers(transcript: List[Dict[str, Any]]) -> List[str]:
         if spk and spk not in seen:
             seen.append(spk)
     return seen
+
+
+def compute_transcript_statistics(transcript: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Transkript için konuşma süresi, kelime adedi, konuşmacı dağılımı gibi metrikleri hesaplar."""
+    if not transcript:
+        return {
+            "total_turns": 0,
+            "unique_speakers_count": 0,
+            "total_words": 0,
+            "speaking_duration_seconds": 0.0,
+            "speaker_speaking_times": {},
+            "speaker_turn_counts": {},
+            "words_per_minute": 0.0,
+        }
+
+    unique_speakers = get_unique_speakers(transcript)
+    total_turns = len(transcript)
+    total_words = 0
+    speaking_duration = 0.0
+    spk_times: Dict[str, float] = {spk: 0.0 for spk in unique_speakers}
+    spk_turns: Dict[str, int] = {spk: 0 for spk in unique_speakers}
+
+    for item in transcript:
+        spk = item.get("speaker", "X1")
+        start = float(item.get("start", 0.0))
+        end = float(item.get("end", 0.0))
+        dur = max(0.0, end - start)
+
+        text = item.get("text", "").strip()
+        words = len(text.split()) if text else 0
+
+        total_words += words
+        speaking_duration += dur
+
+        if spk not in spk_times:
+            spk_times[spk] = 0.0
+            spk_turns[spk] = 0
+        spk_times[spk] += dur
+        spk_turns[spk] += 1
+
+    wpm = round((total_words / (speaking_duration / 60.0)), 1) if speaking_duration > 0 else 0.0
+
+    return {
+        "total_turns": total_turns,
+        "unique_speakers_count": len(unique_speakers),
+        "total_words": total_words,
+        "speaking_duration_seconds": round(speaking_duration, 2),
+        "speaker_speaking_times": {k: round(v, 2) for k, v in spk_times.items()},
+        "speaker_turn_counts": spk_turns,
+        "words_per_minute": wpm,
+    }
+
+
+def find_and_replace_in_transcript(
+    transcript: List[Dict[str, Any]],
+    find_str: str,
+    replace_str: str,
+    case_sensitive: bool = False,
+) -> Tuple[List[Dict[str, Any]], int]:
+    """Transkriptteki metinlerde arama ve değiştirme uygular."""
+    import re
+
+    if not find_str:
+        return transcript, 0
+
+    count = 0
+    flags = 0 if case_sensitive else re.IGNORECASE
+    escaped_find = re.escape(find_str)
+
+    updated = []
+    for item in transcript:
+        new_item = item.copy()
+        text = new_item.get("text", "")
+        new_text, sub_count = re.subn(escaped_find, replace_str, text, flags=flags)
+        if sub_count > 0:
+            count += sub_count
+            new_item["text"] = new_text
+        updated.append(new_item)
+
+    return updated, count
+
+
+def filter_transcript(
+    transcript: List[Dict[str, Any]],
+    query: str,
+) -> List[Dict[str, Any]]:
+    """Arama sorgusuna göre transkript segmentlerini filtreler."""
+    if not query or not query.strip():
+        return transcript
+
+    q = query.strip().lower()
+    return [
+        item for item in transcript
+        if q in item.get("text", "").lower()
+        or q in item.get("speaker", "").lower()
+        or q in item.get("timestamp_display", "").lower()
+    ]
+

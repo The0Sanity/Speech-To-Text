@@ -8,6 +8,10 @@
     "use_pyannote": false,
     "theme": "dark",
     "auto_merge_gap": 1.5,
+    "enhance_audio": true,
+    "postprocess_text": true,
+    "beam_size": 5,
+    "vad_sensitivity": "high",
     "last_input_dir": "E:\\Speech-To-Text",
     "last_output_dir": "E:\\Speech-To-Text\\outputs"
 }
