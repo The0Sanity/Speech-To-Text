@@ -1398,7 +1398,7 @@ class FletSpeechToTextApp:
 
         def _do_check():
             try:
-                info = self.updater.check_for_updates(timeout=8)
+                info = self.updater.check_for_updates(timeout=8, force=manual)
                 if not self.page:
                     return
 

@@ -73,30 +73,42 @@ To deliver an application that functions on systems with zero pre-existing devel
 
 ## 4. Multi-Version Release Roadmap
 
-### Phase 1: v1.0.1 (Current Stability & Integrity Patch)
-- Fix PyInstaller spec (`unittest` dependency).
-- Fix `sys.stdin` headless crash and introduce `crash.log` + native Windows error alert.
-- Persist configuration, downloaded models, and exports outside temporary directories.
-- Introduce `src/bootstrapper.py` and first-run FFmpeg acquisition prompt in the Flet UI.
-- Release standalone `SpeechToText.exe` and SHA256 checksum to GitHub Releases.
+### Phase 1: v1.0.4 (Current Release: Asset Integrity, Icon Bundling & HTTP 304 Cache Resolution)
+- Bundled Flet Material and Cupertino icon catalog (`icons.json`) with runtime self-healing fallback to prevent missing icon crashes.
+- Faster-Whisper Silero VAD ONNX models (`silero_vad_v6.onnx`) and CTranslate2 native assets secured with PyInstaller data hooks.
+- GitHub Releases update engine HTTP 304 (Not Modified) cache resolution, accompanied by a bypass flag (`force=True`) for live manual checks.
+- Enhanced Windows window elevation and instant display priority on launch.
 
-### Phase 2: v1.1.0 (Enhanced Offline Bundles & Model Provisioning)
+### Phase 2: v1.1.0 (Model Hub, Cache Management & Hardware Diagnostics)
 - **Dual Release Artifacts**:
   1. `SpeechToText-Portable.exe` (~135 MB): Self-bootstrapping standalone executable.
-  2. `SpeechToText-Setup.exe` (~280 MB): Full Inno Setup installer bundling static FFmpeg and the default `small` Turkish acoustic model.
+  2. `SpeechToText-Setup.exe` (~280 MB): Inno Setup installer bundling static FFmpeg and the default `small` Turkish acoustic model.
 - **Model Cache Manager**: Visual model manager within the Settings tab showing local disk usage, download status, and GPU memory requirements for each model variant (`tiny`, `base`, `small`, `medium`, `large-v3-turbo`).
 - **Hardware Acceleration Diagnostics**: Real-time GPU VRAM, CUDA capability, and CPU thread benchmarking panel.
 
-### Phase 3: v1.2.0 (Real-Time Microphone Streaming & Live Subtitles)
-- **Live Microphone Transcription**: Real-time speech recognition via PyAudio/sounddevice with circular buffer streaming into Faster-Whisper.
-- **Silero VAD Sliding Window**: Dynamic voice activity chunking with 400ms pause triggers and boundary padding.
-- **Desktop Subtitle Overlay**: Borderless, semi-transparent, always-on-top Flet window designed for live streaming, presentations, and accessibility.
+### Phase 3: v1.2.0 (Batch File Processing Queue & Audio DSP Tuning)
+- **Multi-File Batch Queue**: Drag-and-drop batch queue processing multiple audio and video files with sequential background transcription.
+- **Audio Preprocessing Controls**: Interactive UI sliders for high-pass cutoff frequency, noise gate threshold (dB), and EBU R128 target LUFS normalization.
+- **Batch Export Automation**: Single-click export of all queued transcriptions in multiple selected formats simultaneously.
+- **Dynamic File Naming Templates**: Customizable output file patterns based on date, time, speaker tags, and model name.
 
-### Phase 4: v2.0.0 (Enterprise Speech Intelligence & Multi-Language)
-- **Cross-Lingual Translation**: Automatic transcription in Turkish with concurrent translation into English, German, French, and Spanish.
+### Phase 4: v1.3.0 (Real-Time Live Speech & Desktop Floating Subtitle Bar)
+- **Live Microphone Transcription**: Real-time speech recognition via circular audio buffer streaming into Faster-Whisper.
+- **Desktop Floating Subtitle Bar**: Borderless, semi-transparent, always-on-top Flet window designed for live streaming, presentations, and system-wide accessibility.
+- **Silero VAD Dynamic Pause Detection**: Dynamic voice activity chunking with 400ms - 600ms pause triggers and boundary padding to prevent mid-sentence cuts.
+- **Offline Live Dictation Mode**: Direct streaming of spoken sentences into active desktop applications and system clipboard.
+
+### Phase 5: v1.4.0 (Custom Phonetic Glossary & Advanced Subtitle Export Studio)
+- **Custom Phonetic Terminology & Acronym Glossary**: User-defined vocabulary and bias dictionary enhancing recognition accuracy for technical, legal, and medical jargon.
+- **Filler Word Filtering Controls**: Configurable toggle to automatically remove or retain speech hesitations and fillers (e.g., "uh", "um", "like", "you know").
+- **Subtitle Styling & Preview Studio**: Visual configuration of SRT and VTT subtitles with font size, background opacity, text color, and line wrapping limits.
+- **Timestamp Precision Editor**: Interactive waveform-based timeline editor to adjust, split, and merge segment timestamps with millisecond accuracy.
+
+### Phase 6: v2.0.0 (Enterprise Speech Intelligence, Multi-Language & Local LLM Summaries)
+- **Cross-Lingual Live Translation**: Automatic transcription in Turkish with concurrent translation into English, German, French, and Spanish.
 - **Voice Biometrics & Speaker Profiles**: Speaker profile database allowing users to assign names, avatars, and persistent voice signatures across different recordings.
-- **Video Hardsubbing Engine**: Built-in FFmpeg subtitle burner that bakes styled SRT/ASS subtitles directly into video files with custom typography and positioning.
-- **Local LLM Meeting Minutes**: Optional integration with local Ollama/Llama.cpp models for zero-cloud meeting summaries, action items, and topic extraction.
+- **Native Video Hardsubbing Engine**: Built-in FFmpeg subtitle burner that bakes styled SRT/ASS subtitles directly into video files with custom typography and positioning.
+- **Zero-Cloud Local LLM Meeting Summary**: Optional integration with local Ollama/Llama.cpp models for zero-cloud meeting summaries, action items, and topic extraction.
 
 ---
 
