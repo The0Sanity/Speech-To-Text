@@ -145,6 +145,55 @@ class TestFletUI(unittest.TestCase):
         self.assertTrue(found_update_btn, "Header içinde 'Güncellemeleri Denetle' butonu bulunmalıdır.")
         self.assertTrue(found_version_label, f"Header içinde 'v{APP_VERSION}' versiyon etiketi bulunmalıdır.")
 
+    def test_07_button_hover_and_animation_attributes(self):
+        """Butonların mikro-etkileşim ve ölçek animasyon özelliklerini doğrular."""
+        from src.ui.app import FletSpeechToTextApp
+        from src.ui.theme import ACCENT_LIGHT, ACCENT_PRIMARY
+
+        app = FletSpeechToTextApp()
+        self.assertIsNotNone(app.btn_start.animate_scale)
+        self.assertIsNotNone(app.btn_cancel.animate_scale)
+        self.assertTrue(callable(app._on_btn_start_hover))
+        self.assertTrue(callable(app._on_btn_cancel_hover))
+
+        # Hover simülasyonu: btn_start
+        class MockHoverEvent:
+            def __init__(self, data):
+                self.data = data
+
+        app._on_btn_start_hover(MockHoverEvent("true"))
+        self.assertGreater(app.btn_start.scale, 1.0)
+        self.assertEqual(app.btn_start.bgcolor, ACCENT_LIGHT)
+
+        app._on_btn_start_hover(MockHoverEvent("false"))
+        self.assertEqual(app.btn_start.scale, 1.0)
+        self.assertEqual(app.btn_start.bgcolor, ACCENT_PRIMARY)
+
+    def test_08_staggered_entrance_containers_and_animation(self):
+        """Arayüz bölümlerinin kademeli açılış animasyonu özelliklerini doğrular."""
+        import time
+        from src.ui.app import FletSpeechToTextApp
+
+        app = FletSpeechToTextApp()
+        layout = app.build_layout()
+        self.assertIsNotNone(layout)
+
+        self.assertTrue(hasattr(app, "header_container"))
+        self.assertTrue(hasattr(app, "left_column_container"))
+        self.assertTrue(hasattr(app, "right_column_container"))
+
+        self.assertIsNotNone(app.header_container.animate_opacity)
+        self.assertIsNotNone(app.header_container.animate_offset)
+        self.assertIsNotNone(app.left_column_container.animate_opacity)
+        self.assertIsNotNone(app.right_column_container.animate_opacity)
+
+        # Kademeli animasyonu çalıştır
+        app.play_entrance_animation()
+        time.sleep(0.3)
+        self.assertEqual(app.header_container.opacity, 1.0)
+        self.assertEqual(app.left_column_container.opacity, 1.0)
+        self.assertEqual(app.right_column_container.opacity, 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()

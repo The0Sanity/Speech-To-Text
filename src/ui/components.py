@@ -48,9 +48,25 @@ class MetricCard(ft.Container):
             border_radius=6,
             border=ft.Border.all(1, BORDER_CARD),
             padding=ft.Padding.symmetric(horizontal=12, vertical=8),
+            animate=ft.Animation(180, ft.AnimationCurve.EASE_OUT),
+            animate_scale=ft.Animation(150, ft.AnimationCurve.EASE_OUT),
+            on_hover=self._on_card_hover,
             expand=True,
             **kwargs,
         )
+
+    def _on_card_hover(self, e: ft.HoverEvent):
+        """Kart üzerine gelindiğinde ince sınır aydınlatması uygular."""
+        if e.data == "true":
+            self.border = ft.Border.all(1, ACCENT_LIGHT)
+            self.scale = 1.015
+        else:
+            self.border = ft.Border.all(1, BORDER_CARD)
+            self.scale = 1.0
+        try:
+            self.update()
+        except Exception:
+            pass
 
     def update_value(self, new_val: str):
         """Metrik değerini günceller."""
@@ -92,6 +108,7 @@ class ProcessStepper(ft.Container):
                 border_radius=4,
                 padding=ft.Padding.symmetric(vertical=5, horizontal=6),
                 alignment=ft.Alignment.CENTER,
+                animate=ft.Animation(220, ft.AnimationCurve.EASE_IN_OUT),
                 expand=True,
             )
             self.step_labels.append(lbl)
@@ -316,5 +333,18 @@ class TranscriptTurnCard(ft.Container):
             border_radius=6,
             padding=ft.Padding.all(10),
             margin=ft.Margin.only(bottom=8),
+            animate=ft.Animation(180, ft.AnimationCurve.EASE_OUT),
+            on_hover=self._on_card_hover,
             **kwargs,
         )
+
+    def _on_card_hover(self, e: ft.HoverEvent):
+        """Satır üzerine gelindiğinde ince sınır aydınlatması sağlar."""
+        if e.data == "true":
+            self.border = ft.Border.all(1, ACCENT_LIGHT)
+        else:
+            self.border = ft.Border.all(1, BORDER_CARD)
+        try:
+            self.update()
+        except Exception:
+            pass

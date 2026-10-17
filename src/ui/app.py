@@ -351,6 +351,8 @@ class FletSpeechToTextApp:
             color=TEXT_MAIN,
             height=38,
             expand=True,
+            animate_scale=ft.Animation(150, ft.AnimationCurve.EASE_OUT),
+            on_hover=self._on_btn_start_hover,
             on_click=lambda _: self.start_transcription(),
         )
 
@@ -361,6 +363,8 @@ class FletSpeechToTextApp:
             height=38,
             width=70,
             disabled=True,
+            animate_scale=ft.Animation(150, ft.AnimationCurve.EASE_OUT),
+            on_hover=self._on_btn_cancel_hover,
             on_click=lambda _: self.request_cancel(),
         )
 
@@ -440,6 +444,28 @@ class FletSpeechToTextApp:
 
         # Dışa Aktarma Çubuğu
         self.lbl_total_turns = ft.Text(value="0 konuşma parçası", size=11, color=TEXT_MUTED)
+
+    def _on_btn_start_hover(self, e: Any):
+        """Başlat butonu üzerine gelindiğinde mikro ölçek ve hafif ton aydınlatması sağlar."""
+        if self.btn_start.disabled:
+            return
+        if getattr(e, "data", "") == "true":
+            self.btn_start.scale = 1.02
+            self.btn_start.bgcolor = ACCENT_LIGHT
+        else:
+            self.btn_start.scale = 1.0
+            self.btn_start.bgcolor = ACCENT_PRIMARY
+        self._safe_update(self.btn_start)
+
+    def _on_btn_cancel_hover(self, e: Any):
+        """İptal butonu üzerine gelindiğinde mikro ölçek animasyonu uygular."""
+        if self.btn_cancel.disabled:
+            return
+        if getattr(e, "data", "") == "true":
+            self.btn_cancel.scale = 1.03
+        else:
+            self.btn_cancel.scale = 1.0
+        self._safe_update(self.btn_cancel)
 
     def _switch_input_mode(self, mode: str):
         """Yerel dosya ve YouTube sekmesi arasında geçiş yapar."""
@@ -579,7 +605,12 @@ class FletSpeechToTextApp:
                 scroll=ft.ScrollMode.ADAPTIVE,
             ),
             width=350,
+            opacity=0.0,
+            offset=ft.Offset(-0.03, 0),
+            animate_opacity=ft.Animation(380, ft.AnimationCurve.EASE_OUT),
+            animate_offset=ft.Animation(380, ft.AnimationCurve.EASE_OUT),
         )
+        self.left_column_container = left_column
 
         # Sağ Panel: Transkript, Düzenleme ve Dışa Aktarma
         stats_ribbon_row = ft.Row(
@@ -679,7 +710,12 @@ class FletSpeechToTextApp:
             border_radius=8,
             padding=ft.Padding.all(14),
             expand=True,
+            opacity=0.0,
+            offset=ft.Offset(0.03, 0),
+            animate_opacity=ft.Animation(420, ft.AnimationCurve.EASE_OUT),
+            animate_offset=ft.Animation(420, ft.AnimationCurve.EASE_OUT),
         )
+        self.right_column_container = right_column
 
         # Üst Başlık
         header = ft.Container(
@@ -724,7 +760,12 @@ class FletSpeechToTextApp:
             border=ft.Border.all(1, BORDER_CARD),
             border_radius=6,
             padding=ft.Padding.symmetric(horizontal=14, vertical=10),
+            opacity=0.0,
+            offset=ft.Offset(0, -0.04),
+            animate_opacity=ft.Animation(320, ft.AnimationCurve.EASE_OUT),
+            animate_offset=ft.Animation(320, ft.AnimationCurve.EASE_OUT),
         )
+        self.header_container = header
 
         return ft.Container(
             content=ft.Column(
@@ -743,6 +784,29 @@ class FletSpeechToTextApp:
             padding=ft.Padding.all(14),
             expand=True,
         )
+
+    def play_entrance_animation(self):
+        """Arayüz bölümlerinin kademeli açılış (staggered entrance) animasyonunu tetikler."""
+        def _animate():
+            time.sleep(0.04)
+            if hasattr(self, "header_container") and self.header_container:
+                self.header_container.opacity = 1.0
+                self.header_container.offset = ft.Offset(0, 0)
+                self._safe_update(self.header_container)
+
+            time.sleep(0.05)
+            if hasattr(self, "left_column_container") and self.left_column_container:
+                self.left_column_container.opacity = 1.0
+                self.left_column_container.offset = ft.Offset(0, 0)
+                self._safe_update(self.left_column_container)
+
+            time.sleep(0.05)
+            if hasattr(self, "right_column_container") and self.right_column_container:
+                self.right_column_container.opacity = 1.0
+                self.right_column_container.offset = ft.Offset(0, 0)
+                self._safe_update(self.right_column_container)
+
+        threading.Thread(target=_animate, daemon=True).start()
 
     # ------------------ Dosya ve YouTube Olayları ------------------
     def _pick_file_dialog(self, _=None):
@@ -1270,30 +1334,18 @@ class FletSpeechToTextApp:
 
     # ------------------ Otomatik Güncelleme (Auto-Updater) ------------------
     def start_background_update_check(self):
-        """Uygulama başlangıcında arka planda sessizce yeni sürüm denetimi yapar."""
+        """Uygulama başlangıcında arka planda yeni sürüm denetimi yapar.
+        
+        Yeni bir sürüm tespit edildiğinde kullanıcıyı bilgilendirmek için
+        doğrudan modal güncelleme penceresini açar.
+        """
         def _check():
             try:
-                info = self.updater.check_for_updates(timeout=6)
+                info = self.updater.check_for_updates(timeout=8)
                 if info and info.is_update_available and self.page:
-                    def _notify():
-                        self.page.snack_bar = ft.SnackBar(
-                            content=ft.Text(
-                                f"Yeni sürüm mevcut: v{info.version}. Güncellemek için 'Güncellemeleri Denetle' butonuna tıklayın.",
-                                size=12,
-                                color=TEXT_MAIN,
-                            ),
-                            bgcolor=ACCENT_PRIMARY,
-                            duration=6000,
-                        )
-                        self.page.snack_bar.open = True
-                        self.page.update()
-
-                    if hasattr(self.page, "run_task"):
-                        self.page.run_task(_notify)
-                    else:
-                        _notify()
-            except Exception:
-                pass
+                    self._show_update_modal(info)
+            except Exception as e:
+                print(f"Başlangıç güncelleme denetimi atlandı: {e}")
 
         threading.Thread(target=_check, daemon=True).start()
 
@@ -1306,11 +1358,11 @@ class FletSpeechToTextApp:
             self._show_toast("Güncellemeler denetleniyor...", is_error=False)
 
         def _do_check():
-            info = self.updater.check_for_updates(timeout=8)
-            if not self.page:
-                return
+            try:
+                info = self.updater.check_for_updates(timeout=8)
+                if not self.page:
+                    return
 
-            def _handle_result():
                 if not info:
                     if manual:
                         self._show_toast("Güncellemeler denetlenemedi veya ağ bağlantısı yok.", is_error=True)
@@ -1319,11 +1371,10 @@ class FletSpeechToTextApp:
                 else:
                     if manual:
                         self._show_toast(f"Uygulamanız güncel: v{self.APP_VERSION}", is_error=False)
-
-            if hasattr(self.page, "run_task"):
-                self.page.run_task(_handle_result)
-            else:
-                _handle_result()
+            except Exception as e:
+                print(f"Güncelleme penceresi açılırken hata: {e}")
+                if manual:
+                    self._show_toast("Güncelleme denetimi sırasında hata oluştu.", is_error=True)
 
         threading.Thread(target=_do_check, daemon=True).start()
 
@@ -1469,6 +1520,7 @@ def run_flet_app(page: ft.Page):
     if hasattr(page, "services") and app.file_picker not in page.services:
         page.services.append(app.file_picker)
     page.add(app.build_layout())
+    app.play_entrance_animation()
     app.start_background_update_check()
 
     # Açılış fade-in animasyonu (60 FPS pürüzsüz geçiş)

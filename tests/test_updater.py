@@ -176,6 +176,79 @@ class TestAutoUpdater(unittest.TestCase):
         )
         self.assertFalse(bool(emoji_pattern.search(content)), "src/updater.py icinde emoji bulunmamalidir!")
 
+    def test_09_ui_updater_thread_safe_without_run_task_coroutine_error(self):
+        """Flet sayfasında run_task coroutine zorunluluğunda TypeError vermemelidir."""
+        from src.ui.app import FletSpeechToTextApp
+        from src.updater import UpdateInfo
+        import threading
+        import time
+
+        mock_page = MagicMock()
+        def mock_run_task(handler, *args, **kwargs):
+            import inspect
+            if not inspect.iscoroutinefunction(handler):
+                raise TypeError("handler must be a coroutine function")
+
+        mock_page.run_task = mock_run_task
+        mock_page.overlay = []
+
+        app = FletSpeechToTextApp(mock_page)
+
+        fake_info = UpdateInfo(
+            version="1.2.0",
+            tag_name="v1.2.0",
+            release_name="v1.2.0",
+            release_notes="Notes",
+            published_at="2026-10-17T00:00:00Z",
+            is_update_available=True,
+            download_url="https://example.com/app.exe",
+            asset_name="SpeechToText.exe",
+            asset_size=1000,
+            has_exe_asset=True,
+        )
+
+        with patch.object(app.updater, "check_for_updates", return_value=fake_info):
+            # check_updates_dialog çağrıldığında TypeError fırlatılmamalıdır
+            try:
+                app.check_updates_dialog(manual=True)
+                time.sleep(0.3)
+            except TypeError as te:
+                self.fail(f"check_updates_dialog TypeError firlatti: {te}")
+
+    def test_10_ui_startup_check_shows_modal_when_update_available(self):
+        """Uygulama açılışında yeni sürüm varsa doğrudan güncelleme kutusunu açmalıdır."""
+        from src.ui.app import FletSpeechToTextApp
+        from src.updater import UpdateInfo
+        import time
+
+        mock_page = MagicMock()
+        mock_page.overlay = []
+
+        app = FletSpeechToTextApp(mock_page)
+
+        fake_info = UpdateInfo(
+            version="2.0.0",
+            tag_name="v2.0.0",
+            release_name="v2.0.0",
+            release_notes="Major update",
+            published_at="2026-10-17T00:00:00Z",
+            is_update_available=True,
+            download_url="https://example.com/app.exe",
+            asset_name="SpeechToText.exe",
+            asset_size=2000,
+            has_exe_asset=True,
+        )
+
+        modal_shown = []
+        app._show_update_modal = lambda info: modal_shown.append(info)
+
+        with patch.object(app.updater, "check_for_updates", return_value=fake_info):
+            app.start_background_update_check()
+            time.sleep(0.3)
+
+        self.assertEqual(len(modal_shown), 1)
+        self.assertEqual(modal_shown[0].version, "2.0.0")
+
 
 if __name__ == "__main__":
     unittest.main()
