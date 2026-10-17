@@ -121,5 +121,119 @@ class TestEnhancedUpdater(unittest.TestCase):
         self.assertIn("100", last_update[1])
 
 
+    def test_update_modal_uses_markdown_and_renders_full_notes(self):
+        """Update modal must render full release notes using ft.Markdown instead of truncated ft.Text."""
+        from src.ui.app import SpeechToTextApp
+
+        app = SpeechToTextApp(self.mock_page)
+        long_notes = "## Header 1\n\n" + "- Feature item\n" * 50
+        test_info = UpdateInfo(
+            version="1.0.6",
+            tag_name="v1.0.6",
+            release_name="v1.0.6 Release",
+            release_notes=long_notes,
+            published_at="2026-10-17",
+            is_update_available=True,
+            status=CheckStatus.UPDATE_AVAILABLE,
+            download_url="https://example.com/SpeechToText.exe",
+            asset_size=50000000,
+            has_exe_asset=True,
+        )
+
+        app._show_update_modal(test_info)
+
+        # Dialog should have been passed to page.open or page.overlay
+        opened_dialog = None
+        if self.mock_page.open.called:
+            opened_dialog = self.mock_page.open.call_args[0][0]
+        elif self.mock_page.overlay:
+            opened_dialog = self.mock_page.overlay[-1]
+
+        self.assertIsNotNone(opened_dialog)
+        # Search for ft.Markdown control inside dialog content
+        def find_markdown(control):
+            if isinstance(control, ft.Markdown):
+                return control
+            if hasattr(control, "controls") and control.controls:
+                for c in control.controls:
+                    found = find_markdown(c)
+                    if found:
+                        return found
+            if hasattr(control, "content") and control.content:
+                return find_markdown(control.content)
+            return None
+
+        md_control = find_markdown(opened_dialog.content)
+        self.assertIsNotNone(md_control, "Modal must use ft.Markdown to render release notes")
+        self.assertEqual(md_control.value, long_notes.strip())
+
+    def test_update_modal_button_toggles_during_download(self):
+        """When downloading starts, 'Şimdi Güncelle' must be hidden and 'İptal Et' shown."""
+        import threading
+        from src.ui.app import SpeechToTextApp
+
+        app = SpeechToTextApp(self.mock_page)
+        test_info = UpdateInfo(
+            version="1.0.6",
+            tag_name="v1.0.6",
+            release_name="v1.0.6 Release",
+            release_notes="Notes",
+            published_at="2026-10-17",
+            is_update_available=True,
+            status=CheckStatus.UPDATE_AVAILABLE,
+            download_url="https://example.com/SpeechToText.exe",
+            asset_size=50000000,
+            has_exe_asset=True,
+        )
+
+        app._show_update_modal(test_info)
+        opened_dialog = self.mock_page.open.call_args[0][0] if self.mock_page.open.called else self.mock_page.overlay[-1]
+
+        actions = opened_dialog.actions
+        # Actions: [btn_github, btn_cancel_download, btn_update, btn_later]
+        btn_github = actions[0]
+        btn_cancel = actions[1]
+        btn_update = actions[2]
+        btn_later = actions[3]
+
+        # Initial state before download
+        self.assertTrue(btn_update.visible)
+        self.assertFalse(btn_cancel.visible)
+        self.assertFalse(btn_later.disabled)
+
+        # Trigger download with a blocking event to inspect in-progress state
+        download_started = threading.Event()
+        continue_download = threading.Event()
+
+        def mock_download(*args, **kwargs):
+            download_started.set()
+            continue_download.wait(timeout=2)
+            return True
+
+        with patch.object(app.updater, "download_asset", side_effect=mock_download):
+            btn_update.on_click(None)
+            download_started.wait(timeout=2)
+            # While downloading: btn_update MUST be hidden, btn_cancel MUST be visible, btn_later disabled
+            self.assertFalse(btn_update.visible)
+            self.assertTrue(btn_cancel.visible)
+            self.assertTrue(btn_later.disabled)
+
+            # Let download complete
+            continue_download.set()
+
+    def test_apply_update_calls_os_exit_when_successful(self):
+        """apply_update must call os._exit(0) to prevent process hanging or deadlock."""
+        from pathlib import Path
+        from src.updater import AutoUpdater
+
+        updater = AutoUpdater(current_version="1.0.0")
+        with patch("src.updater.WindowsSelfUpdater.execute_in_place_update", return_value=True), \
+             patch("sys.frozen", True, create=True), \
+             patch("os._exit") as mock_exit, \
+             patch.object(Path, "is_file", return_value=True):
+            updater.apply_update(Path("dummy.exe"))
+            mock_exit.assert_called_once_with(0)
+
+
 if __name__ == "__main__":
     unittest.main()
