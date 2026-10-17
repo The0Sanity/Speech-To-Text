@@ -85,7 +85,9 @@ Speech-To-Text/
 ├── settings.json            # Kullanıcı tercihleri ve yapılandırma
 ├── requirements.txt         # Bağımlılık listesi (Flet, Faster-Whisper vb.)
 ├── run.bat                  # Tek tıkla otomatik bağımlılık kontrolü ve başlatma betiği
-├── PRODUCT.md               # Ürün ve tasarım manifestosu
+├── docs/                    # Proje belgeleri ve mimari planları
+│   ├── PRODUCT.md           # Ürün ve tasarım manifestosu
+│   └── turkish_stt_diarization_plan.md # Mimari planlama dokümanı
 ├── src/
 │   ├── aligner.py           # Metin-konuşmacı hizalama, istatistik ve arama motoru
 │   ├── audio_enhancer.py    # Gürültü filtresi, 80Hz yüksek geçiren filtre ve normalizasyon
@@ -105,7 +107,7 @@ Speech-To-Text/
 │       ├── app.py           # CustomTkinter masaüstü arayüzü
 │       ├── components.py    # Kartlar, stepper, metrikler, ses oynatıcı
 │       └── style.py         # Tema tokenleri ve palet
-└── tests/                   # Kapsamlı birim ve entegrasyon testleri (52 test)
+└── tests/                   # Kapsamlı birim ve entegrasyon testleri
 ```
 
 ---

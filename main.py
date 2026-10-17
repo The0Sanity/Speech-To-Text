@@ -33,13 +33,34 @@ if sys.platform == "win32":
 def main():
     """Uygulama giriş noktası."""
     try:
+        if "--check" in sys.argv or "--dry-run" in sys.argv:
+            import src.aligner
+            import src.audio_enhancer
+            import src.audio_processor
+            import src.config
+            import src.diarizer
+            import src.exporter
+            import src.text_postprocessor
+            import src.transcriber
+            import src.youtube_downloader
+            import flet as ft
+            from src.ui_flet.app import FletSpeechToTextApp
+            app = FletSpeechToTextApp()
+            print("DOĞRULAMA BAŞARILI: Tüm modüller ve Flet UI başarıyla yüklendi.")
+            return
+
         if "--gui=tk" in sys.argv or "--legacy" in sys.argv:
             from src.ui.app import run_gui
             run_gui()
         else:
             import flet as ft
             from src.ui_flet.app import run_flet_app
-            ft.app(target=run_flet_app)
+            if hasattr(ft, "run"):
+                ft.run(run_flet_app)
+            elif hasattr(ft, "app"):
+                ft.app(target=run_flet_app)
+            else:
+                raise RuntimeError("Uyumlu bir Flet çalıştırma metodu (run / app) bulunamadı.")
     except Exception as e:
         import traceback
         traceback.print_exc()

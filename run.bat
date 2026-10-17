@@ -58,7 +58,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 :RUN_APP
 echo SesMetin Pro baslatiliyor...
-%PY% main.py
+%PY% main.py %*
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
