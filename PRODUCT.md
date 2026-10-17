@@ -29,7 +29,8 @@ Desktop application on Windows (CustomTkinter) used for processing local media f
 - Audio pre-filtering: 80Hz high-pass filter, noise gate, peak normalization.
 - Text post-processing: Turkish punctuation, character normalization, hallucination filtering.
 - Multi-format exports: TXT, SRT, VTT, JSON, CSV, Markdown.
-- Design constraint: Strictly minimalist UI, zero emojis, high signal-to-noise ratio, clean typography, and low cognitive load.
+- Design constraint: Windows 11 Fluent Design (Mica-inspired elevated surfaces, subtle 1px borders, native Segoe UI Variable typography, Per-Monitor v2 DPI scaling), strictly zero emojis, balanced 4-column metric ribbon, unified neutral command bar exports.
+- Architecture: Python + CTranslate2 (C++ CPU INT8 engine). Retains mature Pyannote diarization, Turkish NLP normalization, and zero-friction execution while delivering native desktop visual fidelity.
 
 ## Product Principles
 

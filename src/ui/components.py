@@ -1,17 +1,17 @@
-"""Minimalist CustomTkinter bileşenleri, kartlar, istatistik göstergeleri ve pencereler."""
+"""Windows 11 Fluent Design masaüstü bileşenleri, kartlar, istatistik göstergeleri ve pencereler."""
 
 import os
 import tkinter as tk
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import customtkinter as ctk
 
-from src.ui.style import get_speaker_color, get_theme_palette
+from src.ui.style import FONT_FAMILY, FONT_FALLBACK, get_speaker_color, get_theme_palette
 
 
 class ModernCard(ctk.CTkFrame):
-    """Zarif kenarlıklı ve sade görünümlü minimalist kart çerçevesi."""
+    """Windows 11 Fluent yükseltilmiş yüzey kartı."""
 
-    def __init__(self, master, border_color="#232e40", fg_color="#131a26", corner_radius=8, **kwargs):
+    def __init__(self, master, border_color="#383838", fg_color="#2b2b2b", corner_radius=8, **kwargs):
         super().__init__(
             master,
             corner_radius=corner_radius,
@@ -23,27 +23,27 @@ class ModernCard(ctk.CTkFrame):
 
 
 class MetricBadge(ctk.CTkFrame):
-    """Sade metrik göstergesi (Başlık ve Değer)."""
+    """Windows 11 Fluent metrik göstergesi (Başlık ve Değer)."""
 
     def __init__(self, master, title: str, value: str, **kwargs):
         super().__init__(
             master,
-            fg_color="#0e141f",
+            fg_color="#262626",
             corner_radius=6,
             border_width=1,
-            border_color="#1f2937",
+            border_color="#383838",
             **kwargs,
         )
         self.pack_propagate(False)
 
         inner = ctk.CTkFrame(self, fg_color="transparent")
-        inner.pack(fill="both", expand=True, padx=8, pady=4)
+        inner.pack(fill="both", expand=True, padx=10, pady=5)
 
         self.lbl_title = ctk.CTkLabel(
             inner,
             text=title.upper(),
-            font=ctk.CTkFont(size=9, weight="bold"),
-            text_color="#94a3b8",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=9, weight="bold"),
+            text_color="#9e9e9e",
             anchor="w",
         )
         self.lbl_title.pack(fill="x")
@@ -51,8 +51,8 @@ class MetricBadge(ctk.CTkFrame):
         self.lbl_val = ctk.CTkLabel(
             inner,
             text=value,
-            font=ctk.CTkFont(size=13, weight="bold"),
-            text_color="#f8fafc",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
+            text_color="#ffffff",
             anchor="w",
         )
         self.lbl_val.pack(fill="x", pady=(2, 0))
@@ -63,39 +63,40 @@ class MetricBadge(ctk.CTkFrame):
 
 
 class ProcessStepper(ctk.CTkFrame):
-    """Çok adımlı ilerleme durumunu gösteren sade gösterge çubuğu."""
+    """Çok adımlı boru hattı ilerleme durumunu gösteren Windows 11 gösterge çubuğu."""
 
     STEPS = [
-        "1. Medya",
-        "2. İyileştirme",
-        "3. Whisper",
-        "4. Konuşmacı",
-        "5. Hizalama",
+        ("media", "1. Medya"),
+        ("enhance", "2. Filtre"),
+        ("whisper", "3. Whisper"),
+        ("diarize", "4. Konuşmacı"),
+        ("align", "5. Hizalama"),
     ]
 
     def __init__(self, master, **kwargs):
-        super().__init__(master, fg_color="#0e141f", corner_radius=8, border_width=1, border_color="#243042", **kwargs)
+        super().__init__(master, fg_color="#242424", corner_radius=6, border_width=1, border_color="#383838", **kwargs)
         self.step_labels: List[ctk.CTkLabel] = []
         self._build_steps()
 
     def _build_steps(self):
         container = ctk.CTkFrame(self, fg_color="transparent")
-        container.pack(fill="x", padx=8, pady=6)
+        container.pack(fill="x", padx=6, pady=5)
 
-        for title in self.STEPS:
+        for step_item in self.STEPS:
+            title = step_item[1] if isinstance(step_item, (tuple, list)) else step_item
             step_box = ctk.CTkFrame(container, fg_color="transparent")
-            step_box.pack(side="left", expand=True, fill="x")
+            step_box.pack(side="left", expand=True, fill="x", padx=2)
 
             lbl_badge = ctk.CTkLabel(
                 step_box,
                 text=f" {title} ",
-                font=ctk.CTkFont(size=10, weight="bold"),
-                text_color="#64748b",
-                fg_color="#182232",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+                text_color="#888888",
+                fg_color="#2d2d2d",
                 corner_radius=4,
                 height=22,
             )
-            lbl_badge.pack()
+            lbl_badge.pack(fill="x")
 
             self.step_labels.append(lbl_badge)
 
@@ -103,51 +104,51 @@ class ProcessStepper(ctk.CTkFrame):
         """Aktif adımı görsel olarak öne çıkarır (0-indexed)."""
         for idx, badge in enumerate(self.step_labels):
             if idx < step_index:
-                # Tamamlanan adım (Sakin Yeşil)
+                # Tamamlanan adım (Sakin Fluent vurgu)
                 badge.configure(
-                    fg_color="#064e3b",
-                    text_color="#34d399",
+                    fg_color="#1a365d",
+                    text_color="#60cdff",
                 )
             elif idx == step_index:
-                # Aktif adım (Vurgulu Mavi)
+                # Aktif adım (Windows 11 Birincil Vurgu)
                 badge.configure(
-                    fg_color="#1e3a8a",
+                    fg_color="#1a365d",
                     text_color="#60a5fa",
                 )
             else:
-                # Bekleyen adım (Sade Gri)
+                # Bekleyen adım (Sade Nötr)
                 badge.configure(
-                    fg_color="#182232",
-                    text_color="#64748b",
+                    fg_color="#2d2d2d",
+                    text_color="#888888",
                 )
 
     def reset(self):
         """Tüm adımları başlangıç durumuna sıfırlar."""
         for badge in self.step_labels:
-            badge.configure(fg_color="#182232", text_color="#64748b")
+            badge.configure(fg_color="#2d2d2d", text_color="#888888")
 
 
 class AudioPlayerBar(ctk.CTkFrame):
     """Yerel ses önizlemesi için sade oynat/durdur çubuğu."""
 
     def __init__(self, master, **kwargs):
-        super().__init__(master, fg_color="#0f141d", corner_radius=6, border_width=1, border_color="#222c3d", **kwargs)
+        super().__init__(master, fg_color="#242424", corner_radius=6, border_width=1, border_color="#383838", **kwargs)
         self.audio_path: Optional[str] = None
         self.is_playing = False
         self._build_ui()
 
     def _build_ui(self):
         bar = ctk.CTkFrame(self, fg_color="transparent")
-        bar.pack(fill="x", padx=8, pady=6)
+        bar.pack(fill="x", padx=8, pady=5)
 
         self.btn_play = ctk.CTkButton(
             bar,
             text="Önizle",
-            width=70,
-            height=28,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#1e293b",
-            hover_color="#334155",
+            width=65,
+            height=26,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            fg_color="#333333",
+            hover_color="#404040",
             command=self.toggle_playback,
         )
         self.btn_play.pack(side="left")
@@ -155,10 +156,10 @@ class AudioPlayerBar(ctk.CTkFrame):
         self.lbl_audio_status = ctk.CTkLabel(
             bar,
             text="Ses hazır değil",
-            font=ctk.CTkFont(size=11),
-            text_color="#64748b",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text_color="#888888",
         )
-        self.lbl_audio_status.pack(side="left", padx=10)
+        self.lbl_audio_status.pack(side="left", padx=8)
 
     def set_audio_source(self, wav_path: Optional[str], duration_str: str = ""):
         """Oynatılacak ses kaynağını belirler."""
@@ -166,11 +167,11 @@ class AudioPlayerBar(ctk.CTkFrame):
         if wav_path and os.path.exists(wav_path):
             self.lbl_audio_status.configure(
                 text=f"Ses hazır ({duration_str})" if duration_str else "Ses hazır",
-                text_color="#38bdf8",
+                text_color="#60cdff",
             )
             self.btn_play.configure(state="normal")
         else:
-            self.lbl_audio_status.configure(text="Ses hazır değil", text_color="#64748b")
+            self.lbl_audio_status.configure(text="Ses hazır değil", text_color="#888888")
             self.btn_play.configure(state="disabled")
 
     def toggle_playback(self):
@@ -189,10 +190,10 @@ class AudioPlayerBar(ctk.CTkFrame):
             import winsound
             winsound.PlaySound(self.audio_path, winsound.SND_FILENAME | winsound.SND_ASYNC)
             self.is_playing = True
-            self.btn_play.configure(text="Durdur", fg_color="#ef4444", hover_color="#dc2626")
-            self.lbl_audio_status.configure(text="Çalınıyor...", text_color="#34d399")
+            self.btn_play.configure(text="Durdur", fg_color="#e11d48", hover_color="#be123c")
+            self.lbl_audio_status.configure(text="Çalınıyor...", text_color="#60cdff")
         except Exception as e:
-            self.lbl_audio_status.configure(text=f"Hata: {e}", text_color="#ef4444")
+            self.lbl_audio_status.configure(text=f"Hata: {e}", text_color="#e11d48")
 
     def stop_playback(self):
         """Oynatmayı durdurur."""
@@ -202,25 +203,26 @@ class AudioPlayerBar(ctk.CTkFrame):
         except Exception:
             pass
         self.is_playing = False
-        self.btn_play.configure(text="Önizle", fg_color="#1e293b", hover_color="#334155")
-        self.lbl_audio_status.configure(text="Duraklatıldı", text_color="#38bdf8")
+        self.btn_play.configure(text="Önizle", fg_color="#333333", hover_color="#404040")
+        self.lbl_audio_status.configure(text="Duraklatıldı", text_color="#60cdff")
 
 
 class ToastNotification:
-    """Arayüzde sade bildirim mesajı gösteren metin kutusu."""
+    """Arayüzde Windows 11 Fluent tarzı bildirim mesajı gösteren metin kutusu."""
 
     @staticmethod
-    def show(parent, message: str, color: str = "#10b981", duration_ms: int = 2200):
+    def show(parent, message: str, color: str = "#0078d4", duration_ms: int = 2200):
         toast = ctk.CTkFrame(
             parent,
-            fg_color=color,
+            fg_color="#2b2b2b",
             corner_radius=6,
-            border_width=0,
+            border_width=1,
+            border_color="#484848",
         )
         lbl = ctk.CTkLabel(
             toast,
             text=f"  {message}  ",
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             text_color="#ffffff",
             height=28,
         )
@@ -251,21 +253,21 @@ class RenameSpeakerDialog(ctk.CTkToplevel):
         self.on_save = on_save
 
         self.title("Konuşmacıyı Yeniden Adlandır")
-        self.geometry("380x220")
+        self.geometry("380x210")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
 
         self.update_idletasks()
         x = parent.winfo_x() + (parent.winfo_width() // 2) - 190
-        y = parent.winfo_y() + (parent.winfo_height() // 2) - 110
+        y = parent.winfo_y() + (parent.winfo_height() // 2) - 105
         self.geometry(f"+{max(0, x)}+{max(0, y)}")
 
         self._build_ui()
 
     def _build_ui(self):
         container = ctk.CTkFrame(self, fg_color="transparent")
-        container.pack(fill="both", expand=True, padx=20, pady=18)
+        container.pack(fill="both", expand=True, padx=20, pady=16)
 
         bg_col, fg_col = get_speaker_color(self.current_name)
         header_row = ctk.CTkFrame(container, fg_color="transparent")
@@ -274,7 +276,7 @@ class RenameSpeakerDialog(ctk.CTkToplevel):
         badge = ctk.CTkLabel(
             header_row,
             text=f" {self.current_name} ",
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             fg_color=bg_col,
             text_color=fg_col,
             corner_radius=4,
@@ -284,15 +286,15 @@ class RenameSpeakerDialog(ctk.CTkToplevel):
         title = ctk.CTkLabel(
             header_row,
             text="Etiketini Değiştir",
-            font=ctk.CTkFont(size=14, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=14, weight="bold"),
         )
         title.pack(side="left")
 
         desc = ctk.CTkLabel(
             container,
             text="Bu değişiklik tüm ilgili konuşma segmentlerine anında uygulanacaktır:",
-            font=ctk.CTkFont(size=11),
-            text_color="#94a3b8",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text_color="#a6a6a6",
             wraplength=340,
             justify="left",
         )
@@ -301,11 +303,11 @@ class RenameSpeakerDialog(ctk.CTkToplevel):
         self.entry = ctk.CTkEntry(
             container,
             placeholder_text="Örn: Ahmet Yılmaz, Konuşmacı A...",
-            height=34,
-            font=ctk.CTkFont(size=12),
+            height=32,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
         )
         self.entry.insert(0, self.current_name)
-        self.entry.pack(fill="x", pady=(0, 18))
+        self.entry.pack(fill="x", pady=(0, 16))
         self.entry.focus_set()
         self.entry.bind("<Return>", lambda e: self._confirm())
 
@@ -315,8 +317,8 @@ class RenameSpeakerDialog(ctk.CTkToplevel):
         cancel_btn = ctk.CTkButton(
             btn_box,
             text="İptal",
-            fg_color="#334155",
-            hover_color="#475569",
+            fg_color="#333333",
+            hover_color="#404040",
             width=80,
             height=30,
             command=self.destroy,
@@ -326,8 +328,8 @@ class RenameSpeakerDialog(ctk.CTkToplevel):
         save_btn = ctk.CTkButton(
             btn_box,
             text="Güncelle",
-            fg_color="#2563eb",
-            hover_color="#1d4ed8",
+            fg_color="#0078d4",
+            hover_color="#1084d9",
             width=90,
             height=30,
             command=self._confirm,
@@ -342,7 +344,7 @@ class RenameSpeakerDialog(ctk.CTkToplevel):
 
 
 class SpeakerManagerModal(ctk.CTkToplevel):
-    """Transkriptteki tüm konuşmacıların özetini ve yönetimini sağlayan pencere."""
+    """Transkriptteki tüm konuşmacıların özetini ve yönetimini sağlayan Windows 11 Fluent penceresi."""
 
     def __init__(
         self,
@@ -374,15 +376,15 @@ class SpeakerManagerModal(ctk.CTkToplevel):
         header = ctk.CTkLabel(
             container,
             text="Tespit Edilen Konuşmacılar",
-            font=ctk.CTkFont(size=15, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
         )
         header.pack(anchor="w", pady=(0, 4))
 
         desc = ctk.CTkLabel(
             container,
             text="Konuşmacı isimlerini aşağıdan güncelleyebilirsiniz:",
-            font=ctk.CTkFont(size=11),
-            text_color="#94a3b8",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text_color="#a6a6a6",
         )
         desc.pack(anchor="w", pady=(0, 12))
 
@@ -391,18 +393,18 @@ class SpeakerManagerModal(ctk.CTkToplevel):
         spk_times = stats.get("speaker_speaking_times", {})
         spk_turns = stats.get("speaker_turn_counts", {})
 
-        scroll = ctk.CTkScrollableFrame(container, fg_color="#111622", height=220, corner_radius=6)
+        scroll = ctk.CTkScrollableFrame(container, fg_color="#202020", height=220, corner_radius=6)
         scroll.pack(fill="both", expand=True, pady=(0, 14))
 
         for spk, total_sec in spk_times.items():
-            row = ctk.CTkFrame(scroll, fg_color="#182030", corner_radius=6)
+            row = ctk.CTkFrame(scroll, fg_color="#2b2b2b", corner_radius=6, border_width=1, border_color="#383838")
             row.pack(fill="x", pady=3, padx=3)
 
             bg_col, fg_col = get_speaker_color(spk)
             badge = ctk.CTkLabel(
                 row,
                 text=f" {spk} ",
-                font=ctk.CTkFont(size=11, weight="bold"),
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
                 fg_color=bg_col,
                 text_color=fg_col,
                 corner_radius=4,
@@ -417,8 +419,8 @@ class SpeakerManagerModal(ctk.CTkToplevel):
             info_lbl = ctk.CTkLabel(
                 row,
                 text=f"Süre: {time_str} ({turn_cnt} segment)",
-                font=ctk.CTkFont(size=11),
-                text_color="#cbd5e1",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+                text_color="#ffffff",
             )
             info_lbl.pack(side="left", padx=8)
 
@@ -433,9 +435,9 @@ class SpeakerManagerModal(ctk.CTkToplevel):
                 text="Düzenle",
                 width=65,
                 height=26,
-                font=ctk.CTkFont(size=11),
-                fg_color="#2563eb",
-                hover_color="#1d4ed8",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+                fg_color="#0078d4",
+                hover_color="#1084d9",
                 command=make_handler(spk),
             )
             btn_edit.pack(side="right", padx=8)
@@ -444,8 +446,8 @@ class SpeakerManagerModal(ctk.CTkToplevel):
             container,
             text="Kapat",
             height=32,
-            fg_color="#334155",
-            hover_color="#475569",
+            fg_color="#333333",
+            hover_color="#404040",
             command=self.destroy,
         )
         btn_close.pack(fill="x")

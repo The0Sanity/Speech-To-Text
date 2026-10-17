@@ -18,6 +18,18 @@ if ffmpeg_exe:
     if ffmpeg_dir not in os.environ.get("PATH", ""):
         os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
 
+# Windows Yüksek DPI (High-DPI) ölçekleme desteğini etkinleştir
+if sys.platform == "win32":
+    try:
+        import ctypes
+        # Windows 8.1+ ve Windows 10/11 için Per-Monitor DPI Awareness v2
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    except Exception:
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
+
 from src.ui.app import run_gui
 
 

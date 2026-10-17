@@ -52,7 +52,7 @@ from src.ui.components import (
     SpeakerManagerModal,
     ToastNotification,
 )
-from src.ui.style import get_speaker_color, get_theme_palette
+from src.ui.style import FONT_FAMILY, get_speaker_color, get_theme_palette
 from src.youtube_downloader import (
     clean_error_message,
     download_youtube_audio,
@@ -119,9 +119,9 @@ class SpeechToTextApp(ctk.CTk):
         self.body_container = ctk.CTkFrame(self.main_container, fg_color="transparent")
         self.body_container.pack(fill="both", expand=True, padx=16, pady=(0, 14))
 
-        # Sol Panel (Giriş ve Yapılandırma, 400px)
-        self.left_panel = ctk.CTkFrame(self.body_container, width=400, fg_color="transparent")
-        self.left_panel.pack(side="left", fill="y", padx=(0, 14))
+        # Sol Panel (Giriş ve Yapılandırma, 360px)
+        self.left_panel = ctk.CTkFrame(self.body_container, width=360, fg_color="transparent")
+        self.left_panel.pack(side="left", fill="y", padx=(0, 12))
         self.left_panel.pack_propagate(False)
 
         self._build_media_input_card(self.left_panel, palette)
@@ -138,7 +138,7 @@ class SpeechToTextApp(ctk.CTk):
     def _build_header(self, parent, palette: Dict[str, str]):
         header = ctk.CTkFrame(
             parent,
-            height=62,
+            height=58,
             fg_color=palette["bg_card"],
             corner_radius=0,
             border_width=1,
@@ -148,7 +148,7 @@ class SpeechToTextApp(ctk.CTk):
 
         # Sol Logo & Başlık
         brand_frame = ctk.CTkFrame(header, fg_color="transparent")
-        brand_frame.pack(side="left", padx=18, pady=10)
+        brand_frame.pack(side="left", padx=16, pady=8)
 
         title_row = ctk.CTkFrame(brand_frame, fg_color="transparent")
         title_row.pack(anchor="w")
@@ -156,7 +156,7 @@ class SpeechToTextApp(ctk.CTk):
         lbl_logo = ctk.CTkLabel(
             title_row,
             text="SesMetin Pro",
-            font=ctk.CTkFont(size=18, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=16, weight="bold"),
             text_color=palette["text_main"],
         )
         lbl_logo.pack(side="left")
@@ -164,59 +164,65 @@ class SpeechToTextApp(ctk.CTk):
         version_pill = ctk.CTkLabel(
             title_row,
             text=f" v{self.APP_VERSION} ",
-            font=ctk.CTkFont(size=10, weight="bold"),
-            fg_color=palette["accent_primary"],
-            text_color="#ffffff",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            fg_color=palette["bg_card_secondary"],
+            text_color=palette["text_muted"],
             corner_radius=4,
-            height=18,
+            height=20,
         )
         version_pill.pack(side="left", padx=(8, 0))
 
         lbl_sub = ctk.CTkLabel(
             brand_frame,
-            text="Turkce Transkripsiyon (Whisper) ve Konusmaci Ayrastirma (X1, X2...)",
-            font=ctk.CTkFont(size=11),
+            text="Türkçe Transkripsiyon (Whisper) ve Konuşmacı Ayrıştırma (X1, X2...)",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             text_color=palette["text_muted"],
         )
         lbl_sub.pack(anchor="w", pady=(1, 0))
 
-        # Sağ Eylem Butonları
+        # Sağ Eylem Butonları (Windows Fluent Nötr Komut Butonları)
         actions_frame = ctk.CTkFrame(header, fg_color="transparent")
-        actions_frame.pack(side="right", padx=18, pady=12)
+        actions_frame.pack(side="right", padx=16, pady=10)
 
-        theme_text = "Tema: Acik" if self.current_theme == "dark" else "Tema: Koyu"
+        theme_text = "Tema: Açık" if self.current_theme == "dark" else "Tema: Koyu"
         self.btn_theme = ctk.CTkButton(
             actions_frame,
             text=theme_text,
-            width=90,
-            height=30,
-            font=ctk.CTkFont(size=11),
-            fg_color=palette["bg_card_secondary"],
-            hover_color=palette["bg_card_hover"],
+            width=88,
+            height=28,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            fg_color=palette["btn_neutral"],
+            border_width=1,
+            border_color=palette["border_card"],
+            hover_color=palette["btn_neutral_hover"],
             command=self._toggle_theme,
         )
-        self.btn_theme.pack(side="right", padx=(8, 0))
+        self.btn_theme.pack(side="right", padx=(6, 0))
 
         btn_folder = ctk.CTkButton(
             actions_frame,
-            text="Cikti Klasoru",
-            width=95,
-            height=30,
-            font=ctk.CTkFont(size=11),
-            fg_color=palette["bg_card_secondary"],
-            hover_color=palette["bg_card_hover"],
+            text="Çıktı Klasörü",
+            width=92,
+            height=28,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            fg_color=palette["btn_neutral"],
+            border_width=1,
+            border_color=palette["border_card"],
+            hover_color=palette["btn_neutral_hover"],
             command=self._open_output_folder,
         )
-        btn_folder.pack(side="right", padx=(8, 0))
+        btn_folder.pack(side="right", padx=(6, 0))
 
         btn_settings = ctk.CTkButton(
             actions_frame,
             text="Ayarlar",
-            width=80,
-            height=30,
-            font=ctk.CTkFont(size=11),
-            fg_color=palette["bg_card_secondary"],
-            hover_color=palette["bg_card_hover"],
+            width=76,
+            height=28,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            fg_color=palette["btn_neutral"],
+            border_width=1,
+            border_color=palette["border_card"],
+            hover_color=palette["btn_neutral_hover"],
             command=self._open_advanced_settings,
         )
         btn_settings.pack(side="right")
@@ -344,27 +350,32 @@ class SpeechToTextApp(ctk.CTk):
 
         lbl_title = ctk.CTkLabel(
             header_row,
-            text="Model ve Ayrastirma Ayarlari",
-            font=ctk.CTkFont(size=13, weight="bold"),
+            text="Model ve Ayrıştırma Ayarları",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
             text_color=palette["text_main"],
         )
         lbl_title.pack(side="left")
 
         # Whisper Model Seçimi
-        lbl_model = ctk.CTkLabel(card, text="Whisper Modeli:", font=ctk.CTkFont(size=11), text_color=palette["text_muted"])
+        lbl_model = ctk.CTkLabel(
+            card,
+            text="Whisper Modeli:",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            text_color=palette["text_muted"],
+        )
         lbl_model.pack(anchor="w", padx=12, pady=(0, 2))
 
         self.cmb_model = ctk.CTkComboBox(
             card,
             values=[
                 "small (Dengeli)",
-                "medium (Yuksek Dogruluk)",
-                "large-v3-turbo (En Yuksek Kalite)",
-                "base (Hizli)",
-                "tiny (Ultra Hizli)",
+                "medium (Yüksek Doğruluk)",
+                "large-v3-turbo (En Yüksek Kalite)",
+                "base (Hızlı)",
+                "tiny (Ultra Hızlı)",
             ],
-            font=ctk.CTkFont(size=11),
-            height=30,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            height=28,
         )
         self.cmb_model.set("small (Dengeli)")
         self.cmb_model.pack(fill="x", padx=12, pady=(0, 6))
@@ -375,28 +386,38 @@ class SpeechToTextApp(ctk.CTk):
 
         col_lang = ctk.CTkFrame(row_opts, fg_color="transparent")
         col_lang.pack(side="left", fill="x", expand=True, padx=(0, 4))
-        lbl_lang = ctk.CTkLabel(col_lang, text="Dil:", font=ctk.CTkFont(size=10), text_color=palette["text_muted"])
+        lbl_lang = ctk.CTkLabel(
+            col_lang,
+            text="Dil:",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            text_color=palette["text_muted"],
+        )
         lbl_lang.pack(anchor="w", pady=(0, 1))
         self.cmb_lang = ctk.CTkComboBox(
             col_lang,
-            values=["Turkce (tr)", "Otomatik (auto)"],
-            font=ctk.CTkFont(size=11),
+            values=["Türkçe (tr)", "Otomatik (auto)"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
         )
-        self.cmb_lang.set("Turkce (tr)")
+        self.cmb_lang.set("Türkçe (tr)")
         self.cmb_lang.pack(fill="x")
 
         col_vad = ctk.CTkFrame(row_opts, fg_color="transparent")
         col_vad.pack(side="right", fill="x", expand=True, padx=(4, 0))
-        lbl_vad = ctk.CTkLabel(col_vad, text="Ses Tespiti (VAD):", font=ctk.CTkFont(size=10), text_color=palette["text_muted"])
+        lbl_vad = ctk.CTkLabel(
+            col_vad,
+            text="Ses Tespiti (VAD):",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            text_color=palette["text_muted"],
+        )
         lbl_vad.pack(anchor="w", pady=(0, 1))
         self.cmb_vad = ctk.CTkComboBox(
             col_vad,
-            values=["Yuksek (Hassas)", "Normal (Standart)"],
-            font=ctk.CTkFont(size=11),
+            values=["Yüksek (Hassas)", "Normal (Standart)"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
         )
-        self.cmb_vad.set("Yuksek (Hassas)")
+        self.cmb_vad.set("Yüksek (Hassas)")
         self.cmb_vad.pack(fill="x")
 
         # Konuşmacı Ayrıştırma
@@ -405,12 +426,17 @@ class SpeechToTextApp(ctk.CTk):
 
         col_count = ctk.CTkFrame(row_spk, fg_color="transparent")
         col_count.pack(side="left", fill="x", expand=True, padx=(0, 4))
-        lbl_spk_cnt = ctk.CTkLabel(col_count, text="Konusmaci Sayisi:", font=ctk.CTkFont(size=10), text_color=palette["text_muted"])
+        lbl_spk_cnt = ctk.CTkLabel(
+            col_count,
+            text="Konuşmacı Sayısı:",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            text_color=palette["text_muted"],
+        )
         lbl_spk_cnt.pack(anchor="w", pady=(0, 1))
         self.cmb_spk_count = ctk.CTkComboBox(
             col_count,
-            values=["Otomatik Tespit", "1 Konusmaci", "2 Konusmaci", "3 Konusmaci", "4 Konusmaci"],
-            font=ctk.CTkFont(size=11),
+            values=["Otomatik Tespit", "1 Konuşmacı", "2 Konuşmacı", "3 Konuşmacı", "4 Konuşmacı"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
         )
         self.cmb_spk_count.set("Otomatik Tespit")
@@ -418,12 +444,17 @@ class SpeechToTextApp(ctk.CTk):
 
         col_prefix = ctk.CTkFrame(row_spk, fg_color="transparent")
         col_prefix.pack(side="right", fill="x", expand=True, padx=(4, 0))
-        lbl_spk_pre = ctk.CTkLabel(col_prefix, text="Etiket Formati:", font=ctk.CTkFont(size=10), text_color=palette["text_muted"])
+        lbl_spk_pre = ctk.CTkLabel(
+            col_prefix,
+            text="Etiket Formatı:",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            text_color=palette["text_muted"],
+        )
         lbl_spk_pre.pack(anchor="w", pady=(0, 1))
         self.cmb_prefix = ctk.CTkComboBox(
             col_prefix,
-            values=["X (X1, X2...)", "Konusmaci (1, 2...)", "Kisi (1, 2...)"],
-            font=ctk.CTkFont(size=11),
+            values=["X (X1, X2...)", "Konuşmacı (1, 2...)", "Kişi (1, 2...)"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
         )
         self.cmb_prefix.set("X (X1, X2...)")
@@ -432,8 +463,8 @@ class SpeechToTextApp(ctk.CTk):
         # Ses Ön-İyileştirme
         self.chk_enhance = ctk.CTkCheckBox(
             card,
-            text="Ses On-Filtreleme (80Hz dip ses kesici ve seviye dengeleme)",
-            font=ctk.CTkFont(size=11),
+            text="Ses Ön-İyileştirme (80Hz gürültü kesici & dengeleme)",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             fg_color=palette["accent_primary"],
             hover_color=palette["accent_hover"],
         )
@@ -447,146 +478,198 @@ class SpeechToTextApp(ctk.CTk):
 
         # Çok Adımlı İlerleme Göstergesi (Sade Metin)
         self.stepper = ProcessStepper(card)
-        self.stepper.pack(fill="x", padx=12, pady=(10, 8))
+        self.stepper.pack(fill="x", padx=10, pady=(10, 8))
 
         # Başlat ve İptal Butonları
         btn_row = ctk.CTkFrame(card, fg_color="transparent")
-        btn_row.pack(fill="x", padx=12, pady=(0, 8))
+        btn_row.pack(fill="x", padx=10, pady=(0, 8))
 
         self.btn_start = ctk.CTkButton(
             btn_row,
-            text="Transkripsiyonu Baslat",
-            font=ctk.CTkFont(size=12, weight="bold"),
-            height=38,
-            fg_color=palette["success"],
-            hover_color=palette["success_hover"],
+            text="Transkripsiyonu Başlat",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            height=36,
+            fg_color=palette["accent_primary"],
+            hover_color=palette["accent_hover"],
             command=self._start_transcription_thread,
         )
         self.btn_start.pack(side="left", fill="x", expand=True)
 
         self.btn_cancel = ctk.CTkButton(
             btn_row,
-            text="Iptal",
-            font=ctk.CTkFont(size=11),
+            text="İptal",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             width=65,
-            height=38,
-            fg_color="#334155",
+            height=36,
+            fg_color=palette["btn_neutral"],
+            border_width=1,
+            border_color=palette["border_card"],
             hover_color=palette["danger"],
             command=self._request_cancel,
             state="disabled",
         )
         self.btn_cancel.pack(side="right", padx=(6, 0))
 
-        # İlerleme Çubuğu
-        self.progress_bar = ctk.CTkProgressBar(card, height=6, fg_color="#182232", progress_color=palette["accent_primary"])
+        # İlerleme Çubuğu (Windows Fluent İnce Çubuk)
+        self.progress_bar = ctk.CTkProgressBar(
+            card,
+            height=4,
+            fg_color=palette["input_bg"],
+            progress_color=palette["accent_primary"],
+        )
         self.progress_bar.set(0.0)
-        self.progress_bar.pack(fill="x", padx=12, pady=(0, 6))
+        self.progress_bar.pack(fill="x", padx=10, pady=(0, 6))
 
         self.lbl_status = ctk.CTkLabel(
             card,
-            text="Hazir. Medya dosyasi veya link secerek baslayin.",
-            font=ctk.CTkFont(size=10),
+            text="Hazır. Medya dosyası veya bağlantı seçerek başlayın.",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10),
             text_color=palette["text_muted"],
-            wraplength=360,
+            wraplength=340,
             justify="left",
         )
-        self.lbl_status.pack(anchor="w", padx=12, pady=(0, 12))
+        self.lbl_status.pack(anchor="w", padx=10, pady=(0, 10))
 
     # ------------------ Sağ Panel: Transkript, Düzenleyici & Çıktılar ------------------
     def _build_transcript_view(self, parent, palette: Dict[str, str]):
         card = ModernCard(parent, border_color=palette["border_card"], fg_color=palette["bg_card"])
         card.pack(fill="both", expand=True)
 
-        # 1. Metrik / İstatistik Şeridi
-        self.stats_ribbon = ctk.CTkFrame(card, fg_color="transparent", height=44)
-        self.stats_ribbon.pack(fill="x", padx=14, pady=(10, 8))
+        # 1. Metrik / İstatistik Şeridi (4 Eşit Sütunlu Grid - Boşluksuz ve Dengeli)
+        self.stats_ribbon = ctk.CTkFrame(card, fg_color="transparent")
+        self.stats_ribbon.pack(fill="x", padx=14, pady=(12, 8))
+        for col_idx in range(4):
+            self.stats_ribbon.grid_columnconfigure(col_idx, weight=1)
 
-        self.badge_duration = MetricBadge(self.stats_ribbon, title="Sure", value="00:00", width=95, height=44)
-        self.badge_duration.pack(side="left", padx=(0, 6))
+        self.badge_duration = MetricBadge(self.stats_ribbon, title="Süre", value="00:00", height=44)
+        self.badge_duration.grid(row=0, column=0, sticky="ew", padx=(0, 4))
 
-        self.badge_speakers = MetricBadge(self.stats_ribbon, title="Konusmaci", value="0 Kisi", width=105, height=44)
-        self.badge_speakers.pack(side="left", padx=(0, 6))
+        self.badge_speakers = MetricBadge(self.stats_ribbon, title="Konuşmacı", value="0 Kişi", height=44)
+        self.badge_speakers.grid(row=0, column=1, sticky="ew", padx=4)
 
-        self.badge_words = MetricBadge(self.stats_ribbon, title="Kelime", value="0 Kelime", width=105, height=44)
-        self.badge_words.pack(side="left", padx=(0, 6))
+        self.badge_words = MetricBadge(self.stats_ribbon, title="Kelime", value="0 Kelime", height=44)
+        self.badge_words.grid(row=0, column=2, sticky="ew", padx=4)
 
-        self.badge_wpm = MetricBadge(self.stats_ribbon, title="Hiz", value="0 WPM", width=85, height=44)
-        self.badge_wpm.pack(side="left")
+        self.badge_wpm = MetricBadge(self.stats_ribbon, title="Hız", value="0 WPM", height=44)
+        self.badge_wpm.grid(row=0, column=3, sticky="ew", padx=(4, 0))
 
-        # Sağ Yönetim Butonları
-        mgmt_box = ctk.CTkFrame(self.stats_ribbon, fg_color="transparent")
-        mgmt_box.pack(side="right")
+        # 2. Arama ve Komut Araç Çubuğu (Toolbar)
+        toolbar = ctk.CTkFrame(card, fg_color="transparent")
+        toolbar.pack(fill="x", padx=14, pady=(0, 8))
 
-        self.btn_spk_manager = ctk.CTkButton(
-            mgmt_box,
-            text="Konusmaci Yonetimi",
-            font=ctk.CTkFont(size=11),
-            height=30,
-            fg_color="#1e293b",
-            hover_color="#334155",
-            command=self._open_speaker_manager,
+        # Arama Alanı (Sol tarafta genişleyen kutu)
+        self.search_bar_frame = ctk.CTkFrame(
+            toolbar,
+            fg_color=palette["input_bg"],
+            border_width=1,
+            border_color=palette["input_border"],
+            corner_radius=6,
         )
-        self.btn_spk_manager.pack(side="right", padx=(6, 0))
-
-        self.btn_find_replace = ctk.CTkButton(
-            mgmt_box,
-            text="Bul ve Degistir",
-            font=ctk.CTkFont(size=11),
-            height=30,
-            fg_color="#1e293b",
-            hover_color="#334155",
-            command=self._toggle_find_replace,
-        )
-        self.btn_find_replace.pack(side="right")
-
-        # 2. Arama ve Bul-Değiştir Paneli
-        self.search_bar_frame = ctk.CTkFrame(card, fg_color=palette["input_bg"], corner_radius=6)
-        self.search_bar_frame.pack(fill="x", padx=14, pady=(0, 6))
+        self.search_bar_frame.pack(side="left", fill="x", expand=True)
 
         search_inner = ctk.CTkFrame(self.search_bar_frame, fg_color="transparent")
-        search_inner.pack(fill="x", padx=8, pady=6)
+        search_inner.pack(fill="x", padx=8, pady=4)
 
-        lbl_s_tag = ctk.CTkLabel(search_inner, text="Ara:", font=ctk.CTkFont(size=11, weight="bold"), text_color=palette["text_muted"])
+        lbl_s_tag = ctk.CTkLabel(
+            search_inner,
+            text="Ara:",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            text_color=palette["text_muted"],
+        )
         lbl_s_tag.pack(side="left", padx=(0, 6))
 
         self.search_entry = ctk.CTkEntry(
             search_inner,
-            placeholder_text="Transkriptte ara (metin, konusmaci veya zaman)...",
-            height=28,
-            font=ctk.CTkFont(size=11),
+            placeholder_text="Transkriptte ara (metin, konuşmacı veya zaman)...",
+            height=26,
+            border_width=0,
+            fg_color="transparent",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
         )
-        self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
         self.search_entry.bind("<KeyRelease>", lambda e: self._filter_transcript())
 
         self.lbl_search_count = ctk.CTkLabel(
             search_inner,
             text="",
-            font=ctk.CTkFont(size=11),
-            text_color="#38bdf8",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text_color=palette["accent_primary"],
         )
         self.lbl_search_count.pack(side="right", padx=(0, 4))
 
-        # Bul & Değiştir Paneli
-        self.find_replace_frame = ctk.CTkFrame(card, fg_color=palette["input_bg"], corner_radius=6)
+        # Sağ Taraftaki Araç Butonları
+        self.btn_find_replace = ctk.CTkButton(
+            toolbar,
+            text="Bul ve Değiştir",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            height=30,
+            width=100,
+            fg_color=palette["btn_neutral"],
+            border_width=1,
+            border_color=palette["border_card"],
+            hover_color=palette["btn_neutral_hover"],
+            command=self._toggle_find_replace,
+        )
+        self.btn_find_replace.pack(side="right", padx=(6, 0))
+
+        self.btn_spk_manager = ctk.CTkButton(
+            toolbar,
+            text="Konuşmacı Yönetimi",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            height=30,
+            width=125,
+            fg_color=palette["btn_neutral"],
+            border_width=1,
+            border_color=palette["border_card"],
+            hover_color=palette["btn_neutral_hover"],
+            command=self._open_speaker_manager,
+        )
+        self.btn_spk_manager.pack(side="right")
+
+        # Bul & Değiştir Genişleme Paneli
+        self.find_replace_frame = ctk.CTkFrame(
+            card,
+            fg_color=palette["input_bg"],
+            border_width=1,
+            border_color=palette["input_border"],
+            corner_radius=6,
+        )
 
         fr_inner = ctk.CTkFrame(self.find_replace_frame, fg_color="transparent")
         fr_inner.pack(fill="x", padx=8, pady=6)
 
-        lbl_fr = ctk.CTkLabel(fr_inner, text="Degistir:", font=ctk.CTkFont(size=11, weight="bold"))
+        lbl_fr = ctk.CTkLabel(
+            fr_inner,
+            text="Değiştir:",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            text_color=palette["text_muted"],
+        )
         lbl_fr.pack(side="left", padx=(0, 6))
 
-        self.entry_find = ctk.CTkEntry(fr_inner, placeholder_text="Aranan kelime...", width=130, height=26)
+        self.entry_find = ctk.CTkEntry(
+            fr_inner,
+            placeholder_text="Aranan kelime...",
+            width=140,
+            height=26,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+        )
         self.entry_find.pack(side="left", padx=(0, 6))
 
-        self.entry_replace = ctk.CTkEntry(fr_inner, placeholder_text="Yeni kelime...", width=130, height=26)
+        self.entry_replace = ctk.CTkEntry(
+            fr_inner,
+            placeholder_text="Yeni kelime...",
+            width=140,
+            height=26,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+        )
         self.entry_replace.pack(side="left", padx=(0, 8))
 
         btn_do_replace = ctk.CTkButton(
             fr_inner,
-            text="Tumunu Degistir",
-            width=100,
+            text="Tümünü Değiştir",
+            width=110,
             height=26,
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             fg_color=palette["accent_primary"],
             hover_color=palette["accent_hover"],
             command=self._execute_find_replace,
@@ -597,117 +680,103 @@ class SpeechToTextApp(ctk.CTk):
         self.transcript_scroll = ctk.CTkScrollableFrame(
             card,
             fg_color=palette["input_bg"],
-            corner_radius=8,
+            corner_radius=6,
             border_width=1,
             border_color=palette["border_card"],
         )
         self.transcript_scroll.pack(fill="both", expand=True, padx=14, pady=(0, 10))
 
         # Başlangıç Boş Durum
-        self.lbl_empty = ctk.CTkLabel(
-            self.transcript_scroll,
-            text="Transkript henuz olusturulmadi.\n\nSol panelden bir medya dosyasi veya YouTube baglantisi secerek\n'Transkripsiyonu Baslat' butonuna tiklayin.",
-            font=ctk.CTkFont(size=12),
-            text_color=palette["text_muted"],
-            justify="center",
-        )
-        self.lbl_empty.pack(expand=True, pady=120)
+        self._build_empty_state(palette)
 
-        # 4. Alt Dışa Aktarma ve Eylem Barı
+        # 4. Alt Dışa Aktarma ve Eylem Barı (Yeknesak Fluent Stili)
         export_bar = ctk.CTkFrame(card, fg_color="transparent")
         export_bar.pack(fill="x", padx=14, pady=(0, 12))
 
         self.lbl_total_turns = ctk.CTkLabel(
             export_bar,
             text="0 konuşma parçası",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             text_color=palette["text_muted"],
         )
         self.lbl_total_turns.pack(side="left")
 
-        btn_export_md = ctk.CTkButton(
-            export_bar,
-            text="MD",
-            height=30,
-            width=55,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#0369a1",
-            hover_color="#0284c7",
-            command=lambda: self._export_result("md"),
-        )
-        btn_export_md.pack(side="right", padx=(4, 0))
-
-        btn_export_vtt = ctk.CTkButton(
-            export_bar,
-            text="VTT",
-            height=30,
-            width=55,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#6366f1",
-            hover_color="#4f46e5",
-            command=lambda: self._export_result("vtt"),
-        )
-        btn_export_vtt.pack(side="right", padx=(4, 0))
-
-        btn_export_csv = ctk.CTkButton(
-            export_bar,
-            text="CSV",
-            height=30,
-            width=55,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#059669",
-            hover_color="#047857",
-            command=lambda: self._export_result("csv"),
-        )
-        btn_export_csv.pack(side="right", padx=(4, 0))
-
-        btn_export_json = ctk.CTkButton(
-            export_bar,
-            text="JSON",
-            height=30,
-            width=55,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#0f766e",
-            hover_color="#115e59",
-            command=lambda: self._export_result("json"),
-        )
-        btn_export_json.pack(side="right", padx=(4, 0))
-
-        btn_export_srt = ctk.CTkButton(
-            export_bar,
-            text="SRT",
-            height=30,
-            width=55,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#7c3aed",
-            hover_color="#6d28d9",
-            command=lambda: self._export_result("srt"),
-        )
-        btn_export_srt.pack(side="right", padx=(4, 0))
-
-        btn_export_txt = ctk.CTkButton(
-            export_bar,
-            text="TXT",
-            height=30,
-            width=55,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#2563eb",
-            hover_color="#1d4ed8",
-            command=lambda: self._export_result("txt"),
-        )
-        btn_export_txt.pack(side="right", padx=(4, 0))
+        # Format butonları (MD, VTT, CSV, JSON, SRT, TXT)
+        for fmt in ["md", "vtt", "csv", "json", "srt", "txt"]:
+            btn_exp = ctk.CTkButton(
+                export_bar,
+                text=fmt.upper(),
+                height=28,
+                width=52,
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+                fg_color=palette["btn_neutral"],
+                border_width=1,
+                border_color=palette["border_card"],
+                hover_color=palette["btn_neutral_hover"],
+                command=lambda f=fmt: self._export_result(f),
+            )
+            btn_exp.pack(side="right", padx=(4, 0))
 
         btn_copy = ctk.CTkButton(
             export_bar,
             text="Panoya Kopyala",
-            height=30,
-            width=110,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#334155",
-            hover_color="#475569",
+            height=28,
+            width=115,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            fg_color=palette["accent_primary"],
+            hover_color=palette["accent_hover"],
             command=self._copy_to_clipboard,
         )
-        btn_copy.pack(side="right")
+        btn_copy.pack(side="right", padx=(0, 4))
+
+    def _build_empty_state(self, palette: Dict[str, str]):
+        """Transkript listesi boşken gösterilen Fluent bilgilendirme paneli."""
+        for widget in self.transcript_scroll.winfo_children():
+            widget.destroy()
+
+        box = ctk.CTkFrame(
+            self.transcript_scroll,
+            fg_color=palette["bg_card"],
+            border_width=1,
+            border_color=palette["border_card"],
+            corner_radius=8,
+        )
+        box.pack(expand=True, padx=40, pady=70)
+
+        self.lbl_empty = ctk.CTkLabel(
+            box,
+            text="Transkript Henüz Oluşturulmadı",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
+            text_color=palette["text_main"],
+        )
+        self.lbl_empty.pack(padx=30, pady=(20, 6))
+
+        lbl_desc = ctk.CTkLabel(
+            box,
+            text="Sol panelden bir medya dosyası veya YouTube bağlantısı seçerek\n'Transkripsiyonu Başlat' butonuna tıklayınız.",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text_color=palette["text_muted"],
+            justify="center",
+        )
+        lbl_desc.pack(padx=30, pady=(0, 16))
+
+        info_box = ctk.CTkFrame(box, fg_color=palette["input_bg"], corner_radius=6)
+        info_box.pack(fill="x", padx=20, pady=(0, 18))
+
+        tips = [
+            "- 100% Yerel & Çevrimdışı: Ses verileriniz bilgisayarınızda güvenle işlenir.",
+            "- Otomatik Konuşmacı Ayrımı: Konuşmacılar 'X1', 'X2' olarak ayrıştırılır.",
+            "- Esnek Dışa Aktarım: TXT, SRT, VTT, JSON, CSV ve Markdown çıktıları.",
+        ]
+        for tip in tips:
+            lbl_tip = ctk.CTkLabel(
+                info_box,
+                text=tip,
+                font=ctk.CTkFont(family=FONT_FAMILY, size=10),
+                text_color=palette["text_muted"],
+                anchor="w",
+            )
+            lbl_tip.pack(fill="x", padx=12, pady=3)
 
     # ------------------ Dosya & YouTube Giriş Yönetimi ------------------
     def _pick_file(self):
@@ -985,18 +1054,14 @@ class SpeechToTextApp(ctk.CTk):
 
     # ------------------ Transkript Çizimi ------------------
     def _render_transcript(self, transcript_items: List[Dict[str, Any]]):
-        """Segment kartlarını minimalist olarak listeler."""
+        """Segment kartlarını Windows 11 Fluent tasarımına uygun olarak listeler."""
+        palette = get_theme_palette(self.current_theme)
+
         for widget in self.transcript_scroll.winfo_children():
             widget.destroy()
 
         if not transcript_items:
-            self.lbl_empty = ctk.CTkLabel(
-                self.transcript_scroll,
-                text="Transkript henuz olusturulmadi.",
-                font=ctk.CTkFont(size=12),
-                text_color="#64748b",
-            )
-            self.lbl_empty.pack(expand=True, pady=120)
+            self._build_empty_state(palette)
             self.lbl_total_turns.configure(text="0 konuşma parçası")
             self._update_metrics_ribbon([])
             return
@@ -1012,8 +1077,8 @@ class SpeechToTextApp(ctk.CTk):
 
             item_card = ModernCard(
                 self.transcript_scroll,
-                fg_color="#141c28",
-                border_color="#222e40",
+                fg_color=palette["bg_card"],
+                border_color=palette["border_card"],
                 corner_radius=6,
             )
             item_card.pack(fill="x", pady=4, padx=3)
@@ -1030,7 +1095,7 @@ class SpeechToTextApp(ctk.CTk):
             spk_btn = ctk.CTkButton(
                 header_row,
                 text=f" {spk} ",
-                font=ctk.CTkFont(size=10, weight="bold"),
+                font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
                 fg_color=bg_col,
                 text_color=fg_col,
                 hover_color=bg_col,
@@ -1044,8 +1109,8 @@ class SpeechToTextApp(ctk.CTk):
             ts_label = ctk.CTkLabel(
                 header_row,
                 text=f"  {ts} ({duration:.1f}s)",
-                font=ctk.CTkFont(size=10),
-                text_color="#94a3b8",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=10),
+                text_color=palette["text_muted"],
             )
             ts_label.pack(side="left")
 
@@ -1053,7 +1118,7 @@ class SpeechToTextApp(ctk.CTk):
                 def do_copy():
                     self.clipboard_clear()
                     self.clipboard_append(t)
-                    ToastNotification.show(self, "Segment kopyalandi", duration_ms=1400)
+                    ToastNotification.show(self, "Segment kopyalandı", duration_ms=1400)
                 return do_copy
 
             btn_turn_copy = ctk.CTkButton(
@@ -1061,9 +1126,11 @@ class SpeechToTextApp(ctk.CTk):
                 text="Kopyala",
                 width=55,
                 height=20,
-                font=ctk.CTkFont(size=10),
-                fg_color="#1e293b",
-                hover_color="#334155",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=10),
+                fg_color=palette["btn_neutral"],
+                border_width=1,
+                border_color=palette["border_card"],
+                hover_color=palette["btn_neutral_hover"],
                 command=make_copy_turn(text),
             )
             btn_turn_copy.pack(side="right")
@@ -1074,9 +1141,11 @@ class SpeechToTextApp(ctk.CTk):
 
             text_box = ctk.CTkTextbox(
                 item_card,
-                font=ctk.CTkFont(size=12),
-                fg_color="#0e141f",
-                text_color="#f8fafc",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=12),
+                fg_color=palette["input_bg"],
+                border_width=1,
+                border_color=palette["input_border"],
+                text_color=palette["text_main"],
                 height=box_height,
                 wrap="word",
                 corner_radius=6,
@@ -1252,8 +1321,10 @@ class SpeechToTextApp(ctk.CTk):
     # ------------------ Gelişmiş Ayarlar Penceresi ------------------
     def _open_advanced_settings(self):
         """Gelişmiş ayarlar ve HuggingFace token penceresi."""
+        palette = get_theme_palette(self.current_theme)
+
         win = ctk.CTkToplevel(self)
-        win.title("Gelismis Ayarlar")
+        win.title("Gelişmiş Ayarlar")
         win.geometry("450x380")
         win.resizable(False, False)
         win.transient(self)
@@ -1267,21 +1338,27 @@ class SpeechToTextApp(ctk.CTk):
         container = ctk.CTkFrame(win, fg_color="transparent")
         container.pack(fill="both", expand=True, padx=20, pady=18)
 
-        lbl = ctk.CTkLabel(container, text="Gelismis Yapilandirma", font=ctk.CTkFont(size=15, weight="bold"))
+        lbl = ctk.CTkLabel(
+            container,
+            text="Gelişmiş Yapılandırma",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
+            text_color=palette["text_main"],
+        )
         lbl.pack(anchor="w", pady=(0, 10))
 
         # HF Token
         lbl_hf = ctk.CTkLabel(
             container,
-            text="Hugging Face Token (Pyannote Diarization icin):",
-            font=ctk.CTkFont(size=11, weight="bold"),
+            text="Hugging Face Token (Pyannote Diarization için):",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            text_color=palette["text_muted"],
         )
         lbl_hf.pack(anchor="w", pady=(0, 2))
 
         entry_hf = ctk.CTkEntry(
             container,
             placeholder_text="hf_xxxxxxxxxxxxxxxxxxxxxx",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=32,
             show="*",
         )
@@ -1291,33 +1368,44 @@ class SpeechToTextApp(ctk.CTk):
         # Otomatik Birleştirme Eşiği
         lbl_gap = ctk.CTkLabel(
             container,
-            text="Ayni Konusmaciyi Birlestirme Zaman Esigi (Saniye):",
-            font=ctk.CTkFont(size=11, weight="bold"),
+            text="Aynı Konuşmacıyı Birleştirme Zaman Eşiği (Saniye):",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+            text_color=palette["text_muted"],
         )
         lbl_gap.pack(anchor="w", pady=(0, 2))
 
-        entry_gap = ctk.CTkEntry(container, height=32, font=ctk.CTkFont(size=11))
+        entry_gap = ctk.CTkEntry(
+            container,
+            height=32,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+        )
         entry_gap.insert(0, str(self.settings.get("auto_merge_gap", 1.5)))
         entry_gap.pack(fill="x", pady=(0, 14))
 
         # Sistem Durumu Bilgisi
-        sys_box = ctk.CTkFrame(container, fg_color="#111622", corner_radius=6)
+        sys_box = ctk.CTkFrame(
+            container,
+            fg_color=palette["input_bg"],
+            border_width=1,
+            border_color=palette["border_card"],
+            corner_radius=6,
+        )
         sys_box.pack(fill="x", pady=(0, 16))
 
-        ffmpeg_status = "Mevcut" if find_ffmpeg() else "Bulunamadi"
+        ffmpeg_status = "Mevcut" if find_ffmpeg() else "Bulunamadı"
         info_lines = [
             f"- FFmpeg Durumu: {ffmpeg_status}",
-            "- Whisper Modeli: CTranslate2 (CPU INT8)",
-            f"- Uygulama Surumu: v{self.APP_VERSION}",
+            "- Whisper Hızlandırıcı: CTranslate2 (CPU INT8)",
+            f"- Uygulama Sürümü: v{self.APP_VERSION}",
         ]
         lbl_sys = ctk.CTkLabel(
             sys_box,
             text="\n".join(info_lines),
-            font=ctk.CTkFont(size=11),
-            text_color="#94a3b8",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text_color=palette["text_muted"],
             justify="left",
         )
-        lbl_sys.pack(padx=10, pady=8, anchor="w")
+        lbl_sys.pack(padx=12, pady=10, anchor="w")
 
         def save_and_close():
             self.settings["hf_token"] = entry_hf.get().strip()
@@ -1336,9 +1424,9 @@ class SpeechToTextApp(ctk.CTk):
             text="Kaydet ve Kapat",
             command=save_and_close,
             height=34,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            fg_color="#2563eb",
-            hover_color="#1d4ed8",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            fg_color=palette["accent_primary"],
+            hover_color=palette["accent_hover"],
         )
         btn_save.pack(fill="x")
 

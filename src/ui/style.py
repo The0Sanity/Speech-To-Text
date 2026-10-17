@@ -1,80 +1,96 @@
-"""Masaüstü arayüzü renk paletleri, temalar, tipografi ve konuşmacı stilleri."""
+"""Masaüstü ve dizüstü sistemler için Windows 11 Fluent Design renk paletleri, tipografi ve stiller."""
 
 import hashlib
 from typing import Dict, Tuple
 
+# Windows 11 Fluent Tipografi Ailesi
+FONT_FAMILY = "Segoe UI Variable Text"
+FONT_FALLBACK = "Segoe UI"
+
 # Konuşmacı rozet renkleri (Arka plan rengi, Yazı rengi)
 SPEAKER_COLORS: Dict[str, Tuple[str, str]] = {
-    "X1": ("#10b981", "#ffffff"),  # Zümrüt Yeşili
-    "X2": ("#8b5cf6", "#ffffff"),  # Canlı Mor / Violet
-    "X3": ("#f59e0b", "#ffffff"),  # Kehribar Sarısı
-    "X4": ("#f43f5e", "#ffffff"),  # Gül Kurusu / Kırmızı
-    "X5": ("#06b6d4", "#ffffff"),  # Camgöbeği (Cyan)
-    "X6": ("#ec4899", "#ffffff"),  # Fuşya / Pembe
-    "X7": ("#3b82f6", "#ffffff"),  # Safir Mavisi
-    "X8": ("#84cc16", "#ffffff"),  # Limon Yeşili
-    "X9": ("#14b8a6", "#ffffff"),  # Turkuaz
-    "X10": ("#a855f7", "#ffffff"), # Lavanta
-    "X11": ("#eab308", "#ffffff"), # Altın
-    "X12": ("#6366f1", "#ffffff"), # İndigo
+    "X1": ("#0078d4", "#ffffff"),  # Windows Mavi
+    "X2": ("#744da9", "#ffffff"),  # Fluent Mor
+    "X3": ("#d97706", "#ffffff"),  # Kehribar Sarısı
+    "X4": ("#e11d48", "#ffffff"),  # Gül Kurusu
+    "X5": ("#0284c7", "#ffffff"),  # Gök Mavisi
+    "X6": ("#c026d3", "#ffffff"),  # Fuşya
+    "X7": ("#2563eb", "#ffffff"),  # Safir Mavisi
+    "X8": ("#16a34a", "#ffffff"),  # Yeşil
+    "X9": ("#0d9488", "#ffffff"),  # Turkuaz
+    "X10": ("#9333ea", "#ffffff"), # Lavanta
+    "X11": ("#ca8a04", "#ffffff"), # Altın
+    "X12": ("#4f46e5", "#ffffff"), # İndigo
 }
 
 THEMES: Dict[str, Dict[str, str]] = {
     "dark": {
-        "bg_app": "#0b0f17",             # Çok koyu lacivert-siyah arka plan
-        "bg_card": "#131a26",            # Kart yüzey rengi
-        "bg_card_secondary": "#1c2536",  # Vurgulu/ikincil kart yüzeyi
-        "bg_card_hover": "#222e42",      # Üzerine gelindiğinde kart rengi
-        "border_card": "#232e40",        # İnce kart kenarlık rengi
-        "border_highlight": "#3b82f6",   # Aktif/odaklanmış kenarlık
-        "accent_primary": "#2563eb",     # Birincil mavi eylem rengi
-        "accent_hover": "#1d4ed8",       # Birincil hover
-        "accent_soft": "#1e3a8a",        # Yumuşak mavi arka plan
-        "text_main": "#f8fafc",          # Açık beyaz ana metin
-        "text_muted": "#94a3b8",         # Gri ikincil metin
-        "text_subtle": "#64748b",        # Soluk açıklama metni
-        "success": "#10b981",            # Yeşil başarı rengi
-        "success_hover": "#059669",
-        "warning": "#f59e0b",            # Amber uyarı
-        "danger": "#ef4444",             # Kırmızı hata
-        "danger_hover": "#dc2626",
-        "info": "#06b6d4",               # Mavi/Cyan bilgi
-        "badge_bg": "#1e293b",
-        "input_bg": "#0e141f",           # Girdi kutuları arka planı
-        "input_border": "#273447",
-        "stepper_active": "#38bdf8",     # Aktif adım rengi
-        "stepper_done": "#10b981",       # Tamamlanan adım rengi
-        "stepper_pending": "#475569",    # Bekleyen adım rengi
+        # Windows 11 Fluent Dark (Mica / Acrylic)
+        "bg_app": "#202020",             # Windows 11 Fluent Dark Ana Zemin
+        "bg_main": "#202020",            # Eşdeğer ana zemin
+        "bg_card": "#2b2b2b",            # Yükseltilmiş kart yüzeyi
+        "bg_card_secondary": "#323232",  # İkincil kart yüzeyi
+        "bg_card_hover": "#383838",      # Kart hover
+        "border_card": "#383838",        # İnce Fluent kenarlık (1px)
+        "border_highlight": "#0078d4",   # Odaklanmış kenarlık (Fluent Accent)
+        "accent_primary": "#0078d4",     # Windows 11 Fluent Birincil Vurgu
+        "accent_hover": "#1084d9",       # Vurgu hover
+        "accent_soft": "#1a365d",        # Yumuşak vurgu
+        "text_main": "#ffffff",          # Beyaz ana metin
+        "text_primary": "#ffffff",
+        "text_muted": "#a6a6a6",         # Gri ikincil metin
+        "text_subtle": "#767676",        # Soluk metin
+        "btn_neutral": "#2e2e2e",        # Nötr Fluent buton yüzeyi
+        "btn_neutral_hover": "#3a3a3a",  # Nötr buton hover
+        "btn_neutral_border": "#3c3c3c", # Nötr buton kenarlık
+        "success": "#0078d4",            # Ana aksiyon butonu (Windows Fluent Blue)
+        "success_hover": "#1084d9",
+        "warning": "#d97706",
+        "danger": "#e11d48",
+        "danger_hover": "#be123c",
+        "info": "#0284c7",
+        "badge_bg": "#2b2b2b",
+        "input_bg": "#1c1c1c",           # Girdi alanı (bir kademe daha koyu iç boşluk)
+        "input_border": "#3c3c3c",
+        "stepper_active": "#60cdff",     # Windows 11 Aydınlık Mavi
+        "stepper_done": "#0078d4",       # Tamamlanan adım
+        "stepper_pending": "#484848",    # Bekleyen adım
     },
     "light": {
-        "bg_app": "#f1f5f9",             # Açık gri/mavi arka plan
+        # Windows 11 Fluent Light
+        "bg_app": "#f3f3f3",             # Windows 11 Fluent Light Ana Zemin
+        "bg_main": "#f3f3f3",
         "bg_card": "#ffffff",            # Beyaz kart yüzeyi
-        "bg_card_secondary": "#f8fafc",  # Açık ikincil kart
-        "bg_card_hover": "#e2e8f0",
-        "border_card": "#cbd5e1",        # İnce gri kenarlık
-        "border_highlight": "#2563eb",
-        "accent_primary": "#2563eb",
-        "accent_hover": "#1d4ed8",
-        "accent_soft": "#dbeafe",
-        "text_main": "#0f172a",          # Koyu lacivert ana metin
-        "text_muted": "#475569",         # Orta gri metin
-        "text_subtle": "#94a3b8",
-        "success": "#16a34a",
-        "success_hover": "#15803d",
-        "warning": "#d97706",
-        "danger": "#dc2626",
-        "danger_hover": "#b91c1c",
+        "bg_card_secondary": "#f9f9f9",  # İkincil yüzey
+        "bg_card_hover": "#f0f0f0",
+        "border_card": "#e5e5e5",        # İnce gri kenarlık
+        "border_highlight": "#0078d4",
+        "accent_primary": "#0078d4",
+        "accent_hover": "#1084d9",
+        "accent_soft": "#e0eefe",
+        "text_main": "#1c1c1c",          # Koyu ana metin
+        "text_primary": "#1c1c1c",
+        "text_muted": "#5c5c5c",         # Orta gri metin
+        "text_subtle": "#8a8a8a",
+        "btn_neutral": "#fbfbfb",
+        "btn_neutral_hover": "#f0f0f0",
+        "btn_neutral_border": "#d1d1d1",
+        "success": "#0078d4",
+        "success_hover": "#1084d9",
+        "warning": "#b45309",
+        "danger": "#e11d48",
+        "danger_hover": "#be123c",
         "info": "#0284c7",
-        "badge_bg": "#f1f5f9",
+        "badge_bg": "#f9f9f9",
         "input_bg": "#ffffff",
-        "input_border": "#cbd5e1",
-        "stepper_active": "#0284c7",
-        "stepper_done": "#16a34a",
-        "stepper_pending": "#94a3b8",
+        "input_border": "#d1d1d1",
+        "stepper_active": "#0078d4",
+        "stepper_done": "#1084d9",
+        "stepper_pending": "#cccccc",
     },
 }
 
-# Geriye dönük uyumluluk için varsayılan PALETTE
+THEME_PALETTES = THEMES
 PALETTE = THEMES["dark"]
 
 
@@ -88,20 +104,17 @@ def get_speaker_color(speaker_name: str) -> Tuple[str, str]:
     if speaker_name in SPEAKER_COLORS:
         return SPEAKER_COLORS[speaker_name]
 
-    # Özel isimler ve bilinmeyen konuşmacılar için deterministik ve estetik renk paleti
     extended_palette = [
-        ("#10b981", "#ffffff"),
-        ("#8b5cf6", "#ffffff"),
-        ("#f59e0b", "#ffffff"),
-        ("#f43f5e", "#ffffff"),
-        ("#06b6d4", "#ffffff"),
-        ("#ec4899", "#ffffff"),
-        ("#3b82f6", "#ffffff"),
-        ("#84cc16", "#ffffff"),
-        ("#14b8a6", "#ffffff"),
-        ("#a855f7", "#ffffff"),
-        ("#0284c7", "#ffffff"),
+        ("#0078d4", "#ffffff"),
+        ("#744da9", "#ffffff"),
         ("#d97706", "#ffffff"),
+        ("#e11d48", "#ffffff"),
+        ("#0284c7", "#ffffff"),
+        ("#c026d3", "#ffffff"),
+        ("#2563eb", "#ffffff"),
+        ("#16a34a", "#ffffff"),
+        ("#0d9488", "#ffffff"),
+        ("#9333ea", "#ffffff"),
     ]
     hash_val = int(hashlib.md5(speaker_name.encode("utf-8")).hexdigest(), 16)
     return extended_palette[hash_val % len(extended_palette)]
