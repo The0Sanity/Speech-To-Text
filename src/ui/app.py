@@ -1672,12 +1672,15 @@ class FletSpeechToTextApp:
         def _cancel_download(_):
             cancel_event.set()
             btn_cancel_download.visible = False
+            btn_update.visible = True
             btn_update.disabled = False
+            btn_later.disabled = False
             progress_bar.visible = False
             lbl_status.value = "İndirme kullanıcı tarafından iptal edildi."
             lbl_status.color = TEXT_MUTED
             self._safe_update(btn_cancel_download)
             self._safe_update(btn_update)
+            self._safe_update(btn_later)
             self._safe_update(progress_bar)
             self._safe_update(lbl_status)
 
@@ -1688,14 +1691,16 @@ class FletSpeechToTextApp:
                 return
 
             cancel_event.clear()
-            btn_update.disabled = True
+            btn_update.visible = False
             btn_cancel_download.visible = True
+            btn_later.disabled = True
             progress_bar.visible = True
             progress_bar.value = 0.0
             lbl_status.value = "Güncelleme indiriliyor..."
             lbl_status.color = TEXT_MUTED
             self._safe_update(btn_update)
             self._safe_update(btn_cancel_download)
+            self._safe_update(btn_later)
             self._safe_update(progress_bar)
             self._safe_update(lbl_status)
 
@@ -1724,36 +1729,48 @@ class FletSpeechToTextApp:
 
                 if cancel_event.is_set():
                     btn_cancel_download.visible = False
+                    btn_update.visible = True
                     btn_update.disabled = False
+                    btn_later.disabled = False
                     progress_bar.visible = False
                     lbl_status.value = "İndirme iptal edildi."
                     lbl_status.color = TEXT_MUTED
                     self._safe_update(btn_cancel_download)
                     self._safe_update(btn_update)
+                    self._safe_update(btn_later)
                     self._safe_update(progress_bar)
                     self._safe_update(lbl_status)
                     return
 
                 if ok:
                     btn_cancel_download.visible = False
-                    lbl_status.value = "İndirme ve bütünlük doğrulaması tamamlandı. Güncelleme uygulanıyor..."
+                    btn_update.visible = False
+                    btn_later.disabled = True
+                    progress_bar.value = 1.0
+                    lbl_status.value = "İndirme ve bütünlük doğrulaması tamamlandı. Güncelleme uygulanıyor ve yeniden başlatılıyor..."
                     lbl_status.color = SUCCESS
                     self._safe_update(btn_cancel_download)
+                    self._safe_update(btn_update)
+                    self._safe_update(btn_later)
+                    self._safe_update(progress_bar)
                     self._safe_update(lbl_status)
                     # Bir sonraki açılışta gösterilmek üzere sürüm notlarını kaydet ve ertelenmiş güncellemeyi temizle
                     self.settings["pending_patch_notes"] = info.release_notes or ""
                     self.settings["postponed_update"] = None
                     save_settings(self.settings)
-                    time.sleep(1)
+                    time.sleep(1.2)
                     self.updater.apply_update(target_exe)
                 else:
                     btn_cancel_download.visible = False
+                    btn_update.visible = True
                     btn_update.disabled = False
+                    btn_later.disabled = False
                     progress_bar.visible = False
                     lbl_status.value = "İndirme veya doğrulama başarısız oldu. Lütfen tekrar deneyin."
                     lbl_status.color = DANGER
                     self._safe_update(btn_cancel_download)
                     self._safe_update(btn_update)
+                    self._safe_update(btn_later)
                     self._safe_update(progress_bar)
                     self._safe_update(lbl_status)
 
@@ -1793,9 +1810,7 @@ class FletSpeechToTextApp:
             on_click=_close_dialog,
         )
 
-        notes_preview = info.release_notes[:300] + ("..." if len(info.release_notes) > 300 else "")
-        if not notes_preview.strip():
-            notes_preview = "Bu sürüm için değişiklik notu girilmemiş."
+        full_notes = info.release_notes.strip() if (info.release_notes and info.release_notes.strip()) else "Bu sürüm için değişiklik notu girilmemiş."
 
         dialog = ft.AlertDialog(
             modal=True,
@@ -1809,14 +1824,20 @@ class FletSpeechToTextApp:
                             content=ft.Column(
                                 controls=[
                                     ft.Text("Sürüm Notları:", size=11, weight=ft.FontWeight.BOLD, color=ACCENT_LIGHT),
-                                    ft.Text(notes_preview, size=11, color=TEXT_MUTED),
+                                    ft.Markdown(
+                                        full_notes,
+                                        selectable=True,
+                                        extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+                                    ),
                                 ],
-                                spacing=4,
+                                spacing=6,
+                                scroll=ft.ScrollMode.AUTO,
                             ),
                             bgcolor=INPUT_BG,
                             border=ft.Border.all(1, INPUT_BORDER),
-                            border_radius=4,
-                            padding=ft.Padding.all(8),
+                            border_radius=6,
+                            padding=ft.Padding.all(10),
+                            height=220,
                         ),
                         lbl_status,
                         progress_bar,
@@ -1824,7 +1845,7 @@ class FletSpeechToTextApp:
                     spacing=8,
                     tight=True,
                 ),
-                width=440,
+                width=520,
             ),
             actions=[btn_github, btn_cancel_download, btn_update, btn_later],
             actions_alignment=ft.MainAxisAlignment.END,

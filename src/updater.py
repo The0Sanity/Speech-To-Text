@@ -304,26 +304,33 @@ set "MAX_TRIES={retries}"
 rem 1. Calisan uygulamanin sonlanmasini bekle
 set /a TRY_COUNT=0
 :WAIT_PROCESS
+taskkill /f /pid %TARGET_PID% >nul 2>&1
+timeout /t 1 /nobreak >nul
 tasklist /fi "PID eq %TARGET_PID%" | find "%TARGET_PID%" >nul
 if %ERRORLEVEL% EQU 0 (
     set /a TRY_COUNT+=1
-    if !TRY_COUNT! GEQ %MAX_TRIES% (
-        rem Zaman asimi: zorla sonlandirmayi dene
-        taskkill /f /pid %TARGET_PID% >nul 2>&1
+    if !TRY_COUNT! LEQ %MAX_TRIES% (
+        goto :WAIT_PROCESS
     )
-    timeout /t 1 /nobreak >nul
-    goto :WAIT_PROCESS
 )
 
 rem 2. Mevcut exe dosyasini guvenli sekilde .bak olarak yedekle
 if exist "%BACKUP%" del /f /q "%BACKUP%" >nul 2>&1
 move /y "%CUR_EXE%" "%BACKUP%" >nul 2>&1
 
-rem 3. Yeni indirilen surumu asil konuma tasi
+rem 3. Yeni indirilen surumu asil konuma tasi (Gerekirse 5 defa dene)
+set /a MOVE_TRY=0
+:DO_MOVE
 move /y "%NEW_EXE%" "%CUR_EXE%" >nul 2>&1
 if not exist "%CUR_EXE%" (
-    rem Tasiyamadiysa kopyalamayi dene
     copy /y "%NEW_EXE%" "%CUR_EXE%" >nul 2>&1
+)
+if not exist "%CUR_EXE%" (
+    set /a MOVE_TRY+=1
+    if !MOVE_TRY! LEQ 5 (
+        timeout /t 1 /nobreak >nul
+        goto :DO_MOVE
+    )
 )
 
 rem 4. Basarisizlik kontrolu ve Geri Alma (Rollback)
@@ -629,7 +636,8 @@ class AutoUpdater:
             ok = WindowsSelfUpdater.execute_in_place_update(downloaded_exe, current_exe, pid)
             if ok:
                 time.sleep(0.5)
-                sys.exit(0)
+                # Sureci isletim sistemi duzeyinde derhal sonlandir (thread icinde sys.exit takilmasini onler)
+                os._exit(0)
             return False
         else:
             # Kaynak kod / dev modu: Dosyayi outputs/updates altinda koru ve calistir
@@ -641,6 +649,7 @@ class AutoUpdater:
                     import shutil
                     shutil.copy2(str(downloaded_exe), str(dest))
                 subprocess.Popen([str(dest)], shell=True)
-                return True
+                time.sleep(0.8)
+                os._exit(0)
             except Exception:
                 return False
