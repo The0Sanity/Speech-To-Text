@@ -122,7 +122,7 @@ def export_to_markdown(
     media_info: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Transkripti Obsidian/Notion/GitHub uyumlu Markdown (.md) olarak kaydeder."""
-    lines = ["# 🎙️ Ses Transkript Raporu\n"]
+    lines = ["# Ses Transkript Raporu\n"]
 
     if media_info:
         lines.append("| Alan | Değer |")
@@ -133,7 +133,7 @@ def export_to_markdown(
         lines.append(f"| **Oluşturulma** | {datetime.now().strftime('%d.%m.%Y %H:%M:%S')} |")
         lines.append("\n---\n")
 
-    lines.append("## 📝 Konuşma Akışı\n")
+    lines.append("## Konuşma Akışı\n")
     for item in transcript:
         spk = item.get("speaker", "X1")
         ts = item.get("timestamp_display", f"[{item.get('start', 0):.1f}s - {item.get('end', 0):.1f}s]")

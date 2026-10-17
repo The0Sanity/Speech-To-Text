@@ -22,6 +22,10 @@ models/
 # IDE and Editor configurations
 .vscode/
 .idea/
+.cursor/
+.gemini/
+.codex/
+*.exe
 *.swp
 *.swo
 

@@ -1,4 +1,4 @@
-"""CustomTkinter tabanlı Modern, Profesyonel Türkçe Ses Tanıma & Konuşmacı Ayrıştırma Arayüzü."""
+"""CustomTkinter tabanlı Minimalist Türkçe Ses Tanıma & Konuşmacı Ayrıştırma Arayüzü."""
 
 import os
 import subprocess
@@ -62,7 +62,7 @@ from src.youtube_downloader import (
 
 
 class SpeechToTextApp(ctk.CTk):
-    """Modern Ses Tanıma ve Konuşmacı Ayrıştırma Masaüstü Uygulaması."""
+    """Sade ve Minimalist Ses Tanıma ve Konuşmacı Ayrıştırma Masaüstü Uygulaması."""
 
     APP_VERSION = "2.0"
 
@@ -77,10 +77,10 @@ class SpeechToTextApp(ctk.CTk):
         ctk.set_appearance_mode(self.current_theme.capitalize())
         ctk.set_default_color_theme("blue")
 
-        # Pencere Başlığı ve Boyutları
-        self.title(f"🎙️ SesMetin Pro • Türkçe STT & Konuşmacı Ayrıştırma (v{self.APP_VERSION})")
-        self.geometry("1180x860")
-        self.minsize(1020, 740)
+        # Pencere Başlığı ve Boyutları (Emojisiz, sade)
+        self.title(f"SesMetin Pro - Turkce STT ve Konusmaci Ayrastirma (v{self.APP_VERSION})")
+        self.geometry("1160x840")
+        self.minsize(1000, 720)
 
         # Durum Değişkenleri
         self.selected_file_path: Optional[str] = None
@@ -99,13 +99,13 @@ class SpeechToTextApp(ctk.CTk):
         ffmpeg_bin = find_ffmpeg()
         if not ffmpeg_bin:
             messagebox.showwarning(
-                "FFmpeg Bulunamadı",
-                "Sistemde FFmpeg aracı tespit edilemedi! Ses dönüştürme ve işleme adımları için FFmpeg gereklidir.\n"
-                "Lütfen FFmpeg'i sistem PATH'ine ekleyin veya kurun.",
+                "FFmpeg Bulunamadi",
+                "Sistemde FFmpeg araci tespit edilemedi! Ses donusturme adimlari icin FFmpeg gereklidir.\n"
+                "Lutfen FFmpeg'i kurunuz.",
             )
 
     def _build_ui(self):
-        """Tüm kullanıcı arayüzünü modern bir grid & card hiyerarşisiyle oluşturur."""
+        """Sade ve minimalist kullanıcı arayüzünü oluşturur."""
         palette = get_theme_palette(self.current_theme)
 
         # Ana Arka Plan
@@ -117,11 +117,11 @@ class SpeechToTextApp(ctk.CTk):
 
         # 2. Gövde Bölümü (İki Sütunlu)
         self.body_container = ctk.CTkFrame(self.main_container, fg_color="transparent")
-        self.body_container.pack(fill="both", expand=True, padx=20, pady=(0, 16))
+        self.body_container.pack(fill="both", expand=True, padx=16, pady=(0, 14))
 
-        # Sol Panel (Giriş ve Yapılandırma, 410px)
-        self.left_panel = ctk.CTkFrame(self.body_container, width=410, fg_color="transparent")
-        self.left_panel.pack(side="left", fill="y", padx=(0, 16))
+        # Sol Panel (Giriş ve Yapılandırma, 400px)
+        self.left_panel = ctk.CTkFrame(self.body_container, width=400, fg_color="transparent")
+        self.left_panel.pack(side="left", fill="y", padx=(0, 14))
         self.left_panel.pack_propagate(False)
 
         self._build_media_input_card(self.left_panel, palette)
@@ -138,25 +138,25 @@ class SpeechToTextApp(ctk.CTk):
     def _build_header(self, parent, palette: Dict[str, str]):
         header = ctk.CTkFrame(
             parent,
-            height=68,
+            height=62,
             fg_color=palette["bg_card"],
             corner_radius=0,
             border_width=1,
             border_color=palette["border_card"],
         )
-        header.pack(fill="x", pady=(0, 14))
+        header.pack(fill="x", pady=(0, 12))
 
         # Sol Logo & Başlık
         brand_frame = ctk.CTkFrame(header, fg_color="transparent")
-        brand_frame.pack(side="left", padx=22, pady=12)
+        brand_frame.pack(side="left", padx=18, pady=10)
 
         title_row = ctk.CTkFrame(brand_frame, fg_color="transparent")
         title_row.pack(anchor="w")
 
         lbl_logo = ctk.CTkLabel(
             title_row,
-            text="🎙️ SesMetin Pro",
-            font=ctk.CTkFont(size=20, weight="bold"),
+            text="SesMetin Pro",
+            font=ctk.CTkFont(size=18, weight="bold"),
             text_color=palette["text_main"],
         )
         lbl_logo.pack(side="left")
@@ -164,60 +164,57 @@ class SpeechToTextApp(ctk.CTk):
         version_pill = ctk.CTkLabel(
             title_row,
             text=f" v{self.APP_VERSION} ",
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=10, weight="bold"),
             fg_color=palette["accent_primary"],
             text_color="#ffffff",
-            corner_radius=6,
-            height=20,
+            corner_radius=4,
+            height=18,
         )
         version_pill.pack(side="left", padx=(8, 0))
 
         lbl_sub = ctk.CTkLabel(
             brand_frame,
-            text="Yüksek Doğruluklu Türkçe Transkripsiyon (Whisper) • Konuşmacı Ayrıştırma (X1, X2...)",
+            text="Turkce Transkripsiyon (Whisper) ve Konusmaci Ayrastirma (X1, X2...)",
             font=ctk.CTkFont(size=11),
             text_color=palette["text_muted"],
         )
-        lbl_sub.pack(anchor="w", pady=(2, 0))
+        lbl_sub.pack(anchor="w", pady=(1, 0))
 
-        # Sağ Hızlı Butonlar
+        # Sağ Eylem Butonları
         actions_frame = ctk.CTkFrame(header, fg_color="transparent")
-        actions_frame.pack(side="right", padx=22, pady=14)
+        actions_frame.pack(side="right", padx=18, pady=12)
 
-        # Tema Değiştirici
-        theme_icon = "☀️ Açık" if self.current_theme == "dark" else "🌙 Koyu"
+        theme_text = "Tema: Acik" if self.current_theme == "dark" else "Tema: Koyu"
         self.btn_theme = ctk.CTkButton(
             actions_frame,
-            text=theme_icon,
-            width=80,
-            height=32,
-            font=ctk.CTkFont(size=12),
+            text=theme_text,
+            width=90,
+            height=30,
+            font=ctk.CTkFont(size=11),
             fg_color=palette["bg_card_secondary"],
             hover_color=palette["bg_card_hover"],
             command=self._toggle_theme,
         )
         self.btn_theme.pack(side="right", padx=(8, 0))
 
-        # Çıktı Klasörü
         btn_folder = ctk.CTkButton(
             actions_frame,
-            text="📂 Çıktılar",
-            width=90,
-            height=32,
-            font=ctk.CTkFont(size=12),
+            text="Cikti Klasoru",
+            width=95,
+            height=30,
+            font=ctk.CTkFont(size=11),
             fg_color=palette["bg_card_secondary"],
             hover_color=palette["bg_card_hover"],
             command=self._open_output_folder,
         )
         btn_folder.pack(side="right", padx=(8, 0))
 
-        # Ayarlar Butonu
         btn_settings = ctk.CTkButton(
             actions_frame,
-            text="⚙️ Ayarlar",
-            width=90,
-            height=32,
-            font=ctk.CTkFont(size=12),
+            text="Ayarlar",
+            width=80,
+            height=30,
+            font=ctk.CTkFont(size=11),
             fg_color=palette["bg_card_secondary"],
             hover_color=palette["bg_card_hover"],
             command=self._open_advanced_settings,
@@ -231,61 +228,61 @@ class SpeechToTextApp(ctk.CTk):
         save_settings(self.settings)
 
         ctk.set_appearance_mode(self.current_theme.capitalize())
-        theme_icon = "☀️ Açık" if self.current_theme == "dark" else "🌙 Koyu"
-        self.btn_theme.configure(text=theme_icon)
-        ToastNotification.show(self, f"Tema değiştirildi: {self.current_theme.capitalize()}", duration_ms=1800)
+        theme_text = "Tema: Acik" if self.current_theme == "dark" else "Tema: Koyu"
+        self.btn_theme.configure(text=theme_text)
+        ToastNotification.show(self, f"Tema: {self.current_theme.capitalize()}", duration_ms=1600)
 
     # ------------------ Sol Panel Kart 1: Medya Girişi ------------------
     def _build_media_input_card(self, parent, palette: Dict[str, str]):
         card = ModernCard(parent, border_color=palette["border_card"], fg_color=palette["bg_card"])
-        card.pack(fill="x", pady=(0, 12))
+        card.pack(fill="x", pady=(0, 10))
 
         self.input_tabs = ctk.CTkTabview(
             card,
-            height=150,
-            corner_radius=8,
+            height=142,
+            corner_radius=6,
             fg_color=palette["bg_card_secondary"],
             segmented_button_fg_color=palette["input_bg"],
             segmented_button_selected_color=palette["accent_primary"],
             segmented_button_selected_hover_color=palette["accent_hover"],
         )
-        self.input_tabs.pack(fill="both", expand=True, padx=12, pady=(8, 8))
+        self.input_tabs.pack(fill="both", expand=True, padx=10, pady=(6, 6))
 
-        tab_file = self.input_tabs.add("📁 Yerel Dosya")
-        tab_yt = self.input_tabs.add("🔴 YouTube Linki")
+        tab_file = self.input_tabs.add("Yerel Dosya")
+        tab_yt = self.input_tabs.add("YouTube")
 
         # 1. Yerel Dosya
         self.btn_select_file = ctk.CTkButton(
             tab_file,
-            text="📂 Medya Dosyası Seç (MP4 / MP3 / WAV)",
+            text="Dosya Sec (MP4 / MP3 / WAV)",
             font=ctk.CTkFont(size=12, weight="bold"),
-            height=34,
+            height=32,
             fg_color=palette["accent_primary"],
             hover_color=palette["accent_hover"],
             command=self._pick_file,
         )
         self.btn_select_file.pack(fill="x", pady=(2, 6))
 
-        self.file_info_box = ctk.CTkFrame(tab_file, fg_color=palette["input_bg"], corner_radius=6)
+        self.file_info_box = ctk.CTkFrame(tab_file, fg_color=palette["input_bg"], corner_radius=4)
         self.file_info_box.pack(fill="x")
 
         self.lbl_file_name = ctk.CTkLabel(
             self.file_info_box,
-            text="Henüz bir dosya seçilmedi",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            text="Dosya secilmedi",
+            font=ctk.CTkFont(size=11, weight="bold"),
             text_color=palette["text_muted"],
             anchor="w",
         )
-        self.lbl_file_name.pack(fill="x", padx=10, pady=(6, 2))
+        self.lbl_file_name.pack(fill="x", padx=8, pady=(4, 2))
 
         self.lbl_file_meta = ctk.CTkLabel(
             self.file_info_box,
             text="Desteklenen: .mp4, .mp3, .wav, .m4a, .aac, .mkv, .flac",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=10),
             text_color=palette["text_subtle"],
             anchor="w",
         )
-        self.lbl_file_meta.pack(fill="x", padx=10, pady=(0, 6))
+        self.lbl_file_meta.pack(fill="x", padx=8, pady=(0, 4))
 
         # 2. YouTube Sekmesi
         yt_box = ctk.CTkFrame(tab_yt, fg_color="transparent")
@@ -294,8 +291,8 @@ class SpeechToTextApp(ctk.CTk):
         self.yt_url_entry = ctk.CTkEntry(
             yt_box,
             placeholder_text="https://www.youtube.com/watch?v=...",
-            height=34,
-            font=ctk.CTkFont(size=12),
+            height=32,
+            font=ctk.CTkFont(size=11),
         )
         self.yt_url_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
         self.yt_url_entry.bind("<Return>", lambda e: self._fetch_youtube_info())
@@ -303,8 +300,8 @@ class SpeechToTextApp(ctk.CTk):
         self.yt_fetch_btn = ctk.CTkButton(
             yt_box,
             text="Bilgi Al",
-            width=76,
-            height=34,
+            width=70,
+            height=32,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#334155",
             hover_color="#475569",
@@ -312,157 +309,155 @@ class SpeechToTextApp(ctk.CTk):
         )
         self.yt_fetch_btn.pack(side="right")
 
-        self.yt_info_box = ctk.CTkFrame(tab_yt, fg_color=palette["input_bg"], corner_radius=6)
+        self.yt_info_box = ctk.CTkFrame(tab_yt, fg_color=palette["input_bg"], corner_radius=4)
         self.yt_info_box.pack(fill="x")
 
         self.lbl_yt_title = ctk.CTkLabel(
             self.yt_info_box,
-            text="YouTube bağlantısı yapıştırın",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            text="YouTube baglantisi giriniz",
+            font=ctk.CTkFont(size=11, weight="bold"),
             text_color=palette["text_muted"],
             anchor="w",
         )
-        self.lbl_yt_title.pack(fill="x", padx=10, pady=(6, 2))
+        self.lbl_yt_title.pack(fill="x", padx=8, pady=(4, 2))
 
         self.lbl_yt_meta = ctk.CTkLabel(
             self.yt_info_box,
-            text="Link girildikten sonra doğrudan başlatabilirsiniz",
-            font=ctk.CTkFont(size=11),
+            text="Link girildikten sonra dogrudan baslatabilirsiniz",
+            font=ctk.CTkFont(size=10),
             text_color=palette["text_subtle"],
             anchor="w",
         )
-        self.lbl_yt_meta.pack(fill="x", padx=10, pady=(0, 6))
+        self.lbl_yt_meta.pack(fill="x", padx=8, pady=(0, 4))
 
         # Ses Oynatıcı Önizleme Çubuğu
         self.audio_player = AudioPlayerBar(card)
-        self.audio_player.pack(fill="x", padx=12, pady=(0, 10))
+        self.audio_player.pack(fill="x", padx=10, pady=(0, 8))
 
     # ------------------ Sol Panel Kart 2: Model & Ayarlar ------------------
     def _build_settings_card(self, parent, palette: Dict[str, str]):
         card = ModernCard(parent, border_color=palette["border_card"], fg_color=palette["bg_card"])
-        card.pack(fill="x", pady=(0, 12))
+        card.pack(fill="x", pady=(0, 10))
 
         header_row = ctk.CTkFrame(card, fg_color="transparent")
-        header_row.pack(fill="x", padx=14, pady=(12, 8))
+        header_row.pack(fill="x", padx=12, pady=(10, 6))
 
         lbl_title = ctk.CTkLabel(
             header_row,
-            text="⚙️ Tanıma & Ayrıştırma Ayarları",
-            font=ctk.CTkFont(size=14, weight="bold"),
+            text="Model ve Ayrastirma Ayarlari",
+            font=ctk.CTkFont(size=13, weight="bold"),
             text_color=palette["text_main"],
         )
         lbl_title.pack(side="left")
 
         # Whisper Model Seçimi
         lbl_model = ctk.CTkLabel(card, text="Whisper Modeli:", font=ctk.CTkFont(size=11), text_color=palette["text_muted"])
-        lbl_model.pack(anchor="w", padx=14, pady=(0, 2))
+        lbl_model.pack(anchor="w", padx=12, pady=(0, 2))
 
         self.cmb_model = ctk.CTkComboBox(
             card,
             values=[
-                "small (Dengeli - Hızlı Önerilen)",
-                "medium (Yüksek Doğruluk)",
-                "large-v3-turbo (En Yüksek Türkçe Kalitesi)",
-                "base (Hızlı)",
-                "tiny (Ultra Hızlı)",
+                "small (Dengeli)",
+                "medium (Yuksek Dogruluk)",
+                "large-v3-turbo (En Yuksek Kalite)",
+                "base (Hizli)",
+                "tiny (Ultra Hizli)",
             ],
-            font=ctk.CTkFont(size=12),
-            height=32,
+            font=ctk.CTkFont(size=11),
+            height=30,
         )
-        self.cmb_model.set("small (Dengeli - Hızlı Önerilen)")
-        self.cmb_model.pack(fill="x", padx=14, pady=(0, 8))
+        self.cmb_model.set("small (Dengeli)")
+        self.cmb_model.pack(fill="x", padx=12, pady=(0, 6))
 
-        # İkili Seçim Satırı: Dil & VAD
+        # Dil & VAD
         row_opts = ctk.CTkFrame(card, fg_color="transparent")
-        row_opts.pack(fill="x", padx=14, pady=(0, 8))
+        row_opts.pack(fill="x", padx=12, pady=(0, 6))
 
-        # Dil
         col_lang = ctk.CTkFrame(row_opts, fg_color="transparent")
-        col_lang.pack(side="left", fill="x", expand=True, padx=(0, 6))
-        lbl_lang = ctk.CTkLabel(col_lang, text="Dil:", font=ctk.CTkFont(size=11), text_color=palette["text_muted"])
-        lbl_lang.pack(anchor="w", pady=(0, 2))
+        col_lang.pack(side="left", fill="x", expand=True, padx=(0, 4))
+        lbl_lang = ctk.CTkLabel(col_lang, text="Dil:", font=ctk.CTkFont(size=10), text_color=palette["text_muted"])
+        lbl_lang.pack(anchor="w", pady=(0, 1))
         self.cmb_lang = ctk.CTkComboBox(
             col_lang,
-            values=["Türkçe (tr)", "Otomatik (auto)"],
+            values=["Turkce (tr)", "Otomatik (auto)"],
             font=ctk.CTkFont(size=11),
-            height=30,
+            height=28,
         )
-        self.cmb_lang.set("Türkçe (tr)")
+        self.cmb_lang.set("Turkce (tr)")
         self.cmb_lang.pack(fill="x")
 
-        # VAD Hassasiyeti
         col_vad = ctk.CTkFrame(row_opts, fg_color="transparent")
-        col_vad.pack(side="right", fill="x", expand=True, padx=(6, 0))
-        lbl_vad = ctk.CTkLabel(col_vad, text="Ses Tespiti (VAD):", font=ctk.CTkFont(size=11), text_color=palette["text_muted"])
-        lbl_vad.pack(anchor="w", pady=(0, 2))
+        col_vad.pack(side="right", fill="x", expand=True, padx=(4, 0))
+        lbl_vad = ctk.CTkLabel(col_vad, text="Ses Tespiti (VAD):", font=ctk.CTkFont(size=10), text_color=palette["text_muted"])
+        lbl_vad.pack(anchor="w", pady=(0, 1))
         self.cmb_vad = ctk.CTkComboBox(
             col_vad,
-            values=["Yüksek (Fısıltı/Hızlı)", "Normal (Standart)"],
+            values=["Yuksek (Hassas)", "Normal (Standart)"],
             font=ctk.CTkFont(size=11),
-            height=30,
+            height=28,
         )
-        self.cmb_vad.set("Yüksek (Fısıltı/Hızlı)")
+        self.cmb_vad.set("Yuksek (Hassas)")
         self.cmb_vad.pack(fill="x")
 
-        # Konuşmacı Ayrıştırma (Diarization)
+        # Konuşmacı Ayrıştırma
         row_spk = ctk.CTkFrame(card, fg_color="transparent")
-        row_spk.pack(fill="x", padx=14, pady=(0, 8))
+        row_spk.pack(fill="x", padx=12, pady=(0, 6))
 
         col_count = ctk.CTkFrame(row_spk, fg_color="transparent")
-        col_count.pack(side="left", fill="x", expand=True, padx=(0, 6))
-        lbl_spk_cnt = ctk.CTkLabel(col_count, text="Konuşmacı Sayısı:", font=ctk.CTkFont(size=11), text_color=palette["text_muted"])
-        lbl_spk_cnt.pack(anchor="w", pady=(0, 2))
+        col_count.pack(side="left", fill="x", expand=True, padx=(0, 4))
+        lbl_spk_cnt = ctk.CTkLabel(col_count, text="Konusmaci Sayisi:", font=ctk.CTkFont(size=10), text_color=palette["text_muted"])
+        lbl_spk_cnt.pack(anchor="w", pady=(0, 1))
         self.cmb_spk_count = ctk.CTkComboBox(
             col_count,
-            values=["Otomatik Tespit", "1 Konuşmacı", "2 Konuşmacı", "3 Konuşmacı", "4 Konuşmacı"],
+            values=["Otomatik Tespit", "1 Konusmaci", "2 Konusmaci", "3 Konusmaci", "4 Konusmaci"],
             font=ctk.CTkFont(size=11),
-            height=30,
+            height=28,
         )
         self.cmb_spk_count.set("Otomatik Tespit")
         self.cmb_spk_count.pack(fill="x")
 
         col_prefix = ctk.CTkFrame(row_spk, fg_color="transparent")
-        col_prefix.pack(side="right", fill="x", expand=True, padx=(6, 0))
-        lbl_spk_pre = ctk.CTkLabel(col_prefix, text="Etiket Formatı:", font=ctk.CTkFont(size=11), text_color=palette["text_muted"])
-        lbl_spk_pre.pack(anchor="w", pady=(0, 2))
+        col_prefix.pack(side="right", fill="x", expand=True, padx=(4, 0))
+        lbl_spk_pre = ctk.CTkLabel(col_prefix, text="Etiket Formati:", font=ctk.CTkFont(size=10), text_color=palette["text_muted"])
+        lbl_spk_pre.pack(anchor="w", pady=(0, 1))
         self.cmb_prefix = ctk.CTkComboBox(
             col_prefix,
-            values=["X (X1, X2...)", "Konuşmacı (1, 2...)", "Kişi (1, 2...)"],
+            values=["X (X1, X2...)", "Konusmaci (1, 2...)", "Kisi (1, 2...)"],
             font=ctk.CTkFont(size=11),
-            height=30,
+            height=28,
         )
         self.cmb_prefix.set("X (X1, X2...)")
         self.cmb_prefix.pack(fill="x")
 
-        # Ses Ön-İyileştirme Onay Kutusu
+        # Ses Ön-İyileştirme
         self.chk_enhance = ctk.CTkCheckBox(
             card,
-            text="🎧 Akıllı Ses Ön-Filtreleme (80Hz gürültü kesici & seviye dengeleme)",
+            text="Ses On-Filtreleme (80Hz dip ses kesici ve seviye dengeleme)",
             font=ctk.CTkFont(size=11),
             fg_color=palette["accent_primary"],
             hover_color=palette["accent_hover"],
         )
         self.chk_enhance.select()
-        self.chk_enhance.pack(anchor="w", padx=14, pady=(2, 12))
+        self.chk_enhance.pack(anchor="w", padx=12, pady=(2, 10))
 
     # ------------------ Sol Panel Kart 3: İşlem Durumu & Stepper ------------------
     def _build_action_card(self, parent, palette: Dict[str, str]):
         card = ModernCard(parent, border_color=palette["border_card"], fg_color=palette["bg_card"])
         card.pack(fill="x")
 
-        # Çok Adımlı İlerleme Göstergesi (Stepper)
+        # Çok Adımlı İlerleme Göstergesi (Sade Metin)
         self.stepper = ProcessStepper(card)
-        self.stepper.pack(fill="x", padx=14, pady=(12, 10))
+        self.stepper.pack(fill="x", padx=12, pady=(10, 8))
 
-        # Başlat Butonu
+        # Başlat ve İptal Butonları
         btn_row = ctk.CTkFrame(card, fg_color="transparent")
-        btn_row.pack(fill="x", padx=14, pady=(0, 8))
+        btn_row.pack(fill="x", padx=12, pady=(0, 8))
 
         self.btn_start = ctk.CTkButton(
             btn_row,
-            text="🚀 Transkripsiyonu Başlat",
-            font=ctk.CTkFont(size=13, weight="bold"),
-            height=42,
+            text="Transkripsiyonu Baslat",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            height=38,
             fg_color=palette["success"],
             hover_color=palette["success_hover"],
             command=self._start_transcription_thread,
@@ -471,31 +466,31 @@ class SpeechToTextApp(ctk.CTk):
 
         self.btn_cancel = ctk.CTkButton(
             btn_row,
-            text="⏹️ İptal",
-            font=ctk.CTkFont(size=12),
-            width=70,
-            height=42,
+            text="Iptal",
+            font=ctk.CTkFont(size=11),
+            width=65,
+            height=38,
             fg_color="#334155",
             hover_color=palette["danger"],
             command=self._request_cancel,
             state="disabled",
         )
-        self.btn_cancel.pack(side="right", padx=(8, 0))
+        self.btn_cancel.pack(side="right", padx=(6, 0))
 
         # İlerleme Çubuğu
-        self.progress_bar = ctk.CTkProgressBar(card, height=8, fg_color="#182232", progress_color=palette["accent_primary"])
+        self.progress_bar = ctk.CTkProgressBar(card, height=6, fg_color="#182232", progress_color=palette["accent_primary"])
         self.progress_bar.set(0.0)
-        self.progress_bar.pack(fill="x", padx=14, pady=(0, 6))
+        self.progress_bar.pack(fill="x", padx=12, pady=(0, 6))
 
         self.lbl_status = ctk.CTkLabel(
             card,
-            text="Hazır. Bir medya dosyası veya YouTube linki seçerek başlayın.",
-            font=ctk.CTkFont(size=11),
+            text="Hazir. Medya dosyasi veya link secerek baslayin.",
+            font=ctk.CTkFont(size=10),
             text_color=palette["text_muted"],
-            wraplength=370,
+            wraplength=360,
             justify="left",
         )
-        self.lbl_status.pack(anchor="w", padx=14, pady=(0, 14))
+        self.lbl_status.pack(anchor="w", padx=12, pady=(0, 12))
 
     # ------------------ Sağ Panel: Transkript, Düzenleyici & Çıktılar ------------------
     def _build_transcript_view(self, parent, palette: Dict[str, str]):
@@ -503,19 +498,19 @@ class SpeechToTextApp(ctk.CTk):
         card.pack(fill="both", expand=True)
 
         # 1. Metrik / İstatistik Şeridi
-        self.stats_ribbon = ctk.CTkFrame(card, fg_color="transparent", height=48)
-        self.stats_ribbon.pack(fill="x", padx=16, pady=(14, 10))
+        self.stats_ribbon = ctk.CTkFrame(card, fg_color="transparent", height=44)
+        self.stats_ribbon.pack(fill="x", padx=14, pady=(10, 8))
 
-        self.badge_duration = MetricBadge(self.stats_ribbon, icon="⏱️", title="SÜRE", value="00:00", width=105, height=48)
-        self.badge_duration.pack(side="left", padx=(0, 8))
+        self.badge_duration = MetricBadge(self.stats_ribbon, title="Sure", value="00:00", width=95, height=44)
+        self.badge_duration.pack(side="left", padx=(0, 6))
 
-        self.badge_speakers = MetricBadge(self.stats_ribbon, icon="👥", title="KONUŞMACI", value="0 Kişi", width=115, height=48)
-        self.badge_speakers.pack(side="left", padx=(0, 8))
+        self.badge_speakers = MetricBadge(self.stats_ribbon, title="Konusmaci", value="0 Kisi", width=105, height=44)
+        self.badge_speakers.pack(side="left", padx=(0, 6))
 
-        self.badge_words = MetricBadge(self.stats_ribbon, icon="📝", title="KELİME", value="0 Kelime", width=115, height=48)
-        self.badge_words.pack(side="left", padx=(0, 8))
+        self.badge_words = MetricBadge(self.stats_ribbon, title="Kelime", value="0 Kelime", width=105, height=44)
+        self.badge_words.pack(side="left", padx=(0, 6))
 
-        self.badge_wpm = MetricBadge(self.stats_ribbon, icon="⚡", title="HIZ", value="0 WPM", width=95, height=48)
+        self.badge_wpm = MetricBadge(self.stats_ribbon, title="Hiz", value="0 WPM", width=85, height=44)
         self.badge_wpm.pack(side="left")
 
         # Sağ Yönetim Butonları
@@ -524,9 +519,9 @@ class SpeechToTextApp(ctk.CTk):
 
         self.btn_spk_manager = ctk.CTkButton(
             mgmt_box,
-            text="👥 Konuşmacıları Yönet",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            height=32,
+            text="Konusmaci Yonetimi",
+            font=ctk.CTkFont(size=11),
+            height=30,
             fg_color="#1e293b",
             hover_color="#334155",
             command=self._open_speaker_manager,
@@ -535,32 +530,32 @@ class SpeechToTextApp(ctk.CTk):
 
         self.btn_find_replace = ctk.CTkButton(
             mgmt_box,
-            text="🔍/✏️ Bul & Değiştir",
+            text="Bul ve Degistir",
             font=ctk.CTkFont(size=11),
-            height=32,
+            height=30,
             fg_color="#1e293b",
             hover_color="#334155",
             command=self._toggle_find_replace,
         )
         self.btn_find_replace.pack(side="right")
 
-        # 2. Arama ve Bul-Değiştir Paneli (Gerektiğinde açılır)
-        self.search_bar_frame = ctk.CTkFrame(card, fg_color=palette["input_bg"], corner_radius=8)
-        self.search_bar_frame.pack(fill="x", padx=16, pady=(0, 8))
+        # 2. Arama ve Bul-Değiştir Paneli
+        self.search_bar_frame = ctk.CTkFrame(card, fg_color=palette["input_bg"], corner_radius=6)
+        self.search_bar_frame.pack(fill="x", padx=14, pady=(0, 6))
 
         search_inner = ctk.CTkFrame(self.search_bar_frame, fg_color="transparent")
-        search_inner.pack(fill="x", padx=10, pady=8)
+        search_inner.pack(fill="x", padx=8, pady=6)
 
-        lbl_s_icon = ctk.CTkLabel(search_inner, text="🔍", font=ctk.CTkFont(size=12))
-        lbl_s_icon.pack(side="left", padx=(0, 6))
+        lbl_s_tag = ctk.CTkLabel(search_inner, text="Ara:", font=ctk.CTkFont(size=11, weight="bold"), text_color=palette["text_muted"])
+        lbl_s_tag.pack(side="left", padx=(0, 6))
 
         self.search_entry = ctk.CTkEntry(
             search_inner,
-            placeholder_text="Transkriptte canlı ara (metin, konuşmacı veya zaman)...",
-            height=30,
-            font=ctk.CTkFont(size=12),
+            placeholder_text="Transkriptte ara (metin, konusmaci veya zaman)...",
+            height=28,
+            font=ctk.CTkFont(size=11),
         )
-        self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.search_entry.bind("<KeyRelease>", lambda e: self._filter_transcript())
 
         self.lbl_search_count = ctk.CTkLabel(
@@ -571,27 +566,26 @@ class SpeechToTextApp(ctk.CTk):
         )
         self.lbl_search_count.pack(side="right", padx=(0, 4))
 
-        # Bul & Değiştir Genişleme Çubuğu (Varsayılan gizli)
-        self.find_replace_frame = ctk.CTkFrame(card, fg_color=palette["input_bg"], corner_radius=8)
-        # pack edilmez, toggle ile gösterilir
+        # Bul & Değiştir Paneli
+        self.find_replace_frame = ctk.CTkFrame(card, fg_color=palette["input_bg"], corner_radius=6)
 
         fr_inner = ctk.CTkFrame(self.find_replace_frame, fg_color="transparent")
-        fr_inner.pack(fill="x", padx=10, pady=8)
+        fr_inner.pack(fill="x", padx=8, pady=6)
 
-        lbl_fr = ctk.CTkLabel(fr_inner, text="✏️ Değiştir:", font=ctk.CTkFont(size=11, weight="bold"))
+        lbl_fr = ctk.CTkLabel(fr_inner, text="Degistir:", font=ctk.CTkFont(size=11, weight="bold"))
         lbl_fr.pack(side="left", padx=(0, 6))
 
-        self.entry_find = ctk.CTkEntry(fr_inner, placeholder_text="Aranan kelime...", width=140, height=28)
+        self.entry_find = ctk.CTkEntry(fr_inner, placeholder_text="Aranan kelime...", width=130, height=26)
         self.entry_find.pack(side="left", padx=(0, 6))
 
-        self.entry_replace = ctk.CTkEntry(fr_inner, placeholder_text="Yeni kelime...", width=140, height=28)
+        self.entry_replace = ctk.CTkEntry(fr_inner, placeholder_text="Yeni kelime...", width=130, height=26)
         self.entry_replace.pack(side="left", padx=(0, 8))
 
         btn_do_replace = ctk.CTkButton(
             fr_inner,
-            text="Tümünü Değiştir",
-            width=110,
-            height=28,
+            text="Tumunu Degistir",
+            width=100,
+            height=26,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color=palette["accent_primary"],
             hover_color=palette["accent_hover"],
@@ -603,112 +597,111 @@ class SpeechToTextApp(ctk.CTk):
         self.transcript_scroll = ctk.CTkScrollableFrame(
             card,
             fg_color=palette["input_bg"],
-            corner_radius=10,
+            corner_radius=8,
             border_width=1,
             border_color=palette["border_card"],
         )
-        self.transcript_scroll.pack(fill="both", expand=True, padx=16, pady=(0, 12))
+        self.transcript_scroll.pack(fill="both", expand=True, padx=14, pady=(0, 10))
 
         # Başlangıç Boş Durum
         self.lbl_empty = ctk.CTkLabel(
             self.transcript_scroll,
-            text="🎙️ Transkript henüz oluşturulmadı.\n\nSol panelden bir ses/video dosyası veya YouTube bağlantısı seçerek\n'Transkripsiyonu Başlat' butonuna tıklayın.",
-            font=ctk.CTkFont(size=13),
+            text="Transkript henuz olusturulmadi.\n\nSol panelden bir medya dosyasi veya YouTube baglantisi secerek\n'Transkripsiyonu Baslat' butonuna tiklayin.",
+            font=ctk.CTkFont(size=12),
             text_color=palette["text_muted"],
             justify="center",
         )
-        self.lbl_empty.pack(expand=True, pady=130)
+        self.lbl_empty.pack(expand=True, pady=120)
 
         # 4. Alt Dışa Aktarma ve Eylem Barı
         export_bar = ctk.CTkFrame(card, fg_color="transparent")
-        export_bar.pack(fill="x", padx=16, pady=(0, 14))
+        export_bar.pack(fill="x", padx=14, pady=(0, 12))
 
         self.lbl_total_turns = ctk.CTkLabel(
             export_bar,
             text="0 konuşma parçası",
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(size=11),
             text_color=palette["text_muted"],
         )
         self.lbl_total_turns.pack(side="left")
 
-        # Dışa aktarma butonları
         btn_export_md = ctk.CTkButton(
             export_bar,
-            text="📝 MD",
-            height=32,
-            width=65,
+            text="MD",
+            height=30,
+            width=55,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#0369a1",
             hover_color="#0284c7",
             command=lambda: self._export_result("md"),
         )
-        btn_export_md.pack(side="right", padx=(6, 0))
+        btn_export_md.pack(side="right", padx=(4, 0))
 
         btn_export_vtt = ctk.CTkButton(
             export_bar,
-            text="🌐 VTT",
-            height=32,
-            width=65,
+            text="VTT",
+            height=30,
+            width=55,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#6366f1",
             hover_color="#4f46e5",
             command=lambda: self._export_result("vtt"),
         )
-        btn_export_vtt.pack(side="right", padx=(6, 0))
+        btn_export_vtt.pack(side="right", padx=(4, 0))
 
         btn_export_csv = ctk.CTkButton(
             export_bar,
-            text="📊 CSV",
-            height=32,
-            width=65,
+            text="CSV",
+            height=30,
+            width=55,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#059669",
             hover_color="#047857",
             command=lambda: self._export_result("csv"),
         )
-        btn_export_csv.pack(side="right", padx=(6, 0))
+        btn_export_csv.pack(side="right", padx=(4, 0))
 
         btn_export_json = ctk.CTkButton(
             export_bar,
-            text="💾 JSON",
-            height=32,
-            width=65,
+            text="JSON",
+            height=30,
+            width=55,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#0f766e",
             hover_color="#115e59",
             command=lambda: self._export_result("json"),
         )
-        btn_export_json.pack(side="right", padx=(6, 0))
+        btn_export_json.pack(side="right", padx=(4, 0))
 
         btn_export_srt = ctk.CTkButton(
             export_bar,
-            text="🎬 SRT",
-            height=32,
-            width=65,
+            text="SRT",
+            height=30,
+            width=55,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#7c3aed",
             hover_color="#6d28d9",
             command=lambda: self._export_result("srt"),
         )
-        btn_export_srt.pack(side="right", padx=(6, 0))
+        btn_export_srt.pack(side="right", padx=(4, 0))
 
         btn_export_txt = ctk.CTkButton(
             export_bar,
-            text="📄 TXT",
-            height=32,
-            width=65,
+            text="TXT",
+            height=30,
+            width=55,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#2563eb",
             hover_color="#1d4ed8",
             command=lambda: self._export_result("txt"),
         )
-        btn_export_txt.pack(side="right", padx=(6, 0))
+        btn_export_txt.pack(side="right", padx=(4, 0))
 
         btn_copy = ctk.CTkButton(
             export_bar,
-            text="📋 Panoya Kopyala",
-            height=32,
-            width=120,
+            text="Panoya Kopyala",
+            height=30,
+            width=110,
             font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#334155",
             hover_color="#475569",
@@ -720,13 +713,13 @@ class SpeechToTextApp(ctk.CTk):
     def _pick_file(self):
         """Medya dosyası seçme diyalog penceresi."""
         filetypes = [
-            ("Desteklenen Medya Dosyaları", "*.mp4 *.mp3 *.wav *.m4a *.aac *.mkv *.flac *.ogg"),
-            ("Video Dosyaları (*.mp4, *.mkv)", "*.mp4 *.mkv"),
-            ("Ses Dosyaları (*.mp3, *.wav, *.m4a)", "*.mp3 *.wav *.m4a *.aac *.flac *.ogg"),
-            ("Tüm Dosyalar", "*.*"),
+            ("Desteklenen Medya Dosyalari", "*.mp4 *.mp3 *.wav *.m4a *.aac *.mkv *.flac *.ogg"),
+            ("Video Dosyalari (*.mp4, *.mkv)", "*.mp4 *.mkv"),
+            ("Ses Dosyalari (*.mp3, *.wav, *.m4a)", "*.mp3 *.wav *.m4a *.aac *.flac *.ogg"),
+            ("Tum Dosyalar", "*.*"),
         ]
         chosen = filedialog.askopenfilename(
-            title="İşlenecek Ses veya Video Dosyasını Seçin",
+            title="Islenecek Ses veya Video Dosyasini Secin",
             filetypes=filetypes,
             initialdir=self.settings.get("last_input_dir", str(BASE_DIR)),
         )
@@ -740,35 +733,35 @@ class SpeechToTextApp(ctk.CTk):
                 short_name = self.media_info["file_name"]
                 if len(short_name) > 36:
                     short_name = short_name[:34] + "..."
-                self.lbl_file_name.configure(text=f"📄 {short_name}", text_color="#38bdf8")
+                self.lbl_file_name.configure(text=f"Dosya: {short_name}", text_color="#38bdf8")
                 self.lbl_file_meta.configure(
-                    text=f"Süre: {self.media_info['duration_formatted']} • Boyut: {self.media_info['file_size_mb']} MB • {self.media_info['sample_rate']}Hz",
+                    text=f"Sure: {self.media_info['duration_formatted']} - Boyut: {self.media_info['file_size_mb']} MB ({self.media_info['sample_rate']}Hz)",
                 )
                 self.lbl_status.configure(
-                    text=f"Dosya hazır: {self.media_info['file_name']} ({self.media_info['duration_formatted']})",
+                    text=f"Dosya hazir: {self.media_info['file_name']} ({self.media_info['duration_formatted']})",
                 )
                 if chosen.lower().endswith(".wav"):
                     self.audio_player.set_audio_source(chosen, self.media_info["duration_formatted"])
                 else:
                     self.audio_player.set_audio_source(None)
 
-                ToastNotification.show(self, "Dosya başarıyla seçildi", duration_ms=1800)
+                ToastNotification.show(self, "Dosya secildi", duration_ms=1600)
             except Exception:
-                self.lbl_file_name.configure(text=f"📄 {Path(chosen).name}", text_color="#38bdf8")
-                self.lbl_file_meta.configure(text="Medya detayları okunamadı")
+                self.lbl_file_name.configure(text=f"Dosya: {Path(chosen).name}", text_color="#38bdf8")
+                self.lbl_file_meta.configure(text="Medya detaylari okunamadi")
 
     def _fetch_youtube_info(self):
         """Girilen YouTube adresinin video meta verilerini asenkron çeker."""
         url = self.yt_url_entry.get().strip()
         if not url:
-            messagebox.showwarning("Eksik URL", "Lütfen bir YouTube video bağlantısı giriniz!")
+            messagebox.showwarning("Eksik URL", "Lutfen bir YouTube baglantisi giriniz.")
             return
         if not is_valid_youtube_url(url):
-            messagebox.showwarning("Geçersiz URL", "Lütfen geçerli bir YouTube video bağlantısı giriniz!")
+            messagebox.showwarning("Gecersiz URL", "Lutfen gecerli bir YouTube baglantisi giriniz.")
             return
 
-        self.yt_fetch_btn.configure(state="disabled", text="Alınıyor...")
-        self.lbl_yt_title.configure(text="Video bilgileri alınıyor...", text_color="#f59e0b")
+        self.yt_fetch_btn.configure(state="disabled", text="Aliniyor...")
+        self.lbl_yt_title.configure(text="Video bilgileri aliniyor...", text_color="#f59e0b")
 
         def fetch_worker():
             try:
@@ -777,8 +770,8 @@ class SpeechToTextApp(ctk.CTk):
                 self.after(0, lambda: self._apply_youtube_info(info))
             except Exception as e:
                 err_clean = clean_error_message(e)
-                self.after(0, lambda msg=err_clean: messagebox.showerror("Hata", f"YouTube bilgisi alınamadı:\n{msg}"))
-                self.after(0, lambda: self.lbl_yt_title.configure(text="Bilgi alınamadı", text_color="#ef4444"))
+                self.after(0, lambda msg=err_clean: messagebox.showerror("Hata", f"YouTube bilgisi alinamadi:\n{msg}"))
+                self.after(0, lambda: self.lbl_yt_title.configure(text="Bilgi alinamadi", text_color="#ef4444"))
             finally:
                 self.after(0, lambda: self.yt_fetch_btn.configure(state="normal", text="Bilgi Al"))
 
@@ -787,10 +780,10 @@ class SpeechToTextApp(ctk.CTk):
     def _apply_youtube_info(self, info: Dict[str, Any]):
         title = info.get("title", "")
         short_title = title[:36] + "..." if len(title) > 36 else title
-        self.lbl_yt_title.configure(text=f"🎬 {short_title}", text_color="#38bdf8")
-        self.lbl_yt_meta.configure(text=f"Kanal: {info.get('channel', '')} • Süre: {info.get('duration_formatted', '')}")
-        self.lbl_status.configure(text=f"YouTube hazır: {title}")
-        ToastNotification.show(self, "YouTube video bilgisi alındı", duration_ms=1800)
+        self.lbl_yt_title.configure(text=f"Video: {short_title}", text_color="#38bdf8")
+        self.lbl_yt_meta.configure(text=f"Kanal: {info.get('channel', '')} - Sure: {info.get('duration_formatted', '')}")
+        self.lbl_status.configure(text=f"YouTube hazir: {title}")
+        ToastNotification.show(self, "YouTube video bilgisi alindi", duration_ms=1600)
 
     # ------------------ Transkripsiyon Pipeline ------------------
     def _start_transcription_thread(self):
@@ -801,11 +794,11 @@ class SpeechToTextApp(ctk.CTk):
         if is_youtube:
             url = self.yt_url_entry.get().strip()
             if not url or not is_valid_youtube_url(url):
-                messagebox.showwarning("Geçersiz Bağlantı", "Lütfen geçerli bir YouTube bağlantısı giriniz!")
+                messagebox.showwarning("Gecersiz Baglanti", "Lutfen gecerli bir YouTube baglantisi giriniz.")
                 return
         else:
             if not self.selected_file_path:
-                messagebox.showwarning("Dosya Eksik", "Lütfen önce bir ses veya video dosyası seçiniz!")
+                messagebox.showwarning("Dosya Eksik", "Lutfen once bir ses veya video dosyasi seciniz.")
                 return
 
         if self.is_processing:
@@ -813,7 +806,7 @@ class SpeechToTextApp(ctk.CTk):
 
         self.is_processing = True
         self.cancel_requested = False
-        self.btn_start.configure(state="disabled", text="⏳ İşleniyor...")
+        self.btn_start.configure(state="disabled", text="Isleniyor...")
         self.btn_cancel.configure(state="normal")
         self.btn_select_file.configure(state="disabled")
         self.yt_fetch_btn.configure(state="disabled")
@@ -824,7 +817,7 @@ class SpeechToTextApp(ctk.CTk):
     def _request_cancel(self):
         """Kullanıcı iptal butonuna bastığında bayrak kaldırır."""
         self.cancel_requested = True
-        self.lbl_status.configure(text="İşlem iptal ediliyor, lütfen bekleyin...")
+        self.lbl_status.configure(text="Islem iptal ediliyor, lutfen bekleyin...")
         self.btn_cancel.configure(state="disabled")
 
     def _run_transcription_pipeline(self):
@@ -839,7 +832,7 @@ class SpeechToTextApp(ctk.CTk):
             self.after(0, lambda: self.stepper.set_active_step(0))
             if is_youtube:
                 url = self.yt_url_entry.get().strip()
-                self._update_progress(0.04, "1/5: YouTube üzerinden ses akışı indiriliyor...")
+                self._update_progress(0.04, "1/5: YouTube uzerinden ses indiriliyor...")
 
                 def yt_dl_hook(pct, msg):
                     self._update_progress(pct * 0.12, f"1/5: {msg}")
@@ -849,12 +842,12 @@ class SpeechToTextApp(ctk.CTk):
                 self.selected_file_path = temp_wav
                 total_dur = yt_meta.get("duration_seconds", 0.0)
             else:
-                self._update_progress(0.08, "1/5: Ses dosyası 16kHz WAV formatına dönüştürülüyor (FFmpeg)...")
+                self._update_progress(0.08, "1/5: Ses dosyasi 16kHz WAV formatina donusturuluyor...")
                 temp_wav = extract_audio_to_wav(self.selected_file_path)
                 total_dur = self.media_info.get("duration_seconds", 0.0) if self.media_info else 0.0
 
             if self.cancel_requested:
-                raise InterruptedError("İşlem kullanıcı tarafından iptal edildi.")
+                raise InterruptedError("Islem kullanici tarafindan iptal edildi.")
 
             # Ses oynatıcıyı güncelle
             self.active_wav_path = temp_wav
@@ -868,29 +861,28 @@ class SpeechToTextApp(ctk.CTk):
                 try:
                     import uuid
                     enhanced_wav = str(TEMP_DIR / f"enhanced_{uuid.uuid4().hex[:8]}.wav")
-                    self._update_progress(0.14, "2/5: Ses kalitesi iyileştiriliyor (Gürültü kapısı & 80Hz filtre)...")
+                    self._update_progress(0.14, "2/5: Ses kalitesi iyilestiriliyor (Gurultu kesici & filtre)...")
                     enhance_audio(temp_wav, enhanced_wav)
                     audio_for_stt = enhanced_wav
                 except Exception as enh_err:
-                    print(f"Ses iyileştirme atlandı: {enh_err}")
+                    print(f"Ses iyilestirme atlandi: {enh_err}")
                     audio_for_stt = temp_wav
 
             if self.cancel_requested:
-                raise InterruptedError("İşlem kullanıcı tarafından iptal edildi.")
+                raise InterruptedError("Islem kullanici tarafindan iptal edildi.")
 
             # Adım 3: Whisper STT
             self.after(0, lambda: self.stepper.set_active_step(2))
             model_key = self.cmb_model.get().split()[0].lower()
             lang_choice = "tr" if "tr" in self.cmb_lang.get().lower() else "auto"
-            vad_choice = "high" if "yüksek" in self.cmb_vad.get().lower() else "normal"
+            vad_choice = "high" if "yuksek" in self.cmb_vad.get().lower() or "hassas" in self.cmb_vad.get().lower() else "normal"
 
-            self._update_progress(0.20, f"3/5: Whisper '{model_key}' modeli hazırlanıyor...")
+            self._update_progress(0.20, f"3/5: Whisper '{model_key}' modeli hazirlaniyor...")
             transcriber = WhisperTranscriber(model_size=model_key, cpu_threads=4)
 
             def whisper_progress(pct, msg, seg):
                 if self.cancel_requested:
-                    raise InterruptedError("Kullanıcı iptal etti.")
-                # %20 ile %75 arası ölçekle
+                    raise InterruptedError("Kullanici iptal etti.")
                 scaled = 0.20 + (pct * 0.55)
                 self._update_progress(scaled, f"3/5: {msg}")
 
@@ -904,16 +896,16 @@ class SpeechToTextApp(ctk.CTk):
             )
 
             if not stt_segments:
-                self._update_progress(1.0, "Ses dosyasında herhangi bir konuşma algılanamadı.")
+                self._update_progress(1.0, "Ses dosyasinda herhangi bir konusma algilanamadi.")
                 self.after(0, self._render_transcript, [])
                 return
 
             if self.cancel_requested:
-                raise InterruptedError("İşlem kullanıcı tarafından iptal edildi.")
+                raise InterruptedError("Islem kullanici tarafindan iptal edildi.")
 
             # Adım 4: Konuşmacı Ayrıştırma (Diarization)
             self.after(0, lambda: self.stepper.set_active_step(3))
-            self._update_progress(0.78, "4/5: Konuşmacılar ayrıştırılıyor...")
+            self._update_progress(0.78, "4/5: Konusmacilar ayristiriliyor...")
 
             prefix_val = self.cmb_prefix.get().split()[0]
             spk_choice = self.cmb_spk_count.get()
@@ -946,7 +938,7 @@ class SpeechToTextApp(ctk.CTk):
 
             # Adım 5: Hizalama ve Çıktı Oluşturma
             self.after(0, lambda: self.stepper.set_active_step(4))
-            self._update_progress(0.92, "5/5: Konuşmalar ve metin blokları hizalanıyor...")
+            self._update_progress(0.92, "5/5: Konusmalar ve metin bloklari hizalaniyor...")
 
             aligned_transcript = align_transcription_and_diarization(
                 transcription_segments=stt_segments,
@@ -959,16 +951,16 @@ class SpeechToTextApp(ctk.CTk):
             self._auto_save_outputs(aligned_transcript)
 
             self.after(0, lambda: self.stepper.set_active_step(5))
-            self._update_progress(1.0, f"✅ Tamamlandı! {len(aligned_transcript)} konuşma parçası oluşturuldu.")
+            self._update_progress(1.0, f"Tamamlandi. {len(aligned_transcript)} konusma segmenti olusturuldu.")
             self.after(0, self._render_transcript, aligned_transcript)
-            self.after(0, lambda: ToastNotification.show(self, "Transkripsiyon Başarıyla Tamamlandı! 🚀", color="#10b981"))
+            self.after(0, lambda: ToastNotification.show(self, "Transkripsiyon tamamlandi", color="#10b981"))
 
         except InterruptedError:
-            self._update_progress(0.0, "İşlem kullanıcı tarafından iptal edildi.")
-            self.after(0, lambda: ToastNotification.show(self, "İşlem İptal Edildi", color="#ef4444"))
+            self._update_progress(0.0, "Islem kullanici tarafindan iptal edildi.")
+            self.after(0, lambda: ToastNotification.show(self, "Islem iptal edildi", color="#ef4444"))
         except Exception as e:
-            self._update_progress(0.0, f"❌ Hata: {str(e)}")
-            self.after(0, lambda: messagebox.showerror("İşlem Hatası", f"İşlem sırasında beklenmedik bir hata oluştu:\n{str(e)}"))
+            self._update_progress(0.0, f"Hata: {str(e)}")
+            self.after(0, lambda: messagebox.showerror("Islem Hatasi", f"Islem sirasinda bir hata olustu:\n{str(e)}"))
         finally:
             if temp_wav and temp_wav != self.selected_file_path:
                 cleanup_temp_file(temp_wav)
@@ -986,22 +978,22 @@ class SpeechToTextApp(ctk.CTk):
         self.lbl_status.configure(text=message)
 
     def _reset_action_buttons(self):
-        self.btn_start.configure(state="normal", text="🚀 Transkripsiyonu Başlat")
+        self.btn_start.configure(state="normal", text="Transkripsiyonu Baslat")
         self.btn_cancel.configure(state="disabled")
         self.btn_select_file.configure(state="normal")
         self.yt_fetch_btn.configure(state="normal")
 
-    # ------------------ Transkript Çizimi & Görselleştirme ------------------
+    # ------------------ Transkript Çizimi ------------------
     def _render_transcript(self, transcript_items: List[Dict[str, Any]]):
-        """Segment kartlarını sağ tarafta kaydırılabilir alanda şık baloncuklar halinde çizer."""
+        """Segment kartlarını minimalist olarak listeler."""
         for widget in self.transcript_scroll.winfo_children():
             widget.destroy()
 
         if not transcript_items:
             self.lbl_empty = ctk.CTkLabel(
                 self.transcript_scroll,
-                text="Görüntülenecek transkript metni bulunamadı.",
-                font=ctk.CTkFont(size=14),
+                text="Transkript henuz olusturulmadi.",
+                font=ctk.CTkFont(size=12),
                 text_color="#64748b",
             )
             self.lbl_empty.pack(expand=True, pady=120)
@@ -1022,56 +1014,53 @@ class SpeechToTextApp(ctk.CTk):
                 self.transcript_scroll,
                 fg_color="#141c28",
                 border_color="#222e40",
-                corner_radius=10,
+                corner_radius=6,
             )
-            item_card.pack(fill="x", pady=5, padx=4)
+            item_card.pack(fill="x", pady=4, padx=3)
 
-            # Üst Başlık Satırı (Konuşmacı Rozeti, Süre, Hızlı Eylemler)
+            # Üst Başlık Satırı
             header_row = ctk.CTkFrame(item_card, fg_color="transparent")
-            header_row.pack(fill="x", padx=12, pady=(10, 4))
+            header_row.pack(fill="x", padx=10, pady=(8, 3))
 
             bg_col, fg_col = get_speaker_color(spk)
 
-            # Konuşmacı Rozeti (Tıklanabilir - doğrudan isim değiştirme)
             def make_rename_caller(target_spk):
                 return lambda: RenameSpeakerDialog(self, target_spk, self._apply_speaker_rename)
 
             spk_btn = ctk.CTkButton(
                 header_row,
                 text=f" {spk} ",
-                font=ctk.CTkFont(size=11, weight="bold"),
+                font=ctk.CTkFont(size=10, weight="bold"),
                 fg_color=bg_col,
                 text_color=fg_col,
                 hover_color=bg_col,
-                corner_radius=6,
-                height=24,
-                width=45,
+                corner_radius=4,
+                height=22,
+                width=40,
                 command=make_rename_caller(spk),
             )
             spk_btn.pack(side="left")
 
-            # Zaman Damgası
             ts_label = ctk.CTkLabel(
                 header_row,
                 text=f"  {ts} ({duration:.1f}s)",
-                font=ctk.CTkFont(size=11),
+                font=ctk.CTkFont(size=10),
                 text_color="#94a3b8",
             )
             ts_label.pack(side="left")
 
-            # Hızlı Kopyala Butonu
             def make_copy_turn(t):
                 def do_copy():
                     self.clipboard_clear()
                     self.clipboard_append(t)
-                    ToastNotification.show(self, "Segment panoya kopyalandı", duration_ms=1500)
+                    ToastNotification.show(self, "Segment kopyalandi", duration_ms=1400)
                 return do_copy
 
             btn_turn_copy = ctk.CTkButton(
                 header_row,
-                text="📋 Kopyala",
-                width=65,
-                height=22,
+                text="Kopyala",
+                width=55,
+                height=20,
                 font=ctk.CTkFont(size=10),
                 fg_color="#1e293b",
                 hover_color="#334155",
@@ -1080,22 +1069,21 @@ class SpeechToTextApp(ctk.CTk):
             btn_turn_copy.pack(side="right")
 
             # Düzenlenebilir Metin Kutusu
-            line_count = max(2, min(8, len(text) // 70 + text.count("\n") + 1))
-            box_height = 24 * line_count
+            line_count = max(2, min(7, len(text) // 75 + text.count("\n") + 1))
+            box_height = 22 * line_count
 
             text_box = ctk.CTkTextbox(
                 item_card,
-                font=ctk.CTkFont(size=13),
+                font=ctk.CTkFont(size=12),
                 fg_color="#0e141f",
                 text_color="#f8fafc",
                 height=box_height,
                 wrap="word",
-                corner_radius=8,
+                corner_radius=6,
             )
             text_box.insert("1.0", text)
-            text_box.pack(fill="x", padx=12, pady=(0, 10))
+            text_box.pack(fill="x", padx=10, pady=(0, 8))
 
-            # Düzenleme dinleyicisi
             def make_listener(item_ref, txt_box):
                 def on_edit(event=None):
                     item_ref["text"] = txt_box.get("1.0", "end-1c").strip()
@@ -1135,16 +1123,16 @@ class SpeechToTextApp(ctk.CTk):
             self.find_replace_frame.pack_forget()
             self.btn_find_replace.configure(fg_color="#1e293b")
         else:
-            self.find_replace_frame.pack(fill="x", padx=16, pady=(0, 8), after=self.search_bar_frame)
+            self.find_replace_frame.pack(fill="x", padx=14, pady=(0, 6), after=self.search_bar_frame)
             self.btn_find_replace.configure(fg_color="#2563eb")
             self.entry_find.focus_set()
 
     def _execute_find_replace(self):
-        """Tüm transkriptte aranan kelimeyi yenisiyle topluca değiştirir."""
+        """Tüm transkriptte aranan kelimeyi topluca değiştirir."""
         find_txt = self.entry_find.get().strip()
         replace_txt = self.entry_replace.get().strip()
         if not find_txt:
-            messagebox.showwarning("Eksik Arama", "Lütfen değiştirilecek kelimeyi giriniz!")
+            messagebox.showwarning("Eksik Arama", "Lutfen aranacak kelimeyi giriniz.")
             return
 
         updated, count = find_and_replace_in_transcript(
@@ -1155,13 +1143,13 @@ class SpeechToTextApp(ctk.CTk):
         )
         self.transcribed_data = updated
         self._render_transcript(self.transcribed_data)
-        ToastNotification.show(self, f"Toplam {count} adet kelime değiştirildi!", duration_ms=2500)
+        ToastNotification.show(self, f"{count} kelime degistirildi", duration_ms=2000)
 
     # ------------------ Konuşmacı Yönetimi ------------------
     def _open_speaker_manager(self):
         """Tüm konuşmacıları listeleme ve yönetme penceresi."""
         if not self.transcribed_data:
-            messagebox.showinfo("Bilgi", "Henüz işlenmiş bir transkript bulunmuyor.")
+            messagebox.showinfo("Bilgi", "Henuz islenmis bir transkript bulunmuyor.")
             return
 
         SpeakerManagerModal(self, self.transcribed_data, self._apply_speaker_rename)
@@ -1170,11 +1158,11 @@ class SpeechToTextApp(ctk.CTk):
         """Transkriptteki tüm 'old_name' konuşmacılarını 'new_name' yapar."""
         self.transcribed_data = rename_speaker_in_transcript(self.transcribed_data, old_name, new_name)
         self._render_transcript(self.transcribed_data)
-        ToastNotification.show(self, f"'{old_name}' -> '{new_name}' olarak güncellendi", duration_ms=2000)
+        ToastNotification.show(self, f"'{old_name}' -> '{new_name}' guncellendi", duration_ms=1800)
 
     # ------------------ Dışa Aktarma & Otomatik Kayıt ------------------
     def _auto_save_outputs(self, transcript: List[Dict[str, Any]]):
-        """Her işlem bitiminde outputs/ klasörüne otomatik olarak tüm formatları kaydeder."""
+        """Her işlem bitiminde outputs/ klasörüne otomatik olarak kaydeder."""
         if not self.selected_file_path or not transcript:
             return
 
@@ -1198,23 +1186,23 @@ class SpeechToTextApp(ctk.CTk):
         export_to_markdown(transcript, md_path, self.media_info)
 
     def _export_result(self, fmt: str):
-        """Kullanıcının seçeceği konuma transkript dosyasını dışa aktarır."""
+        """Kullanıcının seçeceği konuma transkript dosyasını kaydeder."""
         if not self.transcribed_data:
-            messagebox.showinfo("Bilgi", "Dışa aktarılacak transkript verisi bulunmuyor.")
+            messagebox.showinfo("Bilgi", "Disa aktarilacak transkript verisi bulunmuyor.")
             return
 
         base_name = Path(self.selected_file_path).stem if self.selected_file_path else "transkript"
         ext_map = {
-            "txt": "Metin Dosyası (*.txt)",
-            "srt": "Altyazı Dosyası (*.srt)",
-            "vtt": "WebVTT Altyazı (*.vtt)",
+            "txt": "Metin Dosyasi (*.txt)",
+            "srt": "Altyazi Dosyasi (*.srt)",
+            "vtt": "WebVTT Altyazi (*.vtt)",
             "json": "JSON Verisi (*.json)",
             "csv": "CSV Tablosu (*.csv)",
             "md": "Markdown Belgesi (*.md)",
         }
 
         save_path = filedialog.asksaveasfilename(
-            title=f"{fmt.upper()} Formatında Kaydet",
+            title=f"{fmt.upper()} Formatinda Kaydet",
             initialfile=f"{base_name}_transkript.{fmt}",
             filetypes=[(ext_map.get(fmt, fmt.upper()), f"*.{fmt}")],
             initialdir=self.settings.get("last_output_dir", str(OUTPUTS_DIR)),
@@ -1236,7 +1224,7 @@ class SpeechToTextApp(ctk.CTk):
         elif fmt == "md":
             export_to_markdown(self.transcribed_data, save_path, self.media_info)
 
-        ToastNotification.show(self, f"Başarıyla kaydedildi: {Path(save_path).name}", duration_ms=2500)
+        ToastNotification.show(self, f"Kaydedildi: {Path(save_path).name}", duration_ms=2000)
 
     def _copy_to_clipboard(self):
         """Transkriptin tamamını panoya kopyalar."""
@@ -1254,7 +1242,7 @@ class SpeechToTextApp(ctk.CTk):
         full_text = "\n".join(lines)
         self.clipboard_clear()
         self.clipboard_append(full_text)
-        ToastNotification.show(self, "Tüm transkript panoya kopyalandı! 📋", duration_ms=2000)
+        ToastNotification.show(self, "Panoya kopyalandi", duration_ms=1800)
 
     def _open_output_folder(self):
         """Çıktı klasörünü Windows Dosya Gezgini'nde açar."""
@@ -1265,27 +1253,27 @@ class SpeechToTextApp(ctk.CTk):
     def _open_advanced_settings(self):
         """Gelişmiş ayarlar ve HuggingFace token penceresi."""
         win = ctk.CTkToplevel(self)
-        win.title("⚙️ Gelişmiş Ayarlar & Sistem Bilgisi")
-        win.geometry("480x420")
+        win.title("Gelismis Ayarlar")
+        win.geometry("450x380")
         win.resizable(False, False)
         win.transient(self)
         win.grab_set()
 
         self.update_idletasks()
-        x = self.winfo_x() + (self.winfo_width() // 2) - 240
-        y = self.winfo_y() + (self.winfo_height() // 2) - 210
+        x = self.winfo_x() + (self.winfo_width() // 2) - 225
+        y = self.winfo_y() + (self.winfo_height() // 2) - 190
         win.geometry(f"+{max(0, x)}+{max(0, y)}")
 
         container = ctk.CTkFrame(win, fg_color="transparent")
-        container.pack(fill="both", expand=True, padx=22, pady=20)
+        container.pack(fill="both", expand=True, padx=20, pady=18)
 
-        lbl = ctk.CTkLabel(container, text="⚙️ Gelişmiş Yapılandırma", font=ctk.CTkFont(size=16, weight="bold"))
-        lbl.pack(anchor="w", pady=(0, 12))
+        lbl = ctk.CTkLabel(container, text="Gelismis Yapilandirma", font=ctk.CTkFont(size=15, weight="bold"))
+        lbl.pack(anchor="w", pady=(0, 10))
 
         # HF Token
         lbl_hf = ctk.CTkLabel(
             container,
-            text="Hugging Face Token (Pyannote Diarization için):",
+            text="Hugging Face Token (Pyannote Diarization icin):",
             font=ctk.CTkFont(size=11, weight="bold"),
         )
         lbl_hf.pack(anchor="w", pady=(0, 2))
@@ -1293,34 +1281,34 @@ class SpeechToTextApp(ctk.CTk):
         entry_hf = ctk.CTkEntry(
             container,
             placeholder_text="hf_xxxxxxxxxxxxxxxxxxxxxx",
-            font=ctk.CTkFont(size=12),
-            height=34,
+            font=ctk.CTkFont(size=11),
+            height=32,
             show="*",
         )
         entry_hf.insert(0, self.settings.get("hf_token", ""))
-        entry_hf.pack(fill="x", pady=(0, 14))
+        entry_hf.pack(fill="x", pady=(0, 12))
 
         # Otomatik Birleştirme Eşiği
         lbl_gap = ctk.CTkLabel(
             container,
-            text="Aynı Konuşmacıyı Birleştirme Zaman Eşiği (Saniye):",
+            text="Ayni Konusmaciyi Birlestirme Zaman Esigi (Saniye):",
             font=ctk.CTkFont(size=11, weight="bold"),
         )
         lbl_gap.pack(anchor="w", pady=(0, 2))
 
-        entry_gap = ctk.CTkEntry(container, height=34, font=ctk.CTkFont(size=12))
+        entry_gap = ctk.CTkEntry(container, height=32, font=ctk.CTkFont(size=11))
         entry_gap.insert(0, str(self.settings.get("auto_merge_gap", 1.5)))
-        entry_gap.pack(fill="x", pady=(0, 16))
+        entry_gap.pack(fill="x", pady=(0, 14))
 
         # Sistem Durumu Bilgisi
-        sys_box = ctk.CTkFrame(container, fg_color="#111622", corner_radius=8)
-        sys_box.pack(fill="x", pady=(0, 20))
+        sys_box = ctk.CTkFrame(container, fg_color="#111622", corner_radius=6)
+        sys_box.pack(fill="x", pady=(0, 16))
 
-        ffmpeg_status = "✅ Mevcut" if find_ffmpeg() else "❌ Bulunamadı"
+        ffmpeg_status = "Mevcut" if find_ffmpeg() else "Bulunamadi"
         info_lines = [
-            f"• FFmpeg Motoru: {ffmpeg_status}",
-            "• Whisper Hızlandırıcı: CTranslate2 (CPU INT8)",
-            f"• Uygulama Sürümü: v{self.APP_VERSION}",
+            f"- FFmpeg Durumu: {ffmpeg_status}",
+            "- Whisper Modeli: CTranslate2 (CPU INT8)",
+            f"- Uygulama Surumu: v{self.APP_VERSION}",
         ]
         lbl_sys = ctk.CTkLabel(
             sys_box,
@@ -1329,7 +1317,7 @@ class SpeechToTextApp(ctk.CTk):
             text_color="#94a3b8",
             justify="left",
         )
-        lbl_sys.pack(padx=12, pady=10, anchor="w")
+        lbl_sys.pack(padx=10, pady=8, anchor="w")
 
         def save_and_close():
             self.settings["hf_token"] = entry_hf.get().strip()
@@ -1341,14 +1329,14 @@ class SpeechToTextApp(ctk.CTk):
 
             save_settings(self.settings)
             win.destroy()
-            ToastNotification.show(self, "Ayarlar başarıyla kaydedildi", duration_ms=2000)
+            ToastNotification.show(self, "Ayarlar kaydedildi", duration_ms=1800)
 
         btn_save = ctk.CTkButton(
             container,
-            text="💾 Kaydet ve Kapat",
+            text="Kaydet ve Kapat",
             command=save_and_close,
-            height=38,
-            font=ctk.CTkFont(size=12, weight="bold"),
+            height=34,
+            font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#2563eb",
             hover_color="#1d4ed8",
         )

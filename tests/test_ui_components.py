@@ -132,7 +132,7 @@ class TestUIComponentsAndStyling(unittest.TestCase):
             with open(temp_md, "r", encoding="utf-8") as f:
                 content = f.read()
 
-            self.assertIn("# 🎙️ Ses Transkript Raporu", content)
+            self.assertIn("# Ses Transkript Raporu", content)
             self.assertIn("toplanti_kaydi.mp4", content)
             self.assertIn("**X1**", content)
             self.assertIn("**X2**", content)
