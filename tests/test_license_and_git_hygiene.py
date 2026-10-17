@@ -64,6 +64,49 @@ class TestLicenseAndGitHygiene(unittest.TestCase):
                 f"Unwanted file '{unwanted}' must not be tracked in git index",
             )
 
+    def test_license_contains_prominent_visual_attribution_clause(self):
+        license_path = os.path.join(ROOT_DIR, "LICENSE")
+        with open(license_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        self.assertIn("Visual Attribution Requirement", content)
+        self.assertIn("https://github.com/The0Sanity/Speech-To-Text", content)
+        self.assertIn("prominent", content.lower())
+        self.assertTrue(
+            "hiding" in content.lower() or "obscuring" in content.lower(),
+            "License must explicitly prohibit hiding or obscuring visual attribution",
+        )
+
+    def test_readme_documents_visual_attribution(self):
+        readme_path = os.path.join(ROOT_DIR, "README.md")
+        with open(readme_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        self.assertIn("https://github.com/The0Sanity/Speech-To-Text", content)
+        self.assertTrue(
+            "görsel" in content.lower() or "visual" in content.lower() or "atf" in content.lower() or "attribution" in content.lower(),
+            "README.md must document visual attribution requirement",
+        )
+
+    def test_release_ci_workflow_and_spec_exist(self):
+        workflow_path = os.path.join(ROOT_DIR, ".github", "workflows", "release.yml")
+        self.assertTrue(os.path.isfile(workflow_path), ".github/workflows/release.yml must exist")
+
+        spec_path = os.path.join(ROOT_DIR, "SpeechToText.spec")
+        self.assertTrue(os.path.isfile(spec_path), "SpeechToText.spec must exist for PyInstaller build")
+
+        build_bat = os.path.join(ROOT_DIR, "scripts", "build_exe.bat")
+        self.assertTrue(os.path.isfile(build_bat), "scripts/build_exe.bat must exist")
+
+    def test_app_header_contains_prominent_repo_attribution(self):
+        app_path = os.path.join(ROOT_DIR, "src", "ui", "app.py")
+        with open(app_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        self.assertIn("https://github.com/The0Sanity/Speech-To-Text", content)
+        self.assertIn("The0Sanity/Speech-To-Text", content)
+
 
 if __name__ == "__main__":
     unittest.main()
+

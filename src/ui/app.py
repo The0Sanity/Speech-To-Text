@@ -734,6 +734,28 @@ class FletSpeechToTextApp:
                         color=TEXT_SUBTLE,
                     ),
                     ft.Container(expand=True),
+                    ft.TextButton(
+                        content=ft.Row(
+                            controls=[
+                                ft.Icon(ft.Icons.CODE, size=14, color=ACCENT_LIGHT),
+                                ft.Text(
+                                    value="The0Sanity/Speech-To-Text",
+                                    size=11,
+                                    weight=ft.FontWeight.W_600,
+                                    color=TEXT_MAIN,
+                                ),
+                            ],
+                            spacing=4,
+                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        ),
+                        url="https://github.com/The0Sanity/Speech-To-Text",
+                        tooltip="Orijinal Proje Kaynağı: https://github.com/The0Sanity/Speech-To-Text",
+                        style=ft.ButtonStyle(
+                            bgcolor=INPUT_BG,
+                            padding=ft.Padding.symmetric(horizontal=10, vertical=4),
+                            shape=ft.RoundedRectangleBorder(radius=4),
+                        ),
+                    ),
                     ft.Container(
                         content=ft.Text(
                             value=f"v{self.APP_VERSION}",

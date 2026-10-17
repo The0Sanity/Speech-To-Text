@@ -1,4 +1,4 @@
-MIT License
+MIT License with Prominent Visual Attribution Requirement
 
 Copyright (c) 2026 The0Sanity
 
@@ -11,6 +11,23 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
+VISUAL ATTRIBUTION REQUIREMENT:
+Any program, application, user interface, or derivative service that incorporates,
+adapts, modifies, or uses this Software (or any substantial portion thereof) MUST
+display a clear, prominent, and directly visible visual attribution mentioning and
+linking to the original repository:
+    https://github.com/The0Sanity/Speech-To-Text
+
+This Visual Attribution Requirement must satisfy the following strict visibility criteria:
+1. Prominence: The attribution must be displayed directly on the primary, default
+   user-facing interface (such as the main application window header, top navigation
+   bar, or prominent main dashboard view).
+2. Non-Hiding and Legibility: It is strictly prohibited to hide, obscure, minimize,
+   or bury this attribution in obscure sub-menus, settings drawers, hidden about dialogs,
+   collapsed sidebars, microscopic footers, or corners with low contrast.
+3. Interactive Link: Where an interactive graphical user interface is present, the
+   attribution text must include a clickable link leading directly to the original repository.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

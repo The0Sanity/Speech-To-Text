@@ -496,10 +496,9 @@ class AutoUpdater:
 
         # Saglama toplami (checksum) varligi ara
         expected_sha256 = None
-        for a in assets:
-            a_name = a.get("name", "").lower()
-            if "checksum" in a_name or "sha256" in a_name:
-                pass
+        hash_match = re.search(r'\b([a-fA-F0-9]{64})\b', body)
+        if hash_match:
+            expected_sha256 = hash_match.group(1).lower()
 
         has_exe = best_exe is not None
         asset_name = best_exe.get("name") if best_exe else None

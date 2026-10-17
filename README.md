@@ -121,7 +121,13 @@ Tüm test paketini çalıştırmak için:
 
 ---
 
-## Lisans
+## Lisans ve Görsel Atıf Şartı (License & Visual Attribution)
 
-Bu proje MIT lisansı ile lisanslanmıştır.
-Repo Adresi: `https://github.com/The0Sanity/Speech-To-Text.git`
+Bu proje MIT Lisansı ve Zorunlu Görsel Atıf Şartı (MIT License with Prominent Visual Attribution Requirement) altında lisanslanmıştır.
+
+**Zorunlu Görsel Atıf Kuralı:**
+Bu projenin kaynak kodunu, bileşenlerini veya türevlerini kullanan tüm kişi ve kuruluşlar, kendi uygulamalarının veya kullanıcı arayüzlerinin **ana ekranında/üst menü çubuğunda** doğrudan görülebilecek şekilde bu depoya (`https://github.com/The0Sanity/Speech-To-Text`) tıklanabilir görsel bir atıf (link/badge) yerleştirmekle yükümlüdür. Bu atfı alt menülere, ayarlara veya görünmeyen köşelere gizlemek kesinlikle yasaktır.
+
+Detaylar için [LICENSE](LICENSE) belgesini inceleyiniz.
+Repo Adresi: `https://github.com/The0Sanity/Speech-To-Text`
+
