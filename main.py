@@ -1,8 +1,15 @@
 """Türkçe Ses Tanıma ve Konuşmacı Ayrıştırma Aracı Başlatıcısı."""
 
+import builtins
 import os
 import sys
 from pathlib import Path
+
+# Donmus (.exe) ve consolesuz ortamlarda exit() cagrilari icin guvenlik onlemi
+if not hasattr(builtins, "exit"):
+    builtins.exit = sys.exit
+if not hasattr(builtins, "quit"):
+    builtins.quit = sys.exit
 
 # Proje ana dizinini sys.path'e ekle
 BASE_DIR = Path(__file__).resolve().parent

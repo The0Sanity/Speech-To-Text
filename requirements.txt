@@ -37,3 +37,4 @@ typing_extensions==4.16.0
 yt-dlp==2026.8.19
 
 flet>=1.0.4
+flet-desktop>=1.0.4

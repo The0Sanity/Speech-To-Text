@@ -1,22 +1,34 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
 import sys
 from pathlib import Path
 
 block_cipher = None
 
+datas = [
+    ('settings.json', '.'),
+    ('README.md', '.'),
+    ('LICENSE', '.'),
+]
+
+# Eger flet-windows.zip derleme dizininde mevcutsa flet_desktop altina gom
+if os.path.exists('flet-windows.zip'):
+    datas.append(('flet-windows.zip', 'flet_desktop/app'))
+
 a = Analysis(
     ['main.py'],
     pathex=['.'],
     binaries=[],
-    datas=[
-        ('settings.json', '.'),
-        ('README.md', '.'),
-        ('LICENSE', '.'),
-    ],
+    datas=datas,
     hiddenimports=[
         'flet',
         'flet.fastapi',
+        'flet_desktop',
+        'flet_desktop.version',
+        'flet_desktop.win_taskbar',
+        'rich',
+        'rich.progress',
         'faster_whisper',
         'ctranslate2',
         'numpy',

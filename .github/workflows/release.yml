@@ -34,6 +34,15 @@ jobs:
           pip install pyinstaller
           pip install -r requirements.txt
 
+      - name: Cache or Download Flet Desktop Client Archive
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "flet-windows.zip")) {
+            Write-Host "Downloading flet-windows.zip v1.0.4..."
+            Invoke-WebRequest -Uri "https://github.com/flet-dev/flet/releases/download/v1.0.4/flet-windows.zip" -OutFile "flet-windows.zip"
+          }
+          Write-Host "flet-windows.zip is ready. Size: $((Get-Item 'flet-windows.zip').Length) bytes."
+
       - name: Build Standalone Windows Executable
         run: |
           python -m PyInstaller --clean --noconfirm SpeechToText.spec
