@@ -78,6 +78,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "vad_sensitivity": "high",     # "high" (Sessiz ve hızlı sesleri kaçırmaz), "normal"
     "last_input_dir": str(BASE_DIR),
     "last_output_dir": str(OUTPUTS_DIR),
+    "last_seen_version": APP_VERSION,
+    "postponed_update": None,
+    "pending_patch_notes": "",
 }
 
 
