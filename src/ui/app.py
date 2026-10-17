@@ -77,10 +77,26 @@ class SpeechToTextApp(ctk.CTk):
         ctk.set_appearance_mode(self.current_theme.capitalize())
         ctk.set_default_color_theme("blue")
 
-        # Pencere Başlığı ve Boyutları (Emojisiz, sade)
+        # Pencere Başlığı ve Boyutları (Emojisiz, sade, ekran ortalama ve duyarlı ölçek)
         self.title(f"SesMetin Pro - Turkce STT ve Konusmaci Ayrastirma (v{self.APP_VERSION})")
-        self.geometry("1160x840")
-        self.minsize(1000, 720)
+        self._min_width = 960
+        self._min_height = 640
+        self.minsize(self._min_width, self._min_height)
+
+        # Ekran çözünürlüğüne göre duyarlı dinamik boyutlandırma ve ekran ortalama
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+        win_w = max(self._min_width, min(1160, int(screen_w * 0.88)))
+        win_h = max(self._min_height, min(840, int(screen_h * 0.88)))
+        pos_x = max(0, (screen_w - win_w) // 2)
+        pos_y = max(0, (screen_h - win_h) // 2)
+        self.geometry(f"{win_w}x{win_h}+{pos_x}+{pos_y}")
+
+        # Başlangıçta pürüzsüz açılış için pencere opaklığını 0.0 yap
+        try:
+            self.attributes("-alpha", 0.0)
+        except Exception:
+            pass
 
         # Durum Değişkenleri
         self.selected_file_path: Optional[str] = None
@@ -93,6 +109,25 @@ class SpeechToTextApp(ctk.CTk):
 
         self._build_ui()
         self._check_ffmpeg()
+
+        # Açılış fade-in animasyonunu başlat
+        self.after(10, self._animate_window_entrance)
+
+    def _animate_window_entrance(self, current_alpha: float = 0.0):
+        """Uygulama açılışında pürüzsüz kademeli opaklık (fade-in) animasyonu uygular."""
+        try:
+            if not self.winfo_exists():
+                return
+            next_alpha = min(1.0, round(current_alpha + 0.1, 2))
+            self.attributes("-alpha", next_alpha)
+            if next_alpha < 1.0 and self.winfo_exists():
+                self.after(16, lambda: self._animate_window_entrance(next_alpha))
+        except Exception:
+            try:
+                if self.winfo_exists():
+                    self.attributes("-alpha", 1.0)
+            except Exception:
+                pass
 
     def _check_ffmpeg(self):
         """Sistemde FFmpeg varlığını kontrol eder."""
@@ -119,10 +154,13 @@ class SpeechToTextApp(ctk.CTk):
         self.body_container = ctk.CTkFrame(self.main_container, fg_color="transparent")
         self.body_container.pack(fill="both", expand=True, padx=16, pady=(0, 14))
 
-        # Sol Panel (Giriş ve Yapılandırma, 360px)
-        self.left_panel = ctk.CTkFrame(self.body_container, width=360, fg_color="transparent")
+        # Sol Panel (Giriş ve Yapılandırma - Ekran boyutuna duyarlı kaydırılabilir sütun)
+        self.left_panel = ctk.CTkScrollableFrame(
+            self.body_container,
+            width=350,
+            fg_color="transparent",
+        )
         self.left_panel.pack(side="left", fill="y", padx=(0, 12))
-        self.left_panel.pack_propagate(False)
 
         self._build_media_input_card(self.left_panel, palette)
         self._build_settings_card(self.left_panel, palette)
@@ -376,6 +414,7 @@ class SpeechToTextApp(ctk.CTk):
             ],
             font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
+            state="readonly",
         )
         self.cmb_model.set("small (Dengeli)")
         self.cmb_model.pack(fill="x", padx=12, pady=(0, 6))
@@ -398,6 +437,7 @@ class SpeechToTextApp(ctk.CTk):
             values=["Türkçe (tr)", "Otomatik (auto)"],
             font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
+            state="readonly",
         )
         self.cmb_lang.set("Türkçe (tr)")
         self.cmb_lang.pack(fill="x")
@@ -416,6 +456,7 @@ class SpeechToTextApp(ctk.CTk):
             values=["Yüksek (Hassas)", "Normal (Standart)"],
             font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
+            state="readonly",
         )
         self.cmb_vad.set("Yüksek (Hassas)")
         self.cmb_vad.pack(fill="x")
@@ -438,6 +479,7 @@ class SpeechToTextApp(ctk.CTk):
             values=["Otomatik Tespit", "1 Konuşmacı", "2 Konuşmacı", "3 Konuşmacı", "4 Konuşmacı"],
             font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
+            state="readonly",
         )
         self.cmb_spk_count.set("Otomatik Tespit")
         self.cmb_spk_count.pack(fill="x")
@@ -456,6 +498,7 @@ class SpeechToTextApp(ctk.CTk):
             values=["X (X1, X2...)", "Konuşmacı (1, 2...)", "Kişi (1, 2...)"],
             font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             height=28,
+            state="readonly",
         )
         self.cmb_prefix.set("X (X1, X2...)")
         self.cmb_prefix.pack(fill="x")
