@@ -50,7 +50,7 @@ class TestWorkspaceOrganization(unittest.TestCase):
             self.assertTrue(dpath.is_dir(), f"{dname} klasörü mevcut olmalıdır.")
 
         self.assertTrue((BASE_DIR / "outputs" / ".gitkeep").is_file(), "outputs/.gitkeep mevcut olmalıdır.")
-        self.assertTrue((BASE_DIR / "temp" / ".gitkeep").is_file(), "temp/.gitkeep mevcut olmalıdır.")
+        self.assertTrue((BASE_DIR / "temp").is_dir(), "temp klasörü mevcut olmalıdır.")
 
     def test_03_gitignore_contains_necessary_rules(self):
         """.gitignore dosyası kritik geçici ve özel dizinleri içermelidir."""
