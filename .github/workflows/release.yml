@@ -22,10 +22,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install Dependencies
@@ -45,11 +45,25 @@ jobs:
           Set-Content -Path "dist\SpeechToText.exe.sha256" -Value $hash -Encoding utf8
           Write-Host "Generated SHA256: $hash"
 
+      - name: Resolve Release Tag Name
+        id: resolve_tag
+        shell: pwsh
+        run: |
+          $tag = "${{ inputs.tag_name }}"
+          if (-not $tag -or $tag -eq "") {
+            $tag = "${{ github.ref_name }}"
+          }
+          if ($tag -eq "main" -or $tag -eq "master") {
+            $tag = "v1.0.0"
+          }
+          Write-Host "Resolved release tag: $tag"
+          "release_tag=$tag" >> $env:GITHUB_OUTPUT
+
       - name: Create GitHub Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name || github.event.inputs.tag_name }}
-          name: Speech-To-Text ${{ github.ref_name || github.event.inputs.tag_name }}
+          tag_name: ${{ steps.resolve_tag.outputs.release_tag }}
+          name: Speech-To-Text ${{ steps.resolve_tag.outputs.release_tag }}
           draft: false
           prerelease: false
           generate_release_notes: true
