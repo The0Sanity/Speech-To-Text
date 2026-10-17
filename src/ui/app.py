@@ -32,7 +32,7 @@ from src.config import (
     load_settings,
     save_settings,
 )
-from src.updater import AutoUpdater, CheckStatus, UpdateInfo
+from src.updater import AutoUpdater, CheckStatus, UpdateInfo, is_newer_version
 from src.exporter import (
     export_to_csv,
     export_to_json,
@@ -1447,6 +1447,201 @@ class FletSpeechToTextApp:
 
         threading.Thread(target=_do_check, daemon=True).start()
 
+    def _create_smooth_progress_handler(
+        self,
+        total_bytes: int = 0,
+        ui_updater: Optional[Any] = None,
+        throttle_interval: float = 0.08,
+    ):
+        """Websocket IPC yukunu engelleyen ve akici hiz/ETA hesaplayan ilerleme isleyicisi."""
+        last_update_time = [0.0]
+        last_bytes = [0]
+        rolling_speed_mb = [0.0]
+        alpha = 0.3
+
+        def _handler(dl: int, tot: int):
+            effective_tot = tot if tot > 0 else total_bytes
+            now = time.monotonic()
+            is_finished = (effective_tot > 0 and dl >= effective_tot) or (dl > 0 and effective_tot <= 0 and dl == total_bytes)
+            time_diff = now - last_update_time[0]
+
+            if not is_finished and time_diff < throttle_interval:
+                return
+
+            if time_diff > 0.001 and last_bytes[0] > 0 and dl > last_bytes[0]:
+                bytes_delta = dl - last_bytes[0]
+                inst_speed = (bytes_delta / (1024 * 1024)) / time_diff
+                if rolling_speed_mb[0] <= 0.01:
+                    rolling_speed_mb[0] = inst_speed
+                else:
+                    rolling_speed_mb[0] = alpha * inst_speed + (1 - alpha) * rolling_speed_mb[0]
+
+            last_bytes[0] = dl
+            last_update_time[0] = now
+
+            prog_val = (dl / effective_tot) if effective_tot > 0 else 0.0
+            prog_val = min(1.0, max(0.0, prog_val))
+            pct = int(prog_val * 100)
+
+            speed_str = f" | {rolling_speed_mb[0]:.1f} MB/s" if rolling_speed_mb[0] > 0.05 else ""
+            eta_str = ""
+            if rolling_speed_mb[0] > 0.05 and effective_tot > dl:
+                rem_mb = (effective_tot - dl) / (1024 * 1024)
+                eta_s = int(rem_mb / rolling_speed_mb[0])
+                if eta_s < 60:
+                    eta_str = f" | Kalan: ~{eta_s}s"
+                else:
+                    eta_str = f" | Kalan: ~{eta_s // 60}dk {eta_s % 60}s"
+
+            if effective_tot > 0:
+                status_text = f"İndiriliyor: %{pct} ({dl // 1048576}MB / {effective_tot // 1048576}MB{speed_str}{eta_str})"
+            else:
+                status_text = f"İndiriliyor: {dl // 1048576}MB{speed_str}"
+
+            if is_finished:
+                prog_val = 1.0
+                tot_mb = (effective_tot // 1048576) if effective_tot > 0 else (dl // 1048576)
+                status_text = f"İndirme tamamlandı: %100 ({dl // 1048576}MB / {tot_mb}MB)"
+
+            if ui_updater:
+                ui_updater(prog_val, status_text)
+
+        return _handler
+
+    def _postpone_update(self, info: UpdateInfo):
+        """Kullanici 'Daha Sonra' sectiginde guncellemeyi sonraki acilista hatirlatmak uzere kaydeder."""
+        try:
+            self.settings["postponed_update"] = {
+                "version": info.version,
+                "tag_name": info.tag_name,
+                "release_name": info.release_name,
+                "release_notes": info.release_notes,
+                "published_at": info.published_at,
+                "download_url": info.download_url,
+                "asset_size": info.asset_size,
+                "has_exe_asset": info.has_exe_asset,
+                "html_url": info.html_url,
+            }
+            save_settings(self.settings)
+        except Exception as e:
+            print(f"Guncelleme erteleme kaydi hatasi: {e}")
+
+    def check_and_prompt_postponed_update(self) -> bool:
+        """Uygulama acilisinda ertelenmis bir guncelleme varsa kullaniciya sunar."""
+        postponed = self.settings.get("postponed_update")
+        if not postponed or not isinstance(postponed, dict):
+            return False
+
+        postponed_ver = postponed.get("version", "")
+        if not is_newer_version(self.APP_VERSION, postponed_ver):
+            self.settings["postponed_update"] = None
+            save_settings(self.settings)
+            return False
+
+        info = UpdateInfo(
+            version=postponed.get("version", ""),
+            tag_name=postponed.get("tag_name", f"v{postponed_ver}"),
+            release_name=postponed.get("release_name", f"v{postponed_ver}"),
+            release_notes=postponed.get("release_notes", ""),
+            published_at=postponed.get("published_at", ""),
+            html_url=postponed.get("html_url", ""),
+            download_url=postponed.get("download_url"),
+            asset_name=f"SpeechToText_v{postponed_ver}.exe",
+            asset_size=postponed.get("asset_size"),
+            has_exe_asset=postponed.get("has_exe_asset", True),
+            is_update_available=True,
+            status=CheckStatus.UPDATE_AVAILABLE,
+        )
+        self._show_update_modal(info)
+        return True
+
+    def check_and_show_patch_notes(self) -> bool:
+        """Guncelleme sonrasindaki ilk acilista yama notlarini gosterir."""
+        last_seen = self.settings.get("last_seen_version", "0.0.0")
+        pending_notes = self.settings.get("pending_patch_notes", "")
+
+        has_newer = is_newer_version(last_seen, self.APP_VERSION)
+        if has_newer or bool(pending_notes):
+            notes = pending_notes if pending_notes else f"SesMetin Pro v{self.APP_VERSION} surumune basariyla guncellendi."
+            self._show_patch_notes_dialog(notes, self.APP_VERSION)
+            self.settings["last_seen_version"] = self.APP_VERSION
+            self.settings["pending_patch_notes"] = ""
+            save_settings(self.settings)
+            return True
+        return False
+
+    def _show_patch_notes_dialog(self, notes: str, version: str):
+        """Guncelleme sonrasi surum notlarini (Patch Notes) sik bir modal ile sunar."""
+        if not self.page:
+            return
+
+        def _close(_=None):
+            if hasattr(self.page, "close"):
+                self.page.close(dialog)
+            else:
+                dialog.open = False
+                self._safe_update(self.page)
+
+        btn_ok = ft.FilledButton(
+            content=ft.Text("Harika, Basla", size=12, weight=ft.FontWeight.BOLD),
+            bgcolor=ACCENT_PRIMARY,
+            color=TEXT_MAIN,
+            on_click=_close,
+        )
+
+        formatted_notes = notes.strip() if notes and notes.strip() else "Bu surum icin degisiklik notu belirtilmemis."
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.NEW_RELEASES, color=ACCENT_LIGHT, size=22),
+                    ft.Text(f"Yenilikler ve Surum Notlari (v{version})", size=15, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                ],
+                spacing=8,
+            ),
+            content=ft.Container(
+                content=ft.Column(
+                    controls=[
+                        ft.Text(
+                            "SesMetin Pro basariyla guncellendi! Iste bu surumdeki baslica yenilikler:",
+                            size=12,
+                            color=TEXT_SUBTLE,
+                        ),
+                        ft.Container(
+                            content=ft.Column(
+                                controls=[
+                                    ft.Markdown(
+                                        formatted_notes,
+                                        selectable=True,
+                                        extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+                                    ),
+                                ],
+                                scroll=ft.ScrollMode.AUTO,
+                            ),
+                            bgcolor=INPUT_BG,
+                            border=ft.Border.all(1, INPUT_BORDER),
+                            border_radius=6,
+                            padding=ft.Padding.all(12),
+                            height=260,
+                        ),
+                    ],
+                    spacing=10,
+                    tight=True,
+                ),
+                width=480,
+            ),
+            actions=[btn_ok],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+
+        if hasattr(self.page, "open"):
+            self.page.open(dialog)
+        else:
+            self.page.overlay.append(dialog)
+            dialog.open = True
+            self.page.update()
+
     def _show_update_modal(self, info: UpdateInfo):
         """Yeni sürüm bulunduğunda modal güncelleme penceresi açar."""
         if not self.page:
@@ -1467,8 +1662,12 @@ class FletSpeechToTextApp:
 
         def _close_dialog(_=None):
             cancel_event.set()
-            dialog.open = False
-            self.page.update()
+            self._postpone_update(info)
+            if hasattr(self.page, "close"):
+                self.page.close(dialog)
+            else:
+                dialog.open = False
+                self._safe_update(self.page)
 
         def _cancel_download(_):
             cancel_event.set()
@@ -1477,7 +1676,10 @@ class FletSpeechToTextApp:
             progress_bar.visible = False
             lbl_status.value = "İndirme kullanıcı tarafından iptal edildi."
             lbl_status.color = TEXT_MUTED
-            self.page.update()
+            self._safe_update(btn_cancel_download)
+            self._safe_update(btn_update)
+            self._safe_update(progress_bar)
+            self._safe_update(lbl_status)
 
         def _start_download(_):
             if not self._check_can_update():
@@ -1492,24 +1694,30 @@ class FletSpeechToTextApp:
             progress_bar.value = 0.0
             lbl_status.value = "Güncelleme indiriliyor..."
             lbl_status.color = TEXT_MUTED
-            self.page.update()
+            self._safe_update(btn_update)
+            self._safe_update(btn_cancel_download)
+            self._safe_update(progress_bar)
+            self._safe_update(lbl_status)
 
             def _download_task():
                 target_exe = TEMP_DIR / f"SpeechToText_v{info.version}.exe"
 
-                def _on_prog(dl, tot):
-                    if tot > 0:
-                        progress_bar.value = dl / tot
-                        pct = int((dl / tot) * 100)
-                        lbl_status.value = f"İndiriliyor: %{pct} ({dl // 1048576}MB / {tot // 1048576}MB)"
-                    else:
-                        lbl_status.value = f"İndiriliyor: {dl // 1048576}MB"
-                    self.page.update()
+                def _ui_update(prog_val, status_text):
+                    progress_bar.value = prog_val
+                    lbl_status.value = status_text
+                    self._safe_update(progress_bar)
+                    self._safe_update(lbl_status)
+
+                smooth_prog = self._create_smooth_progress_handler(
+                    total_bytes=info.asset_size or 0,
+                    ui_updater=_ui_update,
+                    throttle_interval=0.08,
+                )
 
                 ok = self.updater.download_asset(
                     info.download_url,
                     target_exe,
-                    progress_callback=_on_prog,
+                    progress_callback=smooth_prog,
                     cancel_event=cancel_event,
                     verify_pe=True,
                 )
@@ -1520,14 +1728,22 @@ class FletSpeechToTextApp:
                     progress_bar.visible = False
                     lbl_status.value = "İndirme iptal edildi."
                     lbl_status.color = TEXT_MUTED
-                    self.page.update()
+                    self._safe_update(btn_cancel_download)
+                    self._safe_update(btn_update)
+                    self._safe_update(progress_bar)
+                    self._safe_update(lbl_status)
                     return
 
                 if ok:
                     btn_cancel_download.visible = False
                     lbl_status.value = "İndirme ve bütünlük doğrulaması tamamlandı. Güncelleme uygulanıyor..."
                     lbl_status.color = SUCCESS
-                    self.page.update()
+                    self._safe_update(btn_cancel_download)
+                    self._safe_update(lbl_status)
+                    # Bir sonraki açılışta gösterilmek üzere sürüm notlarını kaydet ve ertelenmiş güncellemeyi temizle
+                    self.settings["pending_patch_notes"] = info.release_notes or ""
+                    self.settings["postponed_update"] = None
+                    save_settings(self.settings)
                     time.sleep(1)
                     self.updater.apply_update(target_exe)
                 else:
@@ -1536,7 +1752,10 @@ class FletSpeechToTextApp:
                     progress_bar.visible = False
                     lbl_status.value = "İndirme veya doğrulama başarısız oldu. Lütfen tekrar deneyin."
                     lbl_status.color = DANGER
-                    self.page.update()
+                    self._safe_update(btn_cancel_download)
+                    self._safe_update(btn_update)
+                    self._safe_update(progress_bar)
+                    self._safe_update(lbl_status)
 
             threading.Thread(target=_download_task, daemon=True).start()
 
@@ -1788,7 +2007,18 @@ def run_flet_app(page: ft.Page):
         page.services.append(app.file_picker)
     page.add(app.build_layout())
     app.play_entrance_animation()
-    app.start_background_update_check()
+
+    # 1. Guncelleme sonrasi ilk acilista yama notlarini goster
+    patch_notes_shown = app.check_and_show_patch_notes()
+
+    # 2. Yama notlari gosterilmediyse, ertelenmis bir guncelleme var mi kontrol et
+    if not patch_notes_shown:
+        postponed_prompted = app.check_and_prompt_postponed_update()
+        if not postponed_prompted:
+            app.start_background_update_check()
+    else:
+        app.start_background_update_check()
+
     app.check_and_prompt_prerequisites()
 
     # Pencereyi odakla ve ön planda tut; pencere opaklığını 1.0 olarak sabit tut (DWM şeffaflık hatasını önler)
