@@ -44,6 +44,8 @@ def postprocess_segments(
     segments: List[Dict[str, Any]],
     remove_hallucinations: bool = True,
     remove_repeated_phrases: bool = True,
+    apply_itn: bool = True,
+    clean_disfluencies: bool = True,
     min_segment_chars: int = 2,
 ) -> List[Dict[str, Any]]:
     """Tüm segmentlere Türkçe son-işleme uygular.
@@ -52,11 +54,15 @@ def postprocess_segments(
         segments: Whisper segment listesi [{'id': ..., 'text': ..., 'start': ..., 'end': ...}]
         remove_hallucinations: Halüsinasyon kalıplarını kaldır
         remove_repeated_phrases: Tekrarlayan cümleleri kaldır
+        apply_itn: Türkçe sayı, yüzde ve para birimlerini yazılı biçime dönüştür (ITN)
+        clean_disfluencies: Dolgu sözcükleri ('ııı', 'şey' vb.) temizle
         min_segment_chars: Bu karakter sayısından kısa segmentleri kaldır
     
     Returns:
         Temizlenmiş segment listesi
     """
+    from src.itn import apply_turkish_itn
+
     cleaned = []
     prev_text = ""
     
@@ -77,7 +83,18 @@ def postprocess_segments(
         # 3. Türkçe karakter ve noktalama düzeltmeleri
         text = _fix_turkish_text(text)
         
-        # 4. Minimum uzunluk kontrolü
+        # 4. Türkçe Ters Metin Normalizasyonu (ITN) ve Dolgu Temizliği
+        if apply_itn or clean_disfluencies:
+            text = apply_turkish_itn(
+                text,
+                convert_numbers=apply_itn,
+                convert_percentages=apply_itn,
+                convert_currencies=apply_itn,
+                convert_ordinals=apply_itn,
+                remove_fillers=clean_disfluencies,
+            )
+        
+        # 5. Minimum uzunluk kontrolü
         text_stripped = re.sub(r'[^\w]', '', text)
         if len(text_stripped) < min_segment_chars:
             continue

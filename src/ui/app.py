@@ -192,11 +192,46 @@ class FletSpeechToTextApp:
         )
 
         self.chk_enhance = ft.Checkbox(
-            label="Ses Ön-İyileştirme (80Hz gürültü kesici & dengeleme)",
-            value=True,
+            label="Ses Ön-İyileştirme (80Hz - 7600Hz bant filtre)",
+            value=self.settings.get("enhance_audio", True),
             check_color=TEXT_MAIN,
             active_color=ACCENT_PRIMARY,
             label_style=ft.TextStyle(size=11, color=TEXT_MUTED),
+        )
+
+        self.chk_loudnorm = ft.Checkbox(
+            label="EBU R128 Ses Normalizasyonu (-16 LUFS)",
+            value=self.settings.get("normalize_loudness", True),
+            check_color=TEXT_MAIN,
+            active_color=ACCENT_PRIMARY,
+            label_style=ft.TextStyle(size=11, color=TEXT_MUTED),
+        )
+
+        self.chk_itn = ft.Checkbox(
+            label="Türkçe Sayı & Yüzde Dönüşümü (ITN)",
+            value=self.settings.get("apply_itn", True),
+            check_color=TEXT_MAIN,
+            active_color=ACCENT_PRIMARY,
+            label_style=ft.TextStyle(size=11, color=TEXT_MUTED),
+        )
+
+        self.chk_disfluencies = ft.Checkbox(
+            label="Dolgu Sözcük Temizliği (ııı, şey vb.)",
+            value=self.settings.get("clean_disfluencies", True),
+            check_color=TEXT_MAIN,
+            active_color=ACCENT_PRIMARY,
+            label_style=ft.TextStyle(size=11, color=TEXT_MUTED),
+        )
+
+        self.entry_vocab = ft.TextField(
+            hint_text="Teknik terim / sözlük ipuçları (örn: Supabase, TEKNOFEST, API)",
+            value=self.settings.get("vocabulary_bias", ""),
+            height=32,
+            text_size=11,
+            bgcolor=INPUT_BG,
+            border_color=INPUT_BORDER,
+            color=TEXT_MAIN,
+            content_padding=ft.Padding.symmetric(horizontal=10),
         )
 
         # Dosya ve YouTube Girişleri
@@ -495,6 +530,16 @@ class FletSpeechToTextApp:
                         spacing=8,
                     ),
                     self.chk_enhance,
+                    self.chk_loudnorm,
+                    self.chk_itn,
+                    self.chk_disfluencies,
+                    ft.Column(
+                        controls=[
+                            ft.Text(value="Alan Sözlüğü / Terim İpuçları:", size=10, weight=ft.FontWeight.BOLD, color=TEXT_MUTED),
+                            self.entry_vocab,
+                        ],
+                        spacing=2,
+                    ),
                 ],
                 spacing=8,
             ),
@@ -821,10 +866,14 @@ class FletSpeechToTextApp:
                     raise RuntimeError(f"YouTube sesi indirilemedi: {clean_error_message(dl_err)}")
                 temp_wav = wav_path
             else:
-                ext_ok, wav_path, ext_err = extract_audio_to_wav(media_source)
-                if not ext_ok or not wav_path:
-                    raise RuntimeError(f"Ses donusturulemedi: {ext_err}")
-                temp_wav = wav_path
+                try:
+                    temp_wav = extract_audio_to_wav(
+                        media_source,
+                        normalize_loudness=bool(self.chk_loudnorm.value),
+                        apply_bandpass=bool(self.chk_enhance.value),
+                    )
+                except Exception as ext_err:
+                    raise RuntimeError(f"Ses dönüştürülemedi: {ext_err}")
 
             if self.cancel_requested:
                 raise InterruptedError("İşlem kullanıcı tarafından iptal edildi.")
@@ -837,11 +886,12 @@ class FletSpeechToTextApp:
             if self.chk_enhance.value:
                 self.stepper.set_active_step(1)
                 self._update_progress(0.18, "2/5: Ses frekans ve gürültü dengesi optimize ediliyor...")
-                enh_ok, enh_path, enh_err = enhance_audio(temp_wav)
-                if enh_ok and enh_path:
-                    enhanced_wav = enh_path
-                    audio_for_stt = enh_path
-                else:
+                try:
+                    out_enh = str(TEMP_DIR / f"enhanced_{os.path.basename(temp_wav)}")
+                    enhanced_wav = enhance_audio(temp_wav, out_enh)
+                    audio_for_stt = enhanced_wav
+                except Exception as enh_err:
+                    print(f"Ses iyileştirme atlandı: {enh_err}")
                     audio_for_stt = temp_wav
 
             if self.cancel_requested:
@@ -865,12 +915,16 @@ class FletSpeechToTextApp:
                 scaled = 0.20 + (pct * 0.55)
                 self._update_progress(scaled, f"3/5: {msg}")
 
+            vocab_prompt = self.entry_vocab.value.strip() if self.entry_vocab.value else None
             stt_segments = transcriber.transcribe(
                 audio_path=audio_for_stt,
                 language=lang_choice,
                 total_duration=total_dur,
+                initial_prompt=vocab_prompt,
                 vad_sensitivity=vad_choice,
                 apply_postprocessing=True,
+                apply_itn=bool(self.chk_itn.value),
+                clean_disfluencies=bool(self.chk_disfluencies.value),
                 progress_callback=whisper_progress,
             )
 

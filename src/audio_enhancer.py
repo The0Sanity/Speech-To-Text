@@ -31,11 +31,11 @@ def enhance_audio(
     if audio_data.ndim > 1:
         audio_data = np.mean(audio_data, axis=1)
     
-    # 1. Yüksek geçiren filtre (High-pass filter at 80Hz)
-    # Removes low-frequency rumble, hum, wind noise
+    # 1. Bant geçiren filtre (Bandpass filter at 80Hz - 7600Hz)
+    # 80Hz altı rumble/hum ve 7600Hz üzeri aliasing gürültüsünü temizler
     if progress_callback:
-        progress_callback(0.02, "Düşük frekans gürültüsü temizleniyor (80Hz filtre)...")
-    audio_data = apply_highpass_filter(audio_data, sample_rate, cutoff_hz=80)
+        progress_callback(0.02, "Bant geçiren filtre uygulanıyor (80Hz - 7600Hz)...")
+    audio_data = apply_bandpass_filter(audio_data, sample_rate, low_cutoff=80.0, high_cutoff=7600.0)
     
     # 2. Gürültü kapısı (Noise Gate)
     # Suppress noise in quiet sections
@@ -58,6 +58,22 @@ def enhance_audio(
         progress_callback(0.05, "Ses iyileştirme tamamlandı.")
     
     return output_path
+
+
+def apply_bandpass_filter(
+    audio: np.ndarray,
+    sample_rate: int,
+    low_cutoff: float = 80.0,
+    high_cutoff: float = 7600.0,
+) -> np.ndarray:
+    """ASR için 80Hz (rumble/plosive) ile 7600Hz (Nyquist aliasing) arası bant geçiren filtre uygular."""
+    nyquist = sample_rate / 2.0
+    low = max(1.0, low_cutoff) / nyquist
+    high = min(nyquist - 1.0, high_cutoff) / nyquist
+    if low >= high or low >= 1.0 or high <= 0.0:
+        return audio
+    sos = scipy_signal.butter(4, [low, high], btype='bandpass', output='sos')
+    return scipy_signal.sosfiltfilt(sos, audio).astype(np.float32)
 
 
 def apply_highpass_filter(audio: np.ndarray, sample_rate: int, cutoff_hz: float = 80.0) -> np.ndarray:

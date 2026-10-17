@@ -118,14 +118,43 @@ def format_time(seconds: float) -> str:
     return f"{minutes:02d}:{secs:02d}"
 
 
+def build_ffmpeg_filter_string(
+    enable_loudnorm: bool = True,
+    highpass_hz: int = 80,
+    lowpass_hz: int = 7600,
+    target_lufs: float = -16.0,
+    target_tp: float = -1.5,
+    target_lra: float = 11.0,
+) -> str:
+    """ASR için optimize edilmiş FFmpeg ses filtre zincirini oluşturur.
+    
+    Örnek:
+        "highpass=f=80,lowpass=f=7600,loudnorm=I=-16:TP=-1.5:LRA=11"
+    """
+    filters = []
+    if highpass_hz > 0:
+        filters.append(f"highpass=f={highpass_hz}")
+    if lowpass_hz > 0:
+        filters.append(f"lowpass=f={lowpass_hz}")
+    if enable_loudnorm:
+        lufs_str = f"{int(target_lufs)}" if float(target_lufs).is_integer() else f"{target_lufs}"
+        tp_str = f"{int(target_tp)}" if float(target_tp).is_integer() else f"{target_tp}"
+        lra_str = f"{int(target_lra)}" if float(target_lra).is_integer() else f"{target_lra}"
+        filters.append(f"loudnorm=I={lufs_str}:TP={tp_str}:LRA={lra_str}")
+    return ",".join(filters)
+
+
 def extract_audio_to_wav(
     input_file: str,
     output_wav_path: Optional[str] = None,
-    sample_rate: int = 16000
+    sample_rate: int = 16000,
+    normalize_loudness: bool = True,
+    apply_bandpass: bool = True,
 ) -> str:
     """Herhangi bir video/ses dosyasını 16kHz mono 16-bit PCM WAV formatına dönüştürür.
     
-    Bu format Whisper ve Diarization motorları için endüstri standardıdır.
+    EBU R128 (-16 LUFS) normalizasyonu ve 80Hz-7600Hz bant filtreleme uygulayarak
+    Whisper ve Diarization için en yüksek sinyal kalitesini sağlar.
     """
     ffmpeg_exe = find_ffmpeg()
     if not ffmpeg_exe:
@@ -135,13 +164,7 @@ def extract_audio_to_wav(
         unique_name = f"audio_{uuid.uuid4().hex[:8]}.wav"
         output_wav_path = str(TEMP_DIR / unique_name)
 
-    # ffmpeg parametreleri:
-    # -y: Mevcut dosyanın üzerine yaz
-    # -i: Girdi dosyası
-    # -vn: Varsa video akışını göz ardı et
-    # -ac 1: Tek kanal (mono)
-    # -ar: Örnekleme hızı (16000 Hz)
-    # -c:a pcm_s16le: 16-bit signed PCM codec
+    # Temel dönüştürme komutu
     cmd = [
         ffmpeg_exe,
         "-y",
@@ -149,9 +172,18 @@ def extract_audio_to_wav(
         "-vn",
         "-ac", "1",
         "-ar", str(sample_rate),
-        "-c:a", "pcm_s16le",
-        output_wav_path,
     ]
+
+    # Ses filtreleri (EBU R128 + Bandpass)
+    filter_chain = build_ffmpeg_filter_string(
+        enable_loudnorm=normalize_loudness,
+        highpass_hz=80 if apply_bandpass else 0,
+        lowpass_hz=7600 if apply_bandpass else 0,
+    )
+    if filter_chain:
+        cmd.extend(["-af", filter_chain])
+
+    cmd.extend(["-c:a", "pcm_s16le", output_wav_path])
 
     # Windows'ta konsol penceresi açılmasını engellemek için startupinfo
     startupinfo = None
@@ -166,6 +198,26 @@ def extract_audio_to_wav(
         startupinfo=startupinfo,
         text=True,
     )
+
+    # Filtre başarısız olursa güvenli standart dönüştürmeyi dene (fallback)
+    if process.returncode != 0 and filter_chain:
+        fallback_cmd = [
+            ffmpeg_exe,
+            "-y",
+            "-i", input_file,
+            "-vn",
+            "-ac", "1",
+            "-ar", str(sample_rate),
+            "-c:a", "pcm_s16le",
+            output_wav_path,
+        ]
+        process = subprocess.run(
+            fallback_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            startupinfo=startupinfo,
+            text=True,
+        )
 
     if process.returncode != 0:
         raise RuntimeError(f"FFmpeg ses dönüştürme hatası: {process.stderr}")

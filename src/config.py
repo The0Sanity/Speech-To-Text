@@ -41,7 +41,12 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "theme": "dark",               # "dark", "light", "system"
     "auto_merge_gap": 1.5,         # Aynı konuşmacının ardışık cümlelerini birleştirme eşiği (sn)
     "enhance_audio": True,         # Ön-işleme ses iyileştirme (Gürültü kapısı + Filtre + Normalizasyon)
+    "normalize_loudness": True,    # EBU R128 Loudness normalizasyonu (-16 LUFS)
     "postprocess_text": True,      # Türkçe metin temizleme ve halüsinasyon filtresi
+    "apply_itn": True,             # Türkçe Ters Metin Normalizasyonu (Sayı, Yüzde, Para)
+    "clean_disfluencies": True,    # Dolgu sözcük temizliği (ııı, eee, şey, yani)
+    "rolling_prompt": True,        # Segmentler arası hareketli bağlam istemi (Rolling Context)
+    "vocabulary_bias": "",         # Özel terim ve sözlük ipuçları
     "beam_size": 5,                # Arama genişliği (Yüksek doğruluk)
     "vad_sensitivity": "high",     # "high" (Sessiz ve hızlı sesleri kaçırmaz), "normal"
     "last_input_dir": str(BASE_DIR),
