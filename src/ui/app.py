@@ -4,6 +4,7 @@ import os
 import sys
 import threading
 import time
+import webbrowser
 from typing import Any, Dict, List, Optional
 import flet as ft
 
@@ -31,7 +32,7 @@ from src.config import (
     load_settings,
     save_settings,
 )
-from src.updater import AutoUpdater, UpdateInfo
+from src.updater import AutoUpdater, CheckStatus, UpdateInfo
 from src.diarizer import SpeakerDiarizer
 from src.exporter import (
     export_to_csv,
@@ -1349,9 +1350,18 @@ class FletSpeechToTextApp:
 
         threading.Thread(target=_check, daemon=True).start()
 
+    def _check_can_update(self) -> bool:
+        """Aktif bir transkripsiyon işlemi olup olmadığını denetler."""
+        if getattr(self, "is_transcribing", False):
+            self._show_toast("Transkripsiyon devam ederken güncelleme yapılamaz.", is_error=True)
+            return False
+        return True
+
     def check_updates_dialog(self, manual: bool = True):
         """Kullanıcı tarafından tetiklenen güncelleme denetimi."""
         if not self.page:
+            return
+        if not self._check_can_update():
             return
 
         if manual:
@@ -1363,9 +1373,19 @@ class FletSpeechToTextApp:
                 if not self.page:
                     return
 
-                if not info:
+                if not info or info.status == CheckStatus.ERROR:
                     if manual:
-                        self._show_toast("Güncellemeler denetlenemedi veya ağ bağlantısı yok.", is_error=True)
+                        err = info.error_message if (info and info.error_message) else "Güncellemeler denetlenemedi."
+                        self._show_toast(err, is_error=True)
+                elif info.status == CheckStatus.RATE_LIMITED:
+                    if manual:
+                        self._show_toast(info.error_message or "GitHub saatlik istek sınırı aşıldı.", is_error=True)
+                elif info.status == CheckStatus.OFFLINE:
+                    if manual:
+                        self._show_toast("İnternet bağlantısı kurulamadı.", is_error=True)
+                elif info.status == CheckStatus.NO_RELEASES:
+                    if manual:
+                        self._show_toast("Henüz yayınlanmış bir sürüm bulunamadı.", is_error=False)
                 elif info.is_update_available:
                     self._show_update_modal(info)
                 else:
@@ -1382,6 +1402,8 @@ class FletSpeechToTextApp:
         """Yeni sürüm bulunduğunda modal güncelleme penceresi açar."""
         if not self.page:
             return
+        if not self._check_can_update():
+            return
 
         size_mb = f"{info.asset_size / (1024*1024):.1f} MB" if info.asset_size else "Belirtilmedi"
 
@@ -1392,16 +1414,35 @@ class FletSpeechToTextApp:
         )
         progress_bar = ft.ProgressBar(visible=False, color=ACCENT_PRIMARY, bgcolor=BTN_NEUTRAL)
 
-        def _close_dialog(_):
+        cancel_event = threading.Event()
+
+        def _close_dialog(_=None):
+            cancel_event.set()
             dialog.open = False
             self.page.update()
 
+        def _cancel_download(_):
+            cancel_event.set()
+            btn_cancel_download.visible = False
+            btn_update.disabled = False
+            progress_bar.visible = False
+            lbl_status.value = "İndirme kullanıcı tarafından iptal edildi."
+            lbl_status.color = TEXT_MUTED
+            self.page.update()
+
         def _start_download(_):
+            if not self._check_can_update():
+                return
             if not info.download_url:
                 return
+
+            cancel_event.clear()
             btn_update.disabled = True
+            btn_cancel_download.visible = True
             progress_bar.visible = True
+            progress_bar.value = 0.0
             lbl_status.value = "Güncelleme indiriliyor..."
+            lbl_status.color = TEXT_MUTED
             self.page.update()
 
             def _download_task():
@@ -1416,20 +1457,46 @@ class FletSpeechToTextApp:
                         lbl_status.value = f"İndiriliyor: {dl // 1048576}MB"
                     self.page.update()
 
-                ok = self.updater.download_asset(info.download_url, target_exe, _on_prog)
+                ok = self.updater.download_asset(
+                    info.download_url,
+                    target_exe,
+                    progress_callback=_on_prog,
+                    cancel_event=cancel_event,
+                    verify_pe=True,
+                )
+
+                if cancel_event.is_set():
+                    btn_cancel_download.visible = False
+                    btn_update.disabled = False
+                    progress_bar.visible = False
+                    lbl_status.value = "İndirme iptal edildi."
+                    lbl_status.color = TEXT_MUTED
+                    self.page.update()
+                    return
+
                 if ok:
-                    lbl_status.value = "İndirme tamamlandı. Güncelleme uygulanıyor..."
+                    btn_cancel_download.visible = False
+                    lbl_status.value = "İndirme ve bütünlük doğrulaması tamamlandı. Güncelleme uygulanıyor..."
+                    lbl_status.color = SUCCESS
                     self.page.update()
                     time.sleep(1)
                     self.updater.apply_update(target_exe)
                 else:
+                    btn_cancel_download.visible = False
                     btn_update.disabled = False
                     progress_bar.visible = False
-                    lbl_status.value = "İndirme başarısız oldu. Lütfen tekrar deneyin."
+                    lbl_status.value = "İndirme veya doğrulama başarısız oldu. Lütfen tekrar deneyin."
                     lbl_status.color = DANGER
                     self.page.update()
 
             threading.Thread(target=_download_task, daemon=True).start()
+
+        def _open_github(_):
+            url = info.html_url or f"https://github.com/{self.updater.repo_owner}/{self.updater.repo_name}/releases"
+            try:
+                webbrowser.open(url)
+            except Exception:
+                pass
 
         btn_update = ft.FilledButton(
             content=ft.Text("Şimdi Güncelle", size=12, weight=ft.FontWeight.BOLD),
@@ -1437,6 +1504,19 @@ class FletSpeechToTextApp:
             color=TEXT_MAIN,
             disabled=not info.has_exe_asset,
             on_click=_start_download,
+        )
+        btn_cancel_download = ft.FilledButton(
+            content=ft.Text("İptal Et", size=11, weight=ft.FontWeight.W_500),
+            bgcolor=DANGER,
+            color=TEXT_MAIN,
+            visible=False,
+            on_click=_cancel_download,
+        )
+        btn_github = ft.FilledButton(
+            content=ft.Text("GitHub'da İncele", size=11, weight=ft.FontWeight.W_500),
+            bgcolor=BTN_NEUTRAL,
+            color=TEXT_MAIN,
+            on_click=_open_github,
         )
         btn_later = ft.FilledButton(
             content=ft.Text("Daha Sonra", size=12, weight=ft.FontWeight.W_500),
@@ -1476,9 +1556,9 @@ class FletSpeechToTextApp:
                     spacing=8,
                     tight=True,
                 ),
-                width=420,
+                width=440,
             ),
-            actions=[btn_update, btn_later],
+            actions=[btn_github, btn_cancel_download, btn_update, btn_later],
             actions_alignment=ft.MainAxisAlignment.END,
         )
 
