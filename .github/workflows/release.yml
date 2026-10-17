@@ -83,6 +83,18 @@ jobs:
           Write-Host "Resolved release tag: $tag"
           "release_tag=$tag" >> $env:GITHUB_OUTPUT
 
+      - name: Generate Release Patch Notes
+        shell: pwsh
+        run: |
+          python scripts/generate_patch_notes.py `
+            --tag "${{ steps.resolve_tag.outputs.release_tag }}" `
+            --changelog "CHANGELOG.md" `
+            --sha256 "dist/SpeechToText.exe.sha256" `
+            --output "release_notes.md" `
+            --repo "${{ github.repository }}"
+          Write-Host "Generated release_notes.md:"
+          Get-Content "release_notes.md"
+
       - name: Create GitHub Release and Upload Assets
         uses: softprops/action-gh-release@v2
         with:
@@ -90,7 +102,7 @@ jobs:
           name: Speech-To-Text ${{ steps.resolve_tag.outputs.release_tag }}
           draft: false
           prerelease: false
-          generate_release_notes: true
+          body_path: release_notes.md
           files: |
             dist/SpeechToText.exe
             dist/SpeechToText.exe.sha256
