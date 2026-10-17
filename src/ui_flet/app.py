@@ -1165,7 +1165,13 @@ def run_flet_app(page: ft.Page):
         page.window.height = 840
         page.window.min_width = 960
         page.window.min_height = 640
-        page.window.center()
+        try:
+            if hasattr(page, "run_task"):
+                page.run_task(page.window.center)
+            else:
+                page.window.center()
+        except Exception:
+            pass
         # Başlangıç opaklığı
         page.window.opacity = 0.0
         page.update()
