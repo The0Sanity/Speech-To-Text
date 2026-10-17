@@ -86,27 +86,26 @@ Speech-To-Text/
 ├── requirements.txt         # Bağımlılık listesi (Flet, Faster-Whisper vb.)
 ├── run.bat                  # Tek tıkla otomatik bağımlılık kontrolü ve başlatma betiği
 ├── docs/                    # Proje belgeleri ve mimari planları
+│   ├── NEXT_VERSIONS_ROADMAP.md # Gelecek surumler ve sifir kurulum mimari yol haritasi
 │   ├── PRODUCT.md           # Ürün ve tasarım manifestosu
 │   └── turkish_stt_diarization_plan.md # Mimari planlama dokümanı
 ├── src/
 │   ├── aligner.py           # Metin-konuşmacı hizalama, istatistik ve arama motoru
 │   ├── audio_enhancer.py    # Gürültü filtresi, 80Hz yüksek geçiren filtre ve normalizasyon
 │   ├── audio_processor.py   # FFmpeg ses ayrıştırma ve medya analizleri
-│   ├── config.py            # Dizinler ve ayar yöneticisi
+│   ├── bootstrapper.py      # Otomatik bagimlilik ve FFmpeg kurulum yoneticisi
+│   ├── config.py            # Dizinler, kalici kayit ve ayar yoneticisi
 │   ├── diarizer.py          # Akustik ve Pyannote konuşmacı ayrıştırma motoru
 │   ├── exporter.py          # TXT, SRT, VTT, JSON, CSV ve Markdown dışa aktarıcılar
 │   ├── text_postprocessor.py# Türkçe karakter, noktalama ve halüsinasyon filtresi
 │   ├── transcriber.py       # CTranslate2 optimize Faster-Whisper motoru
+│   ├── updater.py           # Otomatik guncelleme motoru (GitHub Releases)
 │   ├── youtube_downloader.py# yt-dlp tabanlı YouTube ses indirici
-│   ├── ui_flet/             # Modern Flet (Flutter) Masaüstü Arayüzü
-│   │   ├── __init__.py      # Modül başlatıcı
-│   │   ├── app.py           # Ana uygulama penceresi, kontroller ve boru hattı bağlantısı
-│   │   ├── components.py    # MetricCard, ProcessStepper, AudioPlayerBar, TurnCard
-│   │   └── theme.py         # Windows 11 Fluent dark renk paleti ve konuşmacı renkleri
-│   └── ui/                  # CustomTkinter arayüzü (yedek/legacy mod)
-│       ├── app.py           # CustomTkinter masaüstü arayüzü
-│       ├── components.py    # Kartlar, stepper, metrikler, ses oynatıcı
-│       └── style.py         # Tema tokenleri ve palet
+│   └── ui/                  # Modern Flet Masaustu Arayuzu
+│       ├── app.py           # Ana uygulama penceresi, kontroller ve boru hattı bağlantısı
+│       ├── components.py    # MetricCard, ProcessStepper, AudioPlayerBar, TurnCard
+│       ├── style.py         # Tema tokenleri ve palet
+│       └── theme.py         # Windows 11 Fluent dark renk paleti ve konuşmacı renkleri
 └── tests/                   # Kapsamlı birim ve entegrasyon testleri
 ```
 

@@ -1591,6 +1591,131 @@ class FletSpeechToTextApp:
             dialog.open = True
             self.page.update()
 
+    def check_and_prompt_prerequisites(self):
+        """Uygulama baslangicinda FFmpeg gereksinimini denetler ve eksikse kurulum onerir."""
+        def _check():
+            try:
+                from src.bootstrapper import DependencyBootstrapper
+                bootstrapper = DependencyBootstrapper()
+                status = bootstrapper.check_ffmpeg_status()
+                if not status["installed"] and self.page:
+                    self._show_ffmpeg_bootstrapper_dialog(bootstrapper)
+            except Exception as e:
+                print(f"Gereksinim denetimi atlandi: {e}")
+
+        threading.Thread(target=_check, daemon=True).start()
+
+    def _show_ffmpeg_bootstrapper_dialog(self, bootstrapper):
+        """FFmpeg eksik oldugunda tek tikla otomatik indirme ve ayiklama modali sunar."""
+        if not self.page:
+            return
+
+        progress_bar = ft.ProgressBar(value=0.0, visible=False, color=ACCENT, bgcolor=BORDER_SUBTLE)
+        lbl_status = ft.Text(
+            "Ses/video dosyalari ve YouTube medyalarini islemek icin FFmpeg gereklidir. Sisteminizde FFmpeg bulunamadi.",
+            size=12,
+            color=TEXT_MUTED,
+        )
+
+        cancel_event = threading.Event()
+
+        def _close_dialog(e=None):
+            cancel_event.set()
+            if hasattr(self.page, "close"):
+                self.page.close(dialog)
+            else:
+                dialog.open = False
+                self.page.update()
+
+        btn_later = ft.TextButton("Daha Sonra", on_click=_close_dialog)
+        btn_install = ft.ElevatedButton(
+            "Otomatik Indir ve Kur",
+            bgcolor=ACCENT,
+            color=TEXT_MAIN,
+        )
+
+        def _do_install(e):
+            btn_install.disabled = True
+            btn_later.disabled = True
+            progress_bar.visible = True
+            progress_bar.value = None
+            lbl_status.value = "FFmpeg paketi hazirlaniyor..."
+            self.page.update()
+
+            def _progress(pct, msg):
+                def _update():
+                    if pct > 0:
+                        progress_bar.value = pct
+                    lbl_status.value = msg
+                    if self.page:
+                        self.page.update()
+                if self.page:
+                    if hasattr(self.page, "run_task"):
+                        import asyncio
+                        async def _coro():
+                            _update()
+                        self.page.run_task(_coro)
+                    else:
+                        _update()
+
+            def _worker():
+                success = bootstrapper.download_and_extract_ffmpeg(
+                    progress_callback=_progress,
+                    cancel_event=cancel_event,
+                )
+                def _done():
+                    btn_later.disabled = False
+                    if success:
+                        lbl_status.value = "FFmpeg basariyla kuruldu ve etkinlestirildi."
+                        lbl_status.color = SUCCESS
+                        progress_bar.value = 1.0
+                        btn_install.text = "Tamamlandi"
+                        btn_later.text = "Kapat"
+                    else:
+                        lbl_status.value = "Kurulum tamamlanamadi. Lutfen internet baglantinizi kontrol edin."
+                        lbl_status.color = ERROR
+                        btn_install.disabled = False
+                    if self.page:
+                        self.page.update()
+
+                if self.page:
+                    if hasattr(self.page, "run_task"):
+                        import asyncio
+                        async def _coro_done():
+                            _done()
+                        self.page.run_task(_coro_done)
+                    else:
+                        _done()
+
+            threading.Thread(target=_worker, daemon=True).start()
+
+        btn_install.on_click = _do_install
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("FFmpeg Gereksinimi", size=16, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+            content=ft.Container(
+                content=ft.Column(
+                    controls=[
+                        lbl_status,
+                        progress_bar,
+                    ],
+                    spacing=12,
+                    tight=True,
+                ),
+                width=420,
+            ),
+            actions=[btn_install, btn_later],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+
+        if hasattr(self.page, "open"):
+            self.page.open(dialog)
+        else:
+            self.page.overlay.append(dialog)
+            dialog.open = True
+            self.page.update()
+
 
 def run_flet_app(page: ft.Page):
     """Flet masaüstü pencere başlatıcısı ve açılış animasyonu."""
@@ -1624,6 +1749,7 @@ def run_flet_app(page: ft.Page):
     page.add(app.build_layout())
     app.play_entrance_animation()
     app.start_background_update_check()
+    app.check_and_prompt_prerequisites()
 
     # Açılış fade-in animasyonu (60 FPS pürüzsüz geçiş)
     def _fade_in_worker():

@@ -18,8 +18,25 @@ def find_ffmpeg() -> Optional[str]:
     if direct:
         return direct
 
-    # 2. WinGet Link dizini
+    # 2. Bootstrapper / Uygulama ozel bin dizini
     local_appdata = os.environ.get("LOCALAPPDATA", "")
+    if local_appdata:
+        app_bin = Path(local_appdata) / "SpeechToText" / "bin" / "ffmpeg.exe"
+        if app_bin.is_file():
+            bin_dir = str(app_bin.parent)
+            if bin_dir not in os.environ.get("PATH", ""):
+                os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
+            return str(app_bin)
+
+    from src.config import BASE_DIR
+    local_bin = BASE_DIR / "bin" / "ffmpeg.exe"
+    if local_bin.is_file():
+        bin_dir = str(local_bin.parent)
+        if bin_dir not in os.environ.get("PATH", ""):
+            os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
+        return str(local_bin)
+
+    # 3. WinGet Link dizini
     if local_appdata:
         winget_link = Path(local_appdata) / "Microsoft" / "WinGet" / "Links" / "ffmpeg.exe"
         if winget_link.is_file():

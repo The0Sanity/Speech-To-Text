@@ -74,7 +74,7 @@ class TestAppIntegration(unittest.TestCase):
 
     def test_06_updater_integration(self):
         """AutoUpdater bileşeninin uygulamaya doğru şekilde bağlandığını doğrular."""
-        self.assertEqual(self.app.updater.current_version, "1.0.0")
+        self.assertEqual(self.app.updater.current_version, self.app.APP_VERSION)
         self.assertTrue(hasattr(self.app, "check_updates_dialog"))
         self.assertTrue(hasattr(self.app, "start_background_update_check"))
 

@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict
 
@@ -12,14 +13,40 @@ try:
 except Exception:
     pass
 
-# Temel Dizin Yolları
-BASE_DIR = Path(__file__).resolve().parent.parent
+def get_base_dir() -> Path:
+    """Uygulamanin kalici calisma dizinini tespit eder.
+
+    PyInstaller tek-dosya (one-file) kipinde __file__ gecici _MEIPASS
+    dizinini gosterir. Verilerin uygulama kapandiginda kaybolmamasi icin
+    calistirilabilir dosyanin (sys.executable) bulundugu gercek dizin alinir.
+    Eger bu dizin salt-okunur ise, %LOCALAPPDATA%/SpeechToText dizinine guvenli
+    gecis yapilir.
+    """
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        test_file = exe_dir / ".write_test"
+        try:
+            test_file.touch()
+            test_file.unlink()
+            return exe_dir
+        except (PermissionError, OSError):
+            local_appdata = os.environ.get("LOCALAPPDATA")
+            if local_appdata:
+                fallback = Path(local_appdata) / "SpeechToText"
+                fallback.mkdir(parents=True, exist_ok=True)
+                return fallback
+            return exe_dir
+    return Path(__file__).resolve().parent.parent
+
+
+# Temel Dizin Yollari
+BASE_DIR = get_base_dir()
 MODELS_DIR = BASE_DIR / "models"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 TEMP_DIR = BASE_DIR / "temp"
 SETTINGS_FILE = BASE_DIR / "settings.json"
-# Uygulama Sürümü ve Depo Bilgileri
-APP_VERSION = "1.0.0"
+# Uygulama Surumu ve Depo Bilgileri
+APP_VERSION = "1.0.1"
 APP_NAME = "SesMetin Pro"
 GITHUB_REPO_OWNER = "The0Sanity"
 GITHUB_REPO_NAME = "Speech-To-Text"

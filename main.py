@@ -83,8 +83,35 @@ def main():
             raise RuntimeError("Uyumlu bir Flet çalıştırma metodu (run / app) bulunamadı.")
     except Exception as e:
         import traceback
+        err_msg = traceback.format_exc()
+        try:
+            from src.config import get_base_dir
+            crash_log = get_base_dir() / "crash.log"
+        except Exception:
+            crash_log = Path("crash.log")
+
+        try:
+            with open(crash_log, "w", encoding="utf-8") as f:
+                f.write(err_msg)
+        except Exception:
+            pass
+
         traceback.print_exc()
-        input("\nUygulama çalışırken beklenmeyen bir hata oluştu. Çıkmak için Enter'a basın...")
+
+        if sys.stdin and hasattr(sys.stdin, "isatty") and sys.stdin.isatty():
+            try:
+                input("\nUygulama calisirken beklenmeyen bir hata olustu. Cikmak icin Enter'a basin...")
+            except Exception:
+                pass
+        else:
+            if sys.platform == "win32":
+                try:
+                    import ctypes
+                    short_err = str(e)
+                    box_text = f"Uygulama baslatilirken bir hata olustu:\n\n{short_err}\n\nAyrintili kayit: {crash_log}"
+                    ctypes.windll.user32.MessageBoxW(0, box_text, "SesMetin Hata", 0x10)
+                except Exception:
+                    pass
 
 
 if __name__ == "__main__":
