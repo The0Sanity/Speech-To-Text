@@ -78,7 +78,11 @@ Geliştiriciler ve kaynak kod üzerinden çalıştırmak isteyenler için:
 
 Geliştirme süreci planlı sürümler halinde yürütülmektedir. v2.0.0 sürümüne kadar eklenecek tüm özellikler aşağıda listelenmiştir:
 
-### v1.0.3 — Kararlı Temel ve Hızlı Başlatma (Mevcut Sürüm)
+### v1.0.4 — Flet İkonları ve Varlık Bütünlüğü (Mevcut Sürüm)
+- [x] Flet materyal ve cupertino ikon kaynakları (icons.json) paketleme ve çalışma zamanı kendini onarma koruması.
+- [x] Faster-Whisper (silero_vad_v6.onnx) ve CTranslate2 yerel varlıkları PyInstaller veri toplama kancasıyla güvenceye alındı.
+
+### v1.0.3 — Kararlı Temel ve Hızlı Başlatma
 - [x] Tek parça bağımsız `SpeechToText.exe` dağıtımı (Python kurulumu gerektirmez).
 - [x] Anında başlatma optimizasyonu ve pencere önceliklendirmesi (arka planda bekleme sorunu giderildi).
 - [x] Flutter iskelet yükleme (skeleton shimmer) geçiş animasyonları.

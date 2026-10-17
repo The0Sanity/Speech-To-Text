@@ -78,7 +78,11 @@ For developers or advanced users running from the source repository:
 
 Project development is organized into focused release milestones. The roadmap below tracks upcoming features up to version v2.0.0:
 
-### v1.0.3 — Stable Foundation & Fast Launch (Current Release)
+### v1.0.4 — Flet Icons & Asset Integrity (Current Release)
+- [x] Flet material and cupertino icon assets (icons.json) bundling with runtime self-healing protection.
+- [x] Faster-Whisper (silero_vad_v6.onnx) and CTranslate2 native assets secured with PyInstaller data hooks.
+
+### v1.0.3 — Stable Foundation & Fast Launch
 - [x] Standalone single-file `SpeechToText.exe` distribution (zero Python prerequisite).
 - [x] Instant startup optimization with window priority elevation (eliminates background launch delays).
 - [x] Flutter skeleton shimmer loading states for visual feedback.

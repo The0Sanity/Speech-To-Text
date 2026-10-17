@@ -3,6 +3,7 @@
 import os
 import sys
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 block_cipher = None
 
@@ -12,6 +13,13 @@ datas = [
     ('LICENSE', '.'),
 ]
 
+datas += collect_data_files('flet')
+datas += collect_data_files('faster_whisper')
+datas += collect_data_files('ctranslate2')
+
+binaries = []
+binaries += collect_dynamic_libs('ctranslate2')
+
 # Eger flet-windows.zip derleme dizininde mevcutsa flet_desktop altina gom
 if os.path.exists('flet-windows.zip'):
     datas.append(('flet-windows.zip', 'flet_desktop/app'))
@@ -19,7 +27,7 @@ if os.path.exists('flet-windows.zip'):
 a = Analysis(
     ['main.py'],
     pathex=['.'],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=[
         'flet',

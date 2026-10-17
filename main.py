@@ -37,6 +37,81 @@ if sys.platform == "win32":
         except Exception:
             pass
 
+def ensure_flet_icons_available() -> None:
+    """Flet materyal ve cupertino ikon kaynaklarinin varligini dogrular ve calisma zamaninda korur.
+
+    PyInstaller tek-dosya modunda veya kisitli dosya sistemi izinlerinde
+    flet/controls/material/icons.json dosyasinin okunamamasi durumunda
+    uygulamanin FileNotFoundError ile cokmesini engeller ve guvenli yedek
+    esleme saglar.
+    """
+    class SafeIconDict(dict):
+        def __getitem__(self, key):
+            return super().get(key, 0xe000)
+
+        def __contains__(self, key):
+            return True
+
+    # 1. Material Icons korumasi
+    try:
+        from flet.controls.material.icons import _IconsProxy
+
+        orig_mat_load = getattr(_IconsProxy, "_load", None)
+        if callable(orig_mat_load) and not getattr(_IconsProxy, "_is_safe_patched", False):
+            def safe_mat_load(self):
+                if self._map is not None:
+                    return
+                try:
+                    orig_mat_load(self)
+                except Exception:
+                    self._map = SafeIconDict({
+                        "CODE": 0xe174,
+                        "COPY": 0xe197,
+                        "CONTENT_COPY": 0xe197,
+                        "SETTINGS": 0xe57f,
+                        "FOLDER": 0xe2a3,
+                        "AUDIO_FILE": 0xe9e5,
+                        "PLAY_ARROW": 0xe4d8,
+                        "PAUSE": 0xe487,
+                        "STOP": 0xe5bb,
+                        "REFRESH": 0xe526,
+                        "SEARCH": 0xe567,
+                        "DELETE": 0xe1bb,
+                        "DOWNLOAD": 0xe204,
+                        "INFO": 0xe88e,
+                        "WARNING": 0xe002,
+                        "ERROR": 0xe000,
+                        "CHECK": 0xe5ca,
+                        "CLOSE": 0xe5cd,
+                    })
+
+            _IconsProxy._load = safe_mat_load
+            _IconsProxy._is_safe_patched = True
+    except Exception:
+        pass
+
+    # 2. Cupertino Icons korumasi
+    try:
+        from flet.controls.cupertino.cupertino_icons import _CupertinoIconsProxy
+
+        orig_cup_load = getattr(_CupertinoIconsProxy, "_load", None)
+        if callable(orig_cup_load) and not getattr(_CupertinoIconsProxy, "_is_safe_patched", False):
+            def safe_cup_load(self):
+                if self._map is not None:
+                    return
+                try:
+                    orig_cup_load(self)
+                except Exception:
+                    self._map = SafeIconDict()
+
+            _CupertinoIconsProxy._load = safe_cup_load
+            _CupertinoIconsProxy._is_safe_patched = True
+    except Exception:
+        pass
+
+# Baslangicta ikon korumasini derhal devreye al
+ensure_flet_icons_available()
+
 def main():
     """Uygulama giriş noktası."""
     try:

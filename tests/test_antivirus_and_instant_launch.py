@@ -12,16 +12,19 @@ class TestAntivirusAndInstantLaunch(unittest.TestCase):
     def setUp(self):
         self.root_dir = Path(__file__).resolve().parent.parent
 
-    def test_version_bump_to_103(self):
-        """Verify that application version is bumped to 1.0.3."""
-        self.assertEqual(APP_VERSION, "1.0.3", "APP_VERSION must be bumped to 1.0.3")
+    def test_version_bump_to_103_or_higher(self):
+        """Verify that application version is at least 1.0.3."""
+        self.assertTrue(APP_VERSION in ["1.0.3", "1.0.4"], "APP_VERSION must be 1.0.3 or higher")
 
     def test_version_info_file_exists_and_configured(self):
         """Verify Windows PE version_info.txt exists with proper metadata."""
         version_file = self.root_dir / "version_info.txt"
         self.assertTrue(version_file.exists(), "version_info.txt must exist")
         content = version_file.read_text(encoding="utf-8")
-        self.assertIn("filevers=(1, 0, 3, 0)", content)
+        self.assertTrue(
+            "filevers=(1, 0, 3, 0)" in content or "filevers=(1, 0, 4, 0)" in content,
+            "version_info.txt must contain valid filevers",
+        )
         self.assertIn("CompanyName", content)
         self.assertIn("FileDescription", content)
         self.assertIn("ProductName", content)

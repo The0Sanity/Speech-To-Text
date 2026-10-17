@@ -15,6 +15,9 @@ temp/
 temp/*
 outputs/
 models/
+build/
+dist/
+*.zip
 
 # AI Assistant and local instruction files
 CLAUDE.md
