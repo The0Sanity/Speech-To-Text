@@ -110,5 +110,22 @@ class TestConfigRelocationAndVersion(unittest.TestCase):
         )
 
 
+    def test_spec_does_not_package_settings_json(self):
+        """Verify SpeechToText.spec does not attempt to package settings.json."""
+        spec_path = Path(__file__).resolve().parent.parent / "SpeechToText.spec"
+        self.assertTrue(spec_path.exists(), "SpeechToText.spec must exist")
+        content = spec_path.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "'settings.json'",
+            content,
+            "SpeechToText.spec must not include settings.json in datas",
+        )
+        self.assertNotIn(
+            '"settings.json"',
+            content,
+            "SpeechToText.spec must not include settings.json in datas",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
