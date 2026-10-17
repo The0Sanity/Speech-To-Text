@@ -85,7 +85,21 @@ class TestMinimalistUI(unittest.TestCase):
             f"README.md içinde istenmeyen emojiler tespit edildi: {set(emojis_found)}",
         )
 
+    def test_06_no_emojis_in_ui_flet(self):
+        """src/ui_flet modülündeki tüm dosyalarda hiçbir emoji olmamalıdır."""
+        flet_dir = BASE_DIR / "src" / "ui_flet"
+        for py_file in flet_dir.glob("*.py"):
+            with open(py_file, "r", encoding="utf-8") as f:
+                content = f.read()
+            emojis_found = EMOJI_PATTERN.findall(content)
+            self.assertEqual(
+                len(emojis_found),
+                0,
+                f"{py_file.name} içinde istenmeyen emojiler tespit edildi: {set(emojis_found)}",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

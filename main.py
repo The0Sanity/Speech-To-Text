@@ -30,13 +30,16 @@ if sys.platform == "win32":
         except Exception:
             pass
 
-from src.ui.app import run_gui
-
-
 def main():
     """Uygulama giriş noktası."""
     try:
-        run_gui()
+        if "--gui=tk" in sys.argv or "--legacy" in sys.argv:
+            from src.ui.app import run_gui
+            run_gui()
+        else:
+            import flet as ft
+            from src.ui_flet.app import run_flet_app
+            ft.app(target=run_flet_app)
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -45,3 +48,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
