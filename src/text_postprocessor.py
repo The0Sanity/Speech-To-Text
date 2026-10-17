@@ -93,6 +93,8 @@ def postprocess_segments(
                 convert_ordinals=apply_itn,
                 remove_fillers=clean_disfluencies,
             )
+            from src.transcription.post_processing import post_process_transcript
+            text = post_process_transcript(text, apply_itn=apply_itn, apply_phonetic=True)
         
         # 5. Minimum uzunluk kontrolü
         text_stripped = re.sub(r'[^\w]', '', text)

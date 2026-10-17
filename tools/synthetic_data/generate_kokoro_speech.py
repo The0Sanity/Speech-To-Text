@@ -25,24 +25,30 @@ TURKISH_TRAINING_CORPUS: List[str] = [
     "Yeni sürümde konuşmacı ayrıştırma algoritmaları çok daha kararlı çalışıyor.",
 
     # 2. Sayılar, Yüzdeler, Tarihler ve Para Birimleri (ITN Testi)
+    "Toplam 100.000 test başarıyla uygulandı ve raporlandı.",
+    "Modelin kelime hata oranı yüzde sıfır nokta bir seviyesine indirildi.",
     "Toplam maliyet 1500 Türk Lirası olarak belirlendi ve fatura kesildi.",
     "Şirketin üçüncü çeyrek büyüme oranı yüzde 14.8 olarak açıklandı.",
     "Toplantımız 25 Ekim 2026 tarihinde saat 14:30'da başlayacaktır.",
     "Depodaki stok miktarı 450 adetten 120 adede kadar geriledi.",
     "Geliştirici ekibimiz son 24 saat içinde 12 farklı hatayı giderdi.",
+    "Ödeme tutarı 45 TL olarak sisteme işlendi.",
+    "Toplam bütçe 1.200.000 TL olarak belirlendi.",
 
     # 3. Teknik, Yazılım ve Yapay Zeka Terimleri
     "Faster-Whisper mimarisi CTranslate2 kütüphanesi üzerinde INT8 kuantizasyon ile çalışır.",
-    "Modelin kelime hata oranı yüzde 3.6 seviyesine kadar düşürüldü.",
+    "SesMetin Pro v2 modeli en düşük kelime hatasına ulaştı.",
     "Ses sinyali 16 kilohertz frekansta ve tek kanallı olarak filtrelendi.",
     "Yapay zeka modellerimiz hem CPU hem de NVIDIA CUDA hızlandırıcılarını desteklemektedir.",
     "Konuşma aktivite tespiti için Silero VAD algoritması hassas kipte devreye alındı.",
+    "Akustik önişleme ve son işleme entegre edildi.",
+    "Derin öğrenme mimarisi ile akustik model optimize edildi.",
 
-    # 4. Soru Cümleleri ve Diyalog Akışı
-    "Bu ses kaydında kaç farklı konuşmacı olduğunu tespit edebildiniz mi?",
-    "Yapılandırma dosyasındaki ayarları varsayılana sıfırlamak istiyor musunuz?",
-    "Transkripsiyon çıktısını hangi formatta kaydetmek istersiniz?",
-    "Yedekleme işlemi tamamlandı mı yoksa devam mı ediyor?",
+    # 4. Fonetik Zorluklar ve Minimal Çiftler (Hard-Negatives)
+    "Hala devam eden çalışmalarımızın yanında hâlâ yeni algoritmalar deniyoruz.",
+    "Yüksek kâr marjı hedeflenirken kışın yağan kar işleri aksattı.",
+    "Oradaki üç beş kişi haricinde salonda kimse kalmamıştı.",
+    "Yapay zeka teknolojisi ses metin pro ile yeni bir seviyeye ulaştı.",
 ]
 
 

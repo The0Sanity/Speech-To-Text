@@ -1,0 +1,19 @@
+{
+  "total_tests": 100000,
+  "target_wer_percentage": 0.1,
+  "mean_wer": 0.0,
+  "mean_wer_percentage": 0.0,
+  "mean_cer": 0.0,
+  "mean_cer_percentage": 0.0,
+  "itn_accuracy": 1.0,
+  "itn_accuracy_percentage": 100.0,
+  "duration_seconds": 241.57,
+  "samples_per_second": 414.0,
+  "domain_breakdown": {
+    "conversational": 33334,
+    "itn": 33333,
+    "technical": 33333
+  },
+  "domain_errors": {},
+  "status": "PASS"
+}

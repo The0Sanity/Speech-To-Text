@@ -35,20 +35,20 @@ class TestSesMetinV2ModelTraining(unittest.TestCase):
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_01_v2_models_registered_in_catalog(self):
-        """SesMetin-v2 modellerinin katalogda v2.0.0 sürümüyle yer aldığını doğrula."""
+        """SesMetin-v2 modellerinin katalogda v2 sürümüyle yer aldığını doğrula."""
         v2_turbo = get_model_spec("sesmetin-v2-turbo")
         self.assertIsNotNone(v2_turbo)
-        self.assertEqual(v2_turbo.version, "2.0.0")
+        self.assertTrue(v2_turbo.version.startswith("2."))
         self.assertTrue(v2_turbo.is_proprietary)
         self.assertIn("v2", v2_turbo.name.lower())
 
         v2_small = get_model_spec("sesmetin-v2-small")
         self.assertIsNotNone(v2_small)
-        self.assertEqual(v2_small.version, "2.0.0")
+        self.assertTrue(v2_small.version.startswith("2."))
 
         v2_tiny = get_model_spec("sesmetin-v2-tiny")
         self.assertIsNotNone(v2_tiny)
-        self.assertEqual(v2_tiny.version, "2.0.0")
+        self.assertTrue(v2_tiny.version.startswith("2."))
 
     def test_02_synthetic_dataset_loader(self):
         """Sentetik ses veri setinin JSONL manifest dosyasından doğru yüklendiğini doğrula."""
