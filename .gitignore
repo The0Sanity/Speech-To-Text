@@ -27,6 +27,8 @@ models/
 .codex/
 .impeccable/
 *.exe
+*.part
+*.update.bat
 *.swp
 *.swo
 

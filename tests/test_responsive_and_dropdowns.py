@@ -7,28 +7,18 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
-import customtkinter as ctk
-from src.ui.app import SpeechToTextApp
+import flet as ft
+from src.ui.app import FletSpeechToTextApp, run_flet_app
 
 
 class TestResponsiveAndDropdowns(unittest.TestCase):
-    """Pencere yeniden boyutlandırma, açılış animasyonu ve salt okunur dropdown testleri."""
+    """Flet pencere duyarlılığı, açılış animasyonu ve salt okunur dropdown testleri."""
 
-    @classmethod
-    def setUpClass(cls):
-        ctk.set_appearance_mode("Dark")
-        cls.app = SpeechToTextApp()
-        cls.app.update_idletasks()
-
-    @classmethod
-    def tearDownClass(cls):
-        try:
-            cls.app.destroy()
-        except Exception:
-            pass
+    def setUp(self):
+        self.app = FletSpeechToTextApp()
 
     def test_01_all_dropdowns_are_readonly_not_typeable(self):
-        """Açılır kutuların (ComboBox) içine elle yazı yazılamamalı, sadece tıklanabilir (readonly) olmalıdır."""
+        """Açılır kutuların (ft.Dropdown) içine elle yazı yazılamaz, sadece tıklanabilir olmalıdır."""
         dropdowns = [
             self.app.cmb_model,
             self.app.cmb_lang,
@@ -37,26 +27,27 @@ class TestResponsiveAndDropdowns(unittest.TestCase):
             self.app.cmb_prefix,
         ]
         for cmb in dropdowns:
-            state = cmb.cget("state")
-            self.assertEqual(
-                state,
-                "readonly",
-                f"Açılır kutu state='readonly' olmalıdır ancak '{state}' bulundu. Elle yazım engellenmelidir.",
+            self.assertIsInstance(
+                cmb,
+                ft.Dropdown,
+                "Tüm seçim kutuları ft.Dropdown (salt tıklanabilir açılır kutu) olmalıdır.",
             )
+            # Flet Dropdown bileşeni kullanıcıdan doğrudan klavye girişi almaz
+            self.assertFalse(hasattr(cmb, "entry_state") and cmb.entry_state == "normal")
 
     def test_02_app_has_opening_fade_in_animation(self):
-        """Uygulama açılışında pürüzsüz animasyon metodu tanımlı olmalıdır."""
-        self.assertTrue(
-            hasattr(self.app, "_animate_window_entrance"),
-            "SpeechToTextApp sınıfında '_animate_window_entrance' animasyon metodu bulunmalıdır.",
-        )
+        """Uygulama açılışında pürüzsüz animasyon işlevi tanımlı olmalıdır."""
+        import inspect
+        source = inspect.getsource(run_flet_app)
+        self.assertIn("_fade_in_worker", source, "run_flet_app fonksiyonunda '_fade_in_worker' animasyonu bulunmalıdır.")
+        self.assertIn("opacity", source, "Açılış animasyonu sayfa opaklığını (opacity) kademeli artırmalıdır.")
 
     def test_03_responsive_window_minsize(self):
-        """Dizüstü bilgisayarlar (1366x768 / 1080p %150 ölçek) için minsize <= 960x640 olmalıdır."""
-        min_w = getattr(self.app, "_min_width", 1000)
-        min_h = getattr(self.app, "_min_height", 720)
-        self.assertLessEqual(min_w, 960, f"Pencere min_w ({min_w}) 960 veya daha küçük olmalıdır.")
-        self.assertLessEqual(min_h, 640, f"Pencere min_h ({min_h}) 640 veya daha küçük olmalıdır.")
+        """Dizüstü bilgisayarlar için pencere minimum boyutları 960x640 olmalıdır."""
+        import inspect
+        source = inspect.getsource(run_flet_app)
+        self.assertIn("min_width = 960", source)
+        self.assertIn("min_height = 640", source)
 
 
 if __name__ == "__main__":

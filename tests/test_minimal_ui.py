@@ -68,7 +68,7 @@ class TestMinimalistUI(unittest.TestCase):
             bat_content = f.read()
 
         # Bağımlılık kontrolü ve otomatik çalıştırma içermeli
-        self.assertIn("customtkinter", bat_content)
+        self.assertTrue("flet" in bat_content or "customtkinter" in bat_content)
         self.assertIn("requirements.txt", bat_content)
         self.assertIn("main.py", bat_content)
 

@@ -18,10 +18,17 @@ MODELS_DIR = BASE_DIR / "models"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 TEMP_DIR = BASE_DIR / "temp"
 SETTINGS_FILE = BASE_DIR / "settings.json"
+# Uygulama Sürümü ve Depo Bilgileri
+APP_VERSION = "1.0.0"
+APP_NAME = "SesMetin Pro"
+GITHUB_REPO_OWNER = "The0Sanity"
+GITHUB_REPO_NAME = "Speech-To-Text"
+GITHUB_RELEASES_URL = f"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/releases/latest"
 
 # Dizinlerin varlığını garantiye al
 for directory in [MODELS_DIR, OUTPUTS_DIR, TEMP_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
+
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     "model_size": "small",         # "tiny", "base", "small", "medium", "large-v3-turbo"

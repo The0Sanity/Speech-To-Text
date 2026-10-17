@@ -34,6 +34,14 @@ class TestWorkspaceOrganization(unittest.TestCase):
         # Kök dizinde dağınıklık olmamalı
         root_plan = BASE_DIR / "turkish_stt_diarization_plan.md"
         self.assertFalse(root_plan.exists(), "Kök dizinde turkish_stt_diarization_plan.md bulunmamalıdır.")
+        root_product = BASE_DIR / "PRODUCT.md"
+        self.assertFalse(root_product.exists(), "Kök dizinde mükerrer PRODUCT.md bulunmamalıdır.")
+        root_setup_env = BASE_DIR / "setup_env.bat"
+        self.assertFalse(root_setup_env.exists(), "Kök dizinde gereksiz setup_env.bat bulunmamalıdır.")
+
+        # src/updater.py modülünün varlığı
+        updater_file = BASE_DIR / "src" / "updater.py"
+        self.assertTrue(updater_file.is_file(), "src/updater.py mevcut olmalıdır.")
 
     def test_02_directories_and_gitkeep_exist(self):
         """Gerekli çalışma dizinleri ve gitkeep dosyaları mevcut olmalıdır."""

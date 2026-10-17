@@ -33,6 +33,29 @@ if sys.platform == "win32":
 def main():
     """Uygulama giriş noktası."""
     try:
+        if "--version" in sys.argv or "-v" in sys.argv:
+            from src.config import APP_NAME, APP_VERSION
+            print(f"{APP_NAME} v{APP_VERSION}")
+            return
+
+        if "--check-update" in sys.argv:
+            from src.updater import AutoUpdater
+            updater = AutoUpdater()
+            print("Guncellemeler denetleniyor...")
+            info = updater.check_for_updates()
+            if not info:
+                print("Guncelleme denetlenemedi veya ag baglantisi yok.")
+            elif info.is_update_available:
+                print(f"YENI SURUM MEVCUT: v{info.version} (Mevcut: v{updater.current_version})")
+                if info.has_exe_asset:
+                    print(f"Indirilebilir .exe varligi: {info.asset_name} ({info.asset_size / (1024*1024):.1f} MB)")
+                    print(f"Indirme baglantisi: {info.download_url}")
+                else:
+                    print("Yeni surum yayinlanmis fakat henuz .exe varligi eklenmemis.")
+            else:
+                print(f"Uygulamaniz guncel: v{updater.current_version}")
+            return
+
         if "--check" in sys.argv or "--dry-run" in sys.argv:
             import src.aligner
             import src.audio_enhancer
@@ -42,25 +65,22 @@ def main():
             import src.exporter
             import src.text_postprocessor
             import src.transcriber
+            import src.updater
             import src.youtube_downloader
             import flet as ft
-            from src.ui_flet.app import FletSpeechToTextApp
+            from src.ui.app import FletSpeechToTextApp
             app = FletSpeechToTextApp()
             print("DOĞRULAMA BAŞARILI: Tüm modüller ve Flet UI başarıyla yüklendi.")
             return
 
-        if "--gui=tk" in sys.argv or "--legacy" in sys.argv:
-            from src.ui.app import run_gui
-            run_gui()
+        import flet as ft
+        from src.ui.app import run_flet_app
+        if hasattr(ft, "run"):
+            ft.run(run_flet_app)
+        elif hasattr(ft, "app"):
+            ft.app(target=run_flet_app)
         else:
-            import flet as ft
-            from src.ui_flet.app import run_flet_app
-            if hasattr(ft, "run"):
-                ft.run(run_flet_app)
-            elif hasattr(ft, "app"):
-                ft.app(target=run_flet_app)
-            else:
-                raise RuntimeError("Uyumlu bir Flet çalıştırma metodu (run / app) bulunamadı.")
+            raise RuntimeError("Uyumlu bir Flet çalıştırma metodu (run / app) bulunamadı.")
     except Exception as e:
         import traceback
         traceback.print_exc()

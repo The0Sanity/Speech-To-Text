@@ -10,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
 import flet as ft
-from src.ui_flet.app import FletSpeechToTextApp, run_flet_app
-from src.ui_flet.theme import (
+from src.ui.app import FletSpeechToTextApp, run_flet_app
+from src.ui.theme import (
     ACCENT_PRIMARY,
     BG_APP,
     BG_CARD,
@@ -107,6 +107,11 @@ class TestUIVisualSnapshot(unittest.TestCase):
         # 1. Pencere Başlık Çubuğu (Fluent Style)
         draw.rectangle([0, 0, W, 38], fill="#202020")
         draw.text((16, 10), "SesMetin Pro - Modern Fluent Transkripsiyon Stüdyosu", fill="#cccccc", font=f_small_bold)
+        # Sürüm Rozeti ve Güncelleme Butonu
+        draw.rounded_rectangle([420, 6, 474, 30], radius=4, fill="#1c1c1c", outline="#333333", width=1)
+        draw.text((430, 10), "v1.0.0", fill="#60cdff", font=f_small_bold)
+        draw.rounded_rectangle([484, 6, 626, 30], radius=4, fill="#2d2d2d", outline="#383838", width=1)
+        draw.text((494, 10), "Güncellemeleri Denetle", fill="#ffffff", font=f_small)
         # Pencere butonları (simge)
         draw.text((W - 90, 10), "—   [ ]   ✕", fill="#888888", font=f_small)
         draw.line([0, 38, W, 38], fill="#2d2d2d", width=1)

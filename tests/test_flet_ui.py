@@ -111,6 +111,41 @@ class TestFletUI(unittest.TestCase):
         self.assertEqual(replaced_count, 1)
         self.assertIn("arkadaşlar", app.transcribed_data[0]["text"])
 
+    def test_06_src_ui_canonical_imports_and_updater(self):
+        """src.ui modülü ve otomatik güncelleme bileşenlerinin varlığını doğrular."""
+        from src.config import APP_VERSION
+        from src.ui.app import FletSpeechToTextApp
+        from src.updater import AutoUpdater
+
+        app = FletSpeechToTextApp()
+        self.assertIsInstance(app.updater, AutoUpdater)
+        self.assertEqual(app.APP_VERSION, APP_VERSION)
+        self.assertTrue(callable(app.check_updates_dialog))
+        self.assertTrue(callable(app.start_background_update_check))
+
+        # Layout içinde Güncellemeleri Denetle butonu ve vX.X.X versiyon etiketi yer almalıdır
+        layout = app.build_layout()
+        found_update_btn = False
+        found_version_label = False
+
+        def _scan(ctrl):
+            nonlocal found_update_btn, found_version_label
+            if isinstance(ctrl, ft.FilledButton) and isinstance(ctrl.content, ft.Text):
+                if "Güncelle" in (ctrl.content.value or ""):
+                    found_update_btn = True
+            if isinstance(ctrl, ft.Text) and f"v{APP_VERSION}" in (ctrl.value or ""):
+                found_version_label = True
+            if hasattr(ctrl, "controls") and isinstance(ctrl.controls, list):
+                for child in ctrl.controls:
+                    _scan(child)
+            if hasattr(ctrl, "content") and ctrl.content is not None and isinstance(ctrl.content, ft.Control):
+                _scan(ctrl.content)
+
+        _scan(layout)
+        self.assertTrue(found_update_btn, "Header içinde 'Güncellemeleri Denetle' butonu bulunmalıdır.")
+        self.assertTrue(found_version_label, f"Header içinde 'v{APP_VERSION}' versiyon etiketi bulunmalıdır.")
+
 
 if __name__ == "__main__":
     unittest.main()
+
