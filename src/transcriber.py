@@ -112,8 +112,21 @@ class WhisperTranscriber:
             if status_callback:
                 status_callback(f"'{self.model_size}' modeli belleğe yükleniyor (CPU INT8)...")
 
+            model_path = self.model_size
+            try:
+                from src.models.catalog import get_model_spec
+                spec = get_model_spec(self.model_size)
+                if spec:
+                    local_dir = Path(self.download_root) / self.model_size
+                    if local_dir.exists() and (local_dir / "model.bin").exists():
+                        model_path = str(local_dir)
+                    elif spec.repo_id:
+                        model_path = spec.repo_id
+            except Exception:
+                pass
+
             self.model = WhisperModel(
-                model_size_or_path=self.model_size,
+                model_size_or_path=model_path,
                 device="cpu",
                 compute_type="int8",
                 cpu_threads=self.cpu_threads,

@@ -11,12 +11,11 @@ env/
 ENV/
 
 # Temporary and generated processing files
-temp/
-temp/*
-outputs/
-models/
-build/
-dist/
+/temp/
+/outputs/
+/models/
+/build/
+/dist/
 *.zip
 settings.json
 config.json

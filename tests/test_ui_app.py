@@ -85,6 +85,64 @@ class TestAppIntegration(unittest.TestCase):
         self.app.stepper.reset()
         self.assertEqual(self.app.stepper.current_step, -1)
 
+    def test_08_page_overlay_no_setter_bug_prevention(self):
+        """Flet Page nesnesinin overlay özelliğinin setter'ı olmaması durumunda hata fırlatılmadığını doğrular."""
+        class MockFletPageNoSetter:
+            def __init__(self):
+                self._overlay_list = []
+
+            @property
+            def overlay(self):
+                return self._overlay_list
+
+            def update(self):
+                pass
+
+        mock_page = MockFletPageNoSetter()
+        self.app.page = mock_page
+
+        # _show_toast çağrısı 'self.page.overlay = ...' yapmamalı, listeyi yerinde güncellemelidir
+        try:
+            self.app._show_toast("Test mesajı", is_error=False)
+            self.assertEqual(len(mock_page.overlay), 1)
+            # İkinci çağrıda eski SnackBar temizlenip yenisi eklenmeli
+            self.app._show_toast("İkinci mesaj", is_error=True)
+            self.assertEqual(len(mock_page.overlay), 1)
+        except AttributeError as e:
+            self.fail(f"_show_toast overlay setter hatası verdi: {e}")
+
+    def test_09_model_hub_navigation_and_tab_switching(self):
+        """Model Merkezi sekmesi ve Transkripsiyon sekmesi arası geçiş testi."""
+        layout = self.app.build_layout()
+        self.assertIsNotNone(layout)
+        self.assertTrue(self.app.transcription_view.visible)
+        self.assertFalse(self.app.model_hub_view.visible)
+
+        # Model Merkezi sekmesine geçiş
+        self.app._switch_nav_tab("model_hub")
+        self.assertFalse(self.app.transcription_view.visible)
+        self.assertTrue(self.app.model_hub_view.visible)
+
+        # Transkripsiyon sekmesine geri dönüş
+        self.app._switch_nav_tab("transcription")
+        self.assertTrue(self.app.transcription_view.visible)
+        self.assertFalse(self.app.model_hub_view.visible)
+
+    def test_10_model_hub_refresh_and_cards_population(self):
+        """Model Merkezi kartlarının doğru şekilde doldurulduğunu doğrula."""
+        self.app.build_layout()
+        self.app.refresh_model_hub()
+        # Kartlar sütununda hem SesMetin hem de resmi modeller bulunmalı
+        self.assertGreater(len(self.app.model_cards_column.controls), 5)
+
+    def test_11_model_hub_set_default_model(self):
+        """Model Merkezi üzerinden varsayılan model değiştirildiğinde dropdown ve ayarların güncellenmesi."""
+        self.app.build_layout()
+        self.app._set_default_model("sesmetin-v1-turbo")
+        self.assertIn("sesmetin-v1-turbo", self.app.cmb_model.value.lower())
+        self.assertEqual(self.app.settings.get("model_size"), "sesmetin-v1-turbo")
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -77,6 +77,15 @@ from src.youtube_downloader import (
     get_youtube_video_info,
     is_valid_youtube_url,
 )
+from src.hardware import format_memory_size, get_system_hardware_info
+from src.models import (
+    MODEL_CATALOG,
+    ModelCategory,
+    ModelManager,
+    ModelSpecification,
+    get_model_spec,
+    list_available_models,
+)
 
 
 class FletSpeechToTextApp:
@@ -122,16 +131,71 @@ class FletSpeechToTextApp:
 
     def _init_controls(self):
         """Tüm arayüz kontrollerini başlatır."""
+        # Model yöneticisi ve durum değişkenleri
+        self.model_manager = ModelManager()
+        self.active_downloads: Dict[str, threading.Event] = {}
+        self.active_nav_tab = "transcription"
+
+        # Model Hub kontrolleri
+        self.lbl_hw_cpu = ft.Text(value="İşlemci: Tespit ediliyor...", size=11, color=TEXT_MUTED)
+        self.lbl_hw_cuda = ft.Text(value="CUDA: Tespit ediliyor...", size=11, color=TEXT_MUTED)
+        self.lbl_disk_usage = ft.Text(value="", size=11, color=TEXT_MUTED)
+        self.pb_disk_usage = ft.ProgressBar(value=0.0, width=180, bgcolor=INPUT_BG, color=ACCENT_PRIMARY)
+        self.model_cards_column = ft.Column(spacing=10, scroll=ft.ScrollMode.ADAPTIVE, expand=True)
+
+        # Navigasyon Sekme Butonları
+        self.btn_nav_transcription = ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.SUBTITLES_OUTLINED, size=14, color=TEXT_MAIN),
+                    ft.Text("Transkripsiyon", size=11, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                ],
+                spacing=5,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+            bgcolor=ACCENT_PRIMARY,
+            border_radius=5,
+            padding=ft.Padding.symmetric(horizontal=10, vertical=5),
+            on_click=lambda _: self._switch_nav_tab("transcription"),
+        )
+
+        self.btn_nav_model_hub = ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.EXPLORE_OUTLINED, size=14, color=TEXT_MUTED),
+                    ft.Text("Model Merkezi", size=11, weight=ft.FontWeight.W_500, color=TEXT_MUTED),
+                ],
+                spacing=5,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+            bgcolor=BTN_NEUTRAL,
+            border_radius=5,
+            padding=ft.Padding.symmetric(horizontal=10, vertical=5),
+            on_click=lambda _: self._switch_nav_tab("model_hub"),
+        )
+
         # 1. Sol Panel: Model ve Ayrıştırma Açılır Menüleri (Dropdown - Salt Okunur / Sadece Tıklanabilir)
+        model_dropdown_options = [
+            ft.dropdown.Option("sesmetin-v1-turbo (Özel Türkçe Turbo)"),
+            ft.dropdown.Option("sesmetin-v1-small (Özel Türkçe Dengeli)"),
+            ft.dropdown.Option("sesmetin-v1-tiny (Özel Türkçe Ultra Hızlı)"),
+            ft.dropdown.Option("small (Dengeli)"),
+            ft.dropdown.Option("medium (Yüksek Doğruluk)"),
+            ft.dropdown.Option("large-v3-turbo (En Yüksek Kalite)"),
+            ft.dropdown.Option("base (Hızlı)"),
+            ft.dropdown.Option("tiny (Ultra Hızlı)"),
+        ]
+
+        cfg_model = self.settings.get("model_size", "small")
+        init_val = "small (Dengeli)"
+        for opt in model_dropdown_options:
+            if opt.key.split()[0].lower() == cfg_model.lower():
+                init_val = opt.key
+                break
+
         self.cmb_model = ft.Dropdown(
-            options=[
-                ft.dropdown.Option("small (Dengeli)"),
-                ft.dropdown.Option("medium (Yüksek Doğruluk)"),
-                ft.dropdown.Option("large-v3-turbo (En Yüksek Kalite)"),
-                ft.dropdown.Option("base (Hızlı)"),
-                ft.dropdown.Option("tiny (Ultra Hızlı)"),
-            ],
-            value="small (Dengeli)",
+            options=model_dropdown_options,
+            value=init_val,
             height=36,
             bgcolor=INPUT_BG,
             border_color=INPUT_BORDER,
@@ -740,6 +804,9 @@ class FletSpeechToTextApp:
                         weight=ft.FontWeight.BOLD,
                         color=TEXT_MAIN,
                     ),
+                    ft.Container(width=12),
+                    self.btn_nav_transcription,
+                    self.btn_nav_model_hub,
                     ft.Container(expand=True),
                     ft.TextButton(
                         content=ft.Row(
@@ -797,15 +864,28 @@ class FletSpeechToTextApp:
         )
         self.header_container = header
 
+        self.transcription_view = ft.Row(
+            controls=[left_column, right_column],
+            spacing=12,
+            expand=True,
+            visible=True,
+        )
+        self.model_hub_view = self._build_model_hub_view()
+        self.model_hub_view.visible = False
+
+        main_content_stack = ft.Stack(
+            controls=[
+                self.transcription_view,
+                self.model_hub_view,
+            ],
+            expand=True,
+        )
+
         return ft.Container(
             content=ft.Column(
                 controls=[
                     header,
-                    ft.Row(
-                        controls=[left_column, right_column],
-                        spacing=12,
-                        expand=True,
-                    ),
+                    main_content_stack,
                 ],
                 spacing=10,
                 expand=True,
@@ -814,6 +894,378 @@ class FletSpeechToTextApp:
             padding=ft.Padding.all(14),
             expand=True,
         )
+
+    def _switch_nav_tab(self, tab_name: str):
+        """Üst sekme (Transkripsiyon vs Model Merkezi) geçişini yönetir."""
+        if self.active_nav_tab == tab_name:
+            return
+        self.active_nav_tab = tab_name
+
+        if tab_name == "transcription":
+            self.btn_nav_transcription.bgcolor = ACCENT_PRIMARY
+            self.btn_nav_transcription.content.controls[0].color = TEXT_MAIN
+            self.btn_nav_transcription.content.controls[1].color = TEXT_MAIN
+            self.btn_nav_transcription.content.controls[1].weight = ft.FontWeight.BOLD
+
+            self.btn_nav_model_hub.bgcolor = BTN_NEUTRAL
+            self.btn_nav_model_hub.content.controls[0].color = TEXT_MUTED
+            self.btn_nav_model_hub.content.controls[1].color = TEXT_MUTED
+            self.btn_nav_model_hub.content.controls[1].weight = ft.FontWeight.NORMAL
+
+            self.transcription_view.visible = True
+            self.model_hub_view.visible = False
+        else:
+            self.btn_nav_transcription.bgcolor = BTN_NEUTRAL
+            self.btn_nav_transcription.content.controls[0].color = TEXT_MUTED
+            self.btn_nav_transcription.content.controls[1].color = TEXT_MUTED
+            self.btn_nav_transcription.content.controls[1].weight = ft.FontWeight.NORMAL
+
+            self.btn_nav_model_hub.bgcolor = ACCENT_PRIMARY
+            self.btn_nav_model_hub.content.controls[0].color = TEXT_MAIN
+            self.btn_nav_model_hub.content.controls[1].color = TEXT_MAIN
+            self.btn_nav_model_hub.content.controls[1].weight = ft.FontWeight.BOLD
+
+            self.transcription_view.visible = False
+            self.model_hub_view.visible = True
+            self.refresh_model_hub()
+
+        self._safe_update()
+
+    def _build_model_hub_view(self) -> ft.Control:
+        """Model Merkezi ekranı bileşenlerini oluşturur."""
+        # Donanım ve Disk Bilgi Kartı
+        hw_card = ft.Container(
+            content=ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.MEMORY, size=20, color=ACCENT_LIGHT),
+                    ft.Column(
+                        controls=[
+                            ft.Text("Sistem Donanım ve Yapay Zeka Hızlandırma", size=12, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                            ft.Row(
+                                controls=[
+                                    self.lbl_hw_cpu,
+                                    ft.Text("•", color=TEXT_MUTED, size=10),
+                                    self.lbl_hw_cuda,
+                                ],
+                                spacing=6,
+                            ),
+                        ],
+                        spacing=2,
+                        expand=True,
+                    ),
+                    ft.Container(
+                        content=ft.Row(
+                            controls=[
+                                ft.Column(
+                                    controls=[
+                                        self.lbl_disk_usage,
+                                        self.pb_disk_usage,
+                                    ],
+                                    spacing=2,
+                                    horizontal_alignment=ft.CrossAxisAlignment.END,
+                                ),
+                                ft.IconButton(
+                                    icon=ft.Icons.REFRESH,
+                                    icon_color=TEXT_MAIN,
+                                    icon_size=16,
+                                    tooltip="Modelleri ve Disk Durumunu Yenile",
+                                    on_click=lambda _: self.refresh_model_hub(),
+                                ),
+                            ],
+                            spacing=6,
+                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        ),
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+            bgcolor=BG_CARD,
+            border=ft.Border.all(1, BORDER_CARD),
+            border_radius=8,
+            padding=ft.Padding.symmetric(horizontal=14, vertical=10),
+        )
+
+        return ft.Container(
+            content=ft.Column(
+                controls=[
+                    hw_card,
+                    self.model_cards_column,
+                ],
+                spacing=12,
+                expand=True,
+            ),
+            expand=True,
+        )
+
+    def refresh_model_hub(self):
+        """Model Merkezi kartlarını ve donanım durumunu günceller."""
+        # 1. Donanım Bilgileri
+        hw = get_system_hardware_info()
+        avx2_str = "AVX2 Destekleniyor" if hw.get("avx2_support") else "AVX2 Yok"
+        self.lbl_hw_cpu.value = f"İşlemci: {hw.get('cpu_count')} Çekirdek ({avx2_str}) | RAM: {hw.get('ram_available_gb')}/{hw.get('ram_total_gb')} GB Boş"
+
+        if hw.get("cuda_available"):
+            devs = hw.get("cuda_devices", [])
+            dev_name = devs[0]["name"] if devs else "NVIDIA GPU"
+            vram = f"{devs[0].get('total_vram_gb', 0)} GB" if devs else ""
+            self.lbl_hw_cuda.value = f"CUDA: Aktif ({dev_name} {vram})"
+            self.lbl_hw_cuda.color = SUCCESS
+        else:
+            self.lbl_hw_cuda.value = "CUDA: Tespit Edilmedi (CPU INT8 Aktif)"
+            self.lbl_hw_cuda.color = TEXT_MUTED
+
+        # 2. Disk Bilgileri
+        usage = self.model_manager.get_storage_usage()
+        used_f = usage.get("used_formatted", "0 B")
+        free_f = usage.get("free_formatted", "0 B")
+        used_bytes = usage.get("used_bytes", 0)
+        free_bytes = usage.get("free_bytes", 1)
+        ratio = min(1.0, used_bytes / max(1, used_bytes + free_bytes))
+        self.pb_disk_usage.value = ratio
+        self.lbl_disk_usage.value = f"Model Alanı: {used_f} | Boş Disk: {free_f}"
+
+        # 3. Model Kartları
+        cards = []
+
+        # Bölüm A: SesMetin Özel Türkçe Modelleri
+        cards.append(
+            ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.AUTO_AWESOME, size=16, color=ACCENT_LIGHT),
+                    ft.Text("SesMetin Özel Türkçe Modelleri", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                    ft.Container(
+                        content=ft.Text("Özel Türkçe İnce Ayar (Fine-Tuning)", size=10, color=ACCENT_LIGHT, weight=ft.FontWeight.W_600),
+                        bgcolor=INPUT_BG,
+                        border=ft.Border.all(1, INPUT_BORDER),
+                        border_radius=4,
+                        padding=ft.Padding.symmetric(horizontal=8, vertical=2),
+                    ),
+                ],
+                spacing=8,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        )
+
+        for spec in list_available_models(ModelCategory.SESMETIN):
+            cards.append(self._create_model_card(spec))
+
+        # Bölüm B: Standart Faster-Whisper Modelleri
+        cards.append(ft.Container(height=6))
+        cards.append(
+            ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.FOLDER_SPECIAL_OUTLINED, size=16, color=TEXT_MUTED),
+                    ft.Text("Standart Faster-Whisper Modelleri", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                ],
+                spacing=8,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        )
+
+        for spec in list_available_models(ModelCategory.WHISPER):
+            cards.append(self._create_model_card(spec))
+
+        self.model_cards_column.controls = cards
+        self._safe_update(self.model_cards_column)
+        self._safe_update(self.model_hub_view)
+
+    def _create_model_card(self, spec: ModelSpecification) -> ft.Control:
+        """Tek bir model için bilgi ve eylem kartı oluşturur."""
+        current_active = (self.cmb_model.value or "").split()[0].lower()
+        is_active = (current_active == spec.model_id.lower())
+        is_installed = self.model_manager.is_model_installed(spec.model_id)
+        is_downloading = spec.model_id in self.active_downloads
+
+        # Eylem Kontrolleri
+        action_controls = []
+        if is_downloading:
+            action_controls = [
+                ft.ProgressBar(width=120, bgcolor=INPUT_BG, color=ACCENT_PRIMARY),
+                ft.Text("İndiriliyor...", size=11, color=ACCENT_LIGHT),
+                ft.TextButton(
+                    "İptal",
+                    on_click=lambda _, mid=spec.model_id: self._cancel_model_download(mid),
+                    style=ft.ButtonStyle(color=DANGER),
+                ),
+            ]
+        elif is_active:
+            action_controls = [
+                ft.Container(
+                    content=ft.Row(
+                        controls=[
+                            ft.Icon(ft.Icons.CHECK_CIRCLE, size=14, color=SUCCESS),
+                            ft.Text("Aktif Varsayılan", size=11, weight=ft.FontWeight.BOLD, color=SUCCESS),
+                        ],
+                        spacing=4,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    bgcolor=INPUT_BG,
+                    border=ft.Border.all(1, SUCCESS),
+                    border_radius=4,
+                    padding=ft.Padding.symmetric(horizontal=8, vertical=4),
+                ),
+            ]
+            if is_installed:
+                action_controls.append(
+                    ft.TextButton(
+                        "Modeli Sil",
+                        on_click=lambda _, mid=spec.model_id: self._delete_model_action(mid),
+                        style=ft.ButtonStyle(color=DANGER),
+                    )
+                )
+        elif is_installed:
+            action_controls = [
+                ft.FilledButton(
+                    content=ft.Text("Varsayılan Yap", size=11, weight=ft.FontWeight.W_600),
+                    bgcolor=ACCENT_PRIMARY,
+                    color=TEXT_MAIN,
+                    height=28,
+                    style=ft.ButtonStyle(padding=ft.Padding.symmetric(horizontal=12, vertical=0)),
+                    on_click=lambda _, mid=spec.model_id: self._set_default_model(mid),
+                ),
+                ft.TextButton(
+                    "Modeli Sil",
+                    on_click=lambda _, mid=spec.model_id: self._delete_model_action(mid),
+                    style=ft.ButtonStyle(color=TEXT_MUTED),
+                ),
+            ]
+        else:
+            action_controls = [
+                ft.FilledButton(
+                    content=ft.Row(
+                        controls=[
+                            ft.Icon(ft.Icons.DOWNLOAD, size=13, color=TEXT_MAIN),
+                            ft.Text("İndir", size=11, weight=ft.FontWeight.W_600),
+                        ],
+                        spacing=4,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    bgcolor=BTN_NEUTRAL,
+                    color=TEXT_MAIN,
+                    height=28,
+                    style=ft.ButtonStyle(padding=ft.Padding.symmetric(horizontal=12, vertical=0)),
+                    on_click=lambda _, mid=spec.model_id: self._start_model_download(mid),
+                ),
+            ]
+
+        # Durum Rozeti
+        if is_installed:
+            status_chip = ft.Container(
+                content=ft.Text("Yüklü / Hazır", size=10, color=SUCCESS, weight=ft.FontWeight.BOLD),
+                bgcolor=INPUT_BG,
+                border=ft.Border.all(1, SUCCESS),
+                border_radius=4,
+                padding=ft.Padding.symmetric(horizontal=6, vertical=2),
+            )
+        else:
+            status_chip = ft.Container(
+                content=ft.Text("İndirilmedi", size=10, color=TEXT_MUTED),
+                bgcolor=INPUT_BG,
+                border=ft.Border.all(1, INPUT_BORDER),
+                border_radius=4,
+                padding=ft.Padding.symmetric(horizontal=6, vertical=2),
+            )
+
+        category_badge = ft.Container(
+            content=ft.Text("SesMetin Özel" if spec.is_proprietary else "Resmi Whisper", size=10, color=ACCENT_LIGHT if spec.is_proprietary else TEXT_MUTED),
+            bgcolor=INPUT_BG,
+            border=ft.Border.all(1, ACCENT_PRIMARY if spec.is_proprietary else INPUT_BORDER),
+            border_radius=4,
+            padding=ft.Padding.symmetric(horizontal=6, vertical=2),
+        )
+
+        return ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Row(
+                        controls=[
+                            ft.Text(spec.name, size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                            category_badge,
+                            status_chip,
+                            ft.Container(expand=True),
+                            ft.Row(controls=action_controls, spacing=6, vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                        ],
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    ft.Text(spec.description, size=11, color=TEXT_MUTED),
+                    ft.Row(
+                        controls=[
+                            ft.Text(f"Boyut: {spec.size_mb} MB", size=10, color=TEXT_SUBTLE),
+                            ft.Text("•", size=10, color=TEXT_SUBTLE),
+                            ft.Text(f"RAM İhtiyacı: ~{spec.ram_req_gb} GB", size=10, color=TEXT_SUBTLE),
+                            ft.Text("•", size=10, color=TEXT_SUBTLE),
+                            ft.Text(f"Türkçe Hata Oranı: {spec.wer_turkish}", size=10, color=ACCENT_LIGHT),
+                            ft.Text("•", size=10, color=TEXT_SUBTLE),
+                            ft.Text(f"Motor: CTranslate2 ({spec.ct2_quantization.upper()})", size=10, color=TEXT_SUBTLE),
+                        ],
+                        spacing=6,
+                    ),
+                ],
+                spacing=6,
+            ),
+            bgcolor=BG_CARD,
+            border=ft.Border.all(1, BORDER_CARD),
+            border_radius=8,
+            padding=ft.Padding.symmetric(horizontal=12, vertical=10),
+        )
+
+    def _start_model_download(self, model_id: str):
+        """Arka planda model indirme işlemini başlatır."""
+        if model_id in self.active_downloads:
+            return
+
+        cancel_ev = threading.Event()
+        self.active_downloads[model_id] = cancel_ev
+        self._show_toast(f"'{model_id}' indirmesi arka planda başlatıldı.", is_error=False)
+
+        def _worker():
+            try:
+                self.model_manager.download_model(
+                    model_id,
+                    progress_callback=None,
+                    cancel_event=cancel_ev,
+                )
+                self._show_toast(f"'{model_id}' modeli başarıyla indirildi!", is_error=False)
+            except Exception as e:
+                if not cancel_ev.is_set():
+                    self._show_toast(f"Model indirme hatası: {e}", is_error=True)
+            finally:
+                self.active_downloads.pop(model_id, None)
+                self.refresh_model_hub()
+
+        threading.Thread(target=_worker, daemon=True).start()
+        self.refresh_model_hub()
+
+    def _cancel_model_download(self, model_id: str):
+        """Model indirmesini iptal eder."""
+        cancel_ev = self.active_downloads.get(model_id)
+        if cancel_ev:
+            cancel_ev.set()
+        self.active_downloads.pop(model_id, None)
+        self._show_toast(f"'{model_id}' indirmesi iptal edildi.", is_error=False)
+        self.refresh_model_hub()
+
+    def _set_default_model(self, model_id: str):
+        """Seçilen modeli varsayılan transkripsiyon modeli olarak ayarlar."""
+        for opt in self.cmb_model.options:
+            if opt.key.split()[0].lower() == model_id.lower():
+                self.cmb_model.value = opt.key
+                break
+        self.settings["model_size"] = model_id
+        save_settings(self.settings)
+        self._show_toast(f"'{model_id}' varsayılan model olarak ayarlandı.", is_error=False)
+        self.refresh_model_hub()
+        self._safe_update(self.cmb_model)
+
+    def _delete_model_action(self, model_id: str):
+        """Modeli yerel diskten siler."""
+        deleted = self.model_manager.delete_model(model_id)
+        if deleted:
+            self._show_toast(f"'{model_id}' modeli silindi.", is_error=False)
+        else:
+            self._show_toast(f"'{model_id}' modeli silinemedi veya zaten yok.", is_error=True)
+        self.refresh_model_hub()
 
     def play_entrance_animation(self):
         """Arayüz bölümlerinin kademeli açılış (staggered entrance) animasyonunu tetikler."""
@@ -1301,7 +1753,12 @@ class FletSpeechToTextApp:
 
         if self.page:
             if hasattr(self.page, "overlay") and self.page.overlay is not None:
-                self.page.overlay = [ctl for ctl in self.page.overlay if not isinstance(ctl, ft.AlertDialog) or getattr(ctl, "open", False)]
+                for ctl in list(self.page.overlay):
+                    if isinstance(ctl, ft.AlertDialog) and not getattr(ctl, "open", False):
+                        try:
+                            self.page.overlay.remove(ctl)
+                        except Exception:
+                            pass
             self.page.overlay.append(dialog)
             dialog.open = True
             self.page.update()
@@ -1365,7 +1822,12 @@ class FletSpeechToTextApp:
         """Kullanıcıya sade bilgi bildirimi (SnackBar) gösterir."""
         if self.page:
             if hasattr(self.page, "overlay") and self.page.overlay is not None:
-                self.page.overlay = [ctl for ctl in self.page.overlay if not isinstance(ctl, ft.SnackBar)]
+                for ctl in list(self.page.overlay):
+                    if isinstance(ctl, ft.SnackBar):
+                        try:
+                            self.page.overlay.remove(ctl)
+                        except Exception:
+                            pass
             snack = ft.SnackBar(
                 content=ft.Text(value=message, color=TEXT_MAIN, size=12),
                 bgcolor=DANGER if is_error else BTN_NEUTRAL,
