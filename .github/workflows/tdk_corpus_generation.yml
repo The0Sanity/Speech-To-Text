@@ -1,0 +1,62 @@
+# SesMetin Pro - 10M+ Turkish TDK Corpus Cloud Generation Pipeline
+# Official Repository: https://github.com/The0Sanity/Speech-To-Text
+
+name: TDK 10M Corpus Generation
+
+on:
+  workflow_dispatch:
+    inputs:
+      total_samples:
+        description: "Total corpus samples to generate"
+        required: true
+        default: "10000000"
+        type: string
+      shard_size:
+        description: "Number of samples per Parquet shard"
+        required: true
+        default: "100000"
+        type: string
+      max_shards:
+        description: "Maximum number of shards to generate and stream"
+        required: false
+        default: "100"
+        type: string
+      repo_id:
+        description: "Target Hugging Face dataset repository"
+        required: true
+        default: "The0Sanity/sesmetin-v2-tdk-10m-corpus"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  generate-corpus:
+    name: Generate and Stream TDK Corpus Shards
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyarrow huggingface_hub
+
+      - name: Stream TDK Corpus to Hugging Face Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python tools/huggingface/generate_and_push_tdk_corpus.py \
+            --repo-id "${{ inputs.repo_id }}" \
+            --total-samples "${{ inputs.total_samples }}" \
+            --shard-size "${{ inputs.shard_size }}" \
+            --max-shards "${{ inputs.max_shards }}"

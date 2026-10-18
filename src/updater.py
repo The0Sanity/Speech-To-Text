@@ -364,6 +364,7 @@ exit /b 0
         cur_path = str(current_exe.resolve()).replace("'", "''")
         bak_path = f"{cur_path}.bak"
         cur_name = current_exe.name
+        cur_dir = str(current_exe.resolve().parent).replace("'", "''")
 
         script = f"""# SesMetin Pro - Silent In-Place Self Updater Engine
 $ErrorActionPreference = 'SilentlyContinue'
@@ -372,21 +373,25 @@ $NewExe = '{new_path}'
 $CurExe = '{cur_path}'
 $BackupExe = '{bak_path}'
 $TargetName = '{cur_name}'
+$CurDir = '{cur_dir}'
 $MaxRetries = {retries}
 
-# 1. Hedef surecin kapanmasini bekle
+# 1. Hedef sureci ve tum surec agacini sonlandir
 try {{
-    Wait-Process -Id $TargetPid -Timeout 8 -ErrorAction SilentlyContinue
+    Wait-Process -Id $TargetPid -Timeout 6 -ErrorAction SilentlyContinue
 }} catch {{}}
 
-# Gerekirse zorla sonlandir (PyInstaller alt ve ana surecler dahil)
 try {{
     Stop-Process -Id $TargetPid -Force -ErrorAction SilentlyContinue
 }} catch {{}}
+
+# PyInstaller bootloader ve diger kilitli surecleri sonlandir
 try {{
-    Get-Process -Name ([System.IO.Path]::GetFileNameWithoutExtension($TargetName)) | 
-        Where-Object {{ $_.Path -eq $CurExe }} | 
-        Stop-Process -Force -ErrorAction SilentlyContinue
+    Get-CimInstance Win32_Process | Where-Object {{
+        $_.ExecutablePath -eq $CurExe -or $_.ProcessId -eq $TargetPid
+    }} | ForEach-Object {{
+        Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+    }}
 }} catch {{}}
 
 Start-Sleep -Milliseconds 600
@@ -399,17 +404,17 @@ if (Test-Path -LiteralPath $CurExe) {{
     Move-Item -LiteralPath $CurExe -Destination $BackupExe -Force -ErrorAction SilentlyContinue
 }}
 
-# 3. Yeni surumu hedef konuma tasi (Dosya kilitleri icin guvenli dongu)
-$moveSuccess = $false
+# 3. Yeni surumu hedef konuma kopyala ve dogrula
+$copySuccess = $false
 for ($i = 0; $i -lt $MaxRetries; $i++) {{
     try {{
         if (Test-Path -LiteralPath $NewExe) {{
-            Move-Item -LiteralPath $NewExe -Destination $CurExe -Force -ErrorAction Stop
-        }} elseif (-not (Test-Path -LiteralPath $CurExe)) {{
             Copy-Item -LiteralPath $NewExe -Destination $CurExe -Force -ErrorAction Stop
         }}
         if ((Test-Path -LiteralPath $CurExe) -and ((Get-Item -LiteralPath $CurExe).Length -gt 0)) {{
-            $moveSuccess = $true
+            $copySuccess = $true
+            # Kopyalama dogrulandiktan sonra gecici indirme dosyasini temizle
+            Remove-Item -LiteralPath $NewExe -Force -ErrorAction SilentlyContinue
             break
         }}
     }} catch {{
@@ -418,17 +423,17 @@ for ($i = 0; $i -lt $MaxRetries; $i++) {{
 }}
 
 # 4. Basarisizlik kontrolu ve Geri Alma (Rollback)
-if (-not $moveSuccess -or -not (Test-Path -LiteralPath $CurExe)) {{
+if (-not $copySuccess -or -not (Test-Path -LiteralPath $CurExe)) {{
     if (Test-Path -LiteralPath $BackupExe) {{
         Move-Item -LiteralPath $BackupExe -Destination $CurExe -Force -ErrorAction SilentlyContinue
     }}
-    Start-Process -FilePath $CurExe
+    Start-Process -FilePath $CurExe -WorkingDirectory $CurDir
     Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
     exit 1
 }}
 
 # 5. Guncellenmis yeni surumu baslat
-Start-Process -FilePath $CurExe
+Start-Process -FilePath $CurExe -WorkingDirectory $CurDir
 
 # 6. Yedek ve calisan betik dosyasini temizle
 Start-Sleep -Seconds 2
@@ -455,11 +460,13 @@ exit 0
             creationflags = (
                 create_no_window
                 | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
-                | getattr(subprocess, "DETACHED_PROCESS", 0x00000008)
             )
 
+            import shutil
+            ps_bin = shutil.which("powershell.exe") or r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
             cmd_args = [
-                "powershell.exe",
+                ps_bin,
                 "-NoProfile",
                 "-NonInteractive",
                 "-ExecutionPolicy",

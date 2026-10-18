@@ -2470,7 +2470,24 @@ class FletSpeechToTextApp:
                     self.settings["postponed_update"] = None
                     save_settings(self.settings)
                     time.sleep(1.5)
-                    self.updater.apply_update(target_exe)
+                    apply_ok = False
+                    try:
+                        apply_ok = self.updater.apply_update(target_exe)
+                    except Exception:
+                        apply_ok = False
+
+                    if not apply_ok:
+                        def _on_apply_error():
+                            btn_cancel_download.visible = False
+                            btn_update.visible = True
+                            btn_update.disabled = False
+                            btn_later.disabled = False
+                            progress_bar.visible = False
+                            lbl_status.value = "Güncelleme uygulanamadı. Lütfen uygulamayı manuel olarak yeniden başlatın veya GitHub'dan indirin."
+                            lbl_status.color = DANGER
+                            if self.page:
+                                self.page.update()
+                        _dispatch_ui(_on_apply_error)
                 else:
                     def _on_failed():
                         btn_cancel_download.visible = False

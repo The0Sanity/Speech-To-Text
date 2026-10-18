@@ -518,8 +518,77 @@ class TestAutoUpdater(unittest.TestCase):
             self.assertEqual(kwargs.get("stdout"), subprocess.DEVNULL)
             self.assertEqual(kwargs.get("stderr"), subprocess.DEVNULL)
 
+    def test_21_powershell_script_terminates_process_tree_and_sets_workdir(self):
+        """PowerShell guncelleme betigi Win32_Process/CimInstance ile tum surec agacini sonlandirmali ve WorkingDirectory tanimlamalidir."""
+        from src.updater import WindowsSelfUpdater
+
+        new_exe = Path(r"C:\Users\Test User\AppData\Local\Temp\new_app.exe")
+        cur_exe = Path(r"C:\Program Files\SesMetin Pro\SpeechToText.exe")
+        pid = 12345
+
+        ps_script = WindowsSelfUpdater.generate_powershell_script(
+            downloaded_exe=new_exe,
+            current_exe=cur_exe,
+            pid=pid,
+        )
+
+        # Surec agaci sonlandirma (Get-CimInstance Win32_Process)
+        self.assertIn("Get-CimInstance Win32_Process", ps_script, "Surec agacini bulmak icin Get-CimInstance Win32_Process kullanilmalidir!")
+        self.assertIn("-WorkingDirectory", ps_script, "Uygulama yeniden baslatilirken -WorkingDirectory belirtilmelidir!")
+        self.assertIn("Copy-Item", ps_script, "Atomik dosya kopyalama ve saglama Copy-Item ile yapilmalidir!")
+
+    def test_22_powershell_script_real_execution_simulation(self):
+        """Uretilen PowerShell betigi izole bir gecici dizinde gercekten calisip dosya degisimini tamamlayabilmelidir."""
+        import tempfile
+        import subprocess
+        from src.updater import WindowsSelfUpdater
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            cur_exe = tmp_path / "AppOld.exe"
+            new_exe = tmp_path / "AppNew.exe"
+
+            # Mock ikili dosyalar olustur
+            cur_exe.write_bytes(b"MZ_OLD_VERSION_BYTES_DATA_v1.0.9")
+            new_exe.write_bytes(b"MZ_NEW_VERSION_BYTES_DATA_v1.1.0_EXPANDED")
+
+            # Var olmayan veya bitmis bir sahte PID (orn: 999999)
+            ps_script_text = WindowsSelfUpdater.generate_powershell_script(
+                downloaded_exe=new_exe,
+                current_exe=cur_exe,
+                pid=999999,
+                retries=5,
+            )
+
+            # Test icin Start-Process yerine sadece degisim dogrulama kismini calistirabiliriz
+            # veya betigi dogrudan powershell ile test edebiliriz (Start-Process exe'yi baslatir)
+            # Gercek powershell calistirimi:
+            script_file = tmp_path / "test_updater.ps1"
+            script_file.write_text(ps_script_text, encoding="utf-8")
+
+            res = subprocess.run(
+                ["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(script_file)],
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+
+            # cur_exe artik new_exe'nin icerigine sahip olmalidir
+            self.assertTrue(cur_exe.exists(), "cur_exe degisim sonrasi mevcut olmalidir!")
+            self.assertEqual(cur_exe.read_bytes(), b"MZ_NEW_VERSION_BYTES_DATA_v1.1.0_EXPANDED")
+
+    def test_23_apply_update_dev_mode_and_frozen_mode_returns_bool(self):
+        """apply_update basarisiz oldugunda False donmeli ve calisma modlarini dogru yonetmelidir."""
+        from src.updater import AutoUpdater
+
+        updater = AutoUpdater(current_version="1.0.9")
+        # Var olmayan dosya False donmeli
+        res = updater.apply_update(Path("non_existent_file_12345.exe"))
+        self.assertFalse(res)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

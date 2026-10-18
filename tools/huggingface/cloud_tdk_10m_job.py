@@ -104,7 +104,7 @@ def generate_shard_batch(
 
     for i in range(shard_size):
         item_id = f"tdk_{start_id + i + 1:08d}"
-        length = rng.randint(4, 25)
+        length = rng.randint(75, 125)
 
         if length <= len(vocabulary):
             chosen = rng.sample(vocabulary, length)
@@ -115,15 +115,33 @@ def generate_shard_batch(
         has_punctuation = rng.random() < 0.70
         if has_punctuation:
             formatted = []
+            capitalize_next = True
+            words_in_clause = 0
+            clause_target = rng.randint(6, 13)
+
             for idx, w in enumerate(chosen):
-                if idx == 0:
-                    formatted.append(turkish_capitalize(w))
-                elif idx > 0 and idx < len(chosen) - 1 and rng.random() < 0.20:
-                    formatted.append(w + ",")
+                word_str = turkish_capitalize(w) if capitalize_next else w
+                capitalize_next = False
+                words_in_clause += 1
+
+                is_last_word = (idx == len(chosen) - 1)
+                if is_last_word:
+                    terminator = rng.choice([".", ".", ".", "?", "!"])
+                    formatted.append(word_str + terminator)
+                elif words_in_clause >= clause_target:
+                    if rng.random() < 0.45:
+                        punct = rng.choice([".", ".", "?", "!"])
+                        formatted.append(word_str + punct)
+                        capitalize_next = True
+                    else:
+                        punct = rng.choice([",", ",", ";"])
+                        formatted.append(word_str + punct)
+                    words_in_clause = 0
+                    clause_target = rng.randint(6, 13)
                 else:
-                    formatted.append(w)
-            terminator = rng.choice([".", ".", ".", "?", "!"])
-            text = " ".join(formatted) + terminator
+                    formatted.append(word_str)
+
+            text = " ".join(formatted)
         else:
             text = " ".join([w.lower() for w in chosen])
 

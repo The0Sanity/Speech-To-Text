@@ -54,7 +54,7 @@ class TestTDKCorpusGeneration(unittest.TestCase):
         self.assertTrue("fiyat" in word_set)
 
     def test_02_permutation_generator_produces_variable_lengths(self):
-        """Generator must produce sentences of variable length between 4 and 25 words."""
+        """Generator must produce sentences of expanded length averaging ~100 words (75 to 125 words)."""
         sample_vocab = [
             "merhaba", "günaydın", "müvafakat", "asker", "zeytin",
             "fiyat", "merkez", "ucuz", "fahiş", "börek", "artı", "tepsi",
@@ -66,7 +66,8 @@ class TestTDKCorpusGeneration(unittest.TestCase):
         self.assertEqual(len(batch), 100)
 
         word_counts = [len(item["text"].split()) for item in batch]
-        self.assertTrue(all(4 <= c <= 25 for c in word_counts))
+        self.assertTrue(all(75 <= c <= 125 for c in word_counts), f"Word counts outside 75-125: min={min(word_counts)}, max={max(word_counts)}")
+        self.assertAlmostEqual(sum(word_counts) / len(word_counts), 100, delta=10)
         self.assertGreater(max(word_counts), min(word_counts))
 
     def test_03_hybrid_distribution_ratio(self):

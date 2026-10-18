@@ -78,8 +78,8 @@ class TDKPermutationGenerator:
         self._counter += 1
         item_id = f"tdk_{self._counter:08d}"
 
-        # Sentence length between 4 and 25 words
-        length = self.rng.randint(4, 25)
+        # Sentence length averaging ~100 words (75 to 125 words)
+        length = self.rng.randint(75, 125)
 
         # Sample words without collision in this sentence
         if length <= len(self.vocabulary):
@@ -94,20 +94,37 @@ class TDKPermutationGenerator:
         has_punctuation = self.rng.random() < 0.70
 
         if has_punctuation:
-            # Build punctuated sentence
+            # Build punctuated multi-clause/multi-sentence utterance
             formatted_words = []
-            for idx, w in enumerate(chosen_words):
-                if idx == 0:
-                    formatted_words.append(turkish_capitalize(w))
-                elif idx > 0 and idx < len(chosen_words) - 1 and self.rng.random() < 0.20:
-                    formatted_words.append(w + ",")
-                else:
-                    formatted_words.append(w)
+            capitalize_next = True
+            words_in_clause = 0
+            clause_target = self.rng.randint(6, 13)
 
-            terminator = self.rng.choice([".", ".", ".", "?", "!"])
-            text = " ".join(formatted_words) + terminator
+            for idx, w in enumerate(chosen_words):
+                word_str = turkish_capitalize(w) if capitalize_next else w
+                capitalize_next = False
+                words_in_clause += 1
+
+                is_last_word = (idx == len(chosen_words) - 1)
+                if is_last_word:
+                    terminator = self.rng.choice([".", ".", ".", "?", "!"])
+                    formatted_words.append(word_str + terminator)
+                elif words_in_clause >= clause_target:
+                    if self.rng.random() < 0.45:
+                        punct = self.rng.choice([".", ".", "?", "!"])
+                        formatted_words.append(word_str + punct)
+                        capitalize_next = True
+                    else:
+                        punct = self.rng.choice([",", ",", ";"])
+                        formatted_words.append(word_str + punct)
+                    words_in_clause = 0
+                    clause_target = self.rng.randint(6, 13)
+                else:
+                    formatted_words.append(word_str)
+
+            text = " ".join(formatted_words)
         else:
-            # Pure lowercase unpunctuated
+            # Pure lowercase unpunctuated acoustic stream
             text = " ".join([w.lower() for w in chosen_words])
 
         return {
@@ -148,7 +165,6 @@ task_categories:
 - automatic-speech-recognition
 - text-generation
 task_ids:
-- speech-recognition
 - language-modeling
 tags:
 - turkish
