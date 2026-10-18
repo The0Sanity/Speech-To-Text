@@ -5,6 +5,7 @@ import sys
 import threading
 import time
 import webbrowser
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 import flet as ft
 
@@ -314,9 +315,14 @@ class FletSpeechToTextApp:
             content_padding=ft.Padding.symmetric(horizontal=10),
         )
 
-        # Dosya ve YouTube Girişleri
+        # Dosya ve YouTube Girisleri
         self.file_picker = ft.FilePicker(on_result=self._on_file_picked)
-        self.lbl_file_name = ft.Text(value="Dosya seçilmedi", size=11, weight=ft.FontWeight.BOLD, color=TEXT_MUTED)
+        if self.page:
+            if hasattr(self.page, "services") and self.page.services is not None:
+                if self.file_picker not in self.page.services:
+                    self.page.services.append(self.file_picker)
+
+        self.lbl_file_name = ft.Text(value="Dosya secilmedi", size=11, weight=ft.FontWeight.BOLD, color=TEXT_MUTED)
         self.lbl_file_meta = ft.Text(
             value="Desteklenen: .mp4, .mp3, .wav, .m4a, .aac, .mkv, .flac",
             size=10,
@@ -375,6 +381,8 @@ class FletSpeechToTextApp:
                         bgcolor=INPUT_BG,
                         border_radius=4,
                         padding=ft.Padding.all(8),
+                        ink=True,
+                        on_click=self._pick_file_dialog,
                     ),
                 ],
                 spacing=8,
@@ -1327,47 +1335,103 @@ class FletSpeechToTextApp:
         threading.Thread(target=_animate, daemon=True).start()
 
     # ------------------ Dosya ve YouTube Olayları ------------------
-    def _pick_file_dialog(self, _=None):
-        """Dosya seçiciyi güvenli şekilde başlatır."""
-        async def _pick():
+    def _handle_selected_file(self, file_path: str):
+        """Secilen yerel ses/video dosyasini isler ve kullanici arayuzunu aninda gunceller."""
+        if not file_path or not os.path.exists(file_path):
+            return
+
+        self.selected_file_path = str(file_path)
+        self.active_wav_path = None
+        self.media_info = None
+
+        file_name = os.path.basename(file_path)
+        try:
+            file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
+        except OSError:
+            file_size_mb = 0.0
+
+        ext = Path(file_path).suffix.upper().replace(".", "")
+        if not ext:
+            ext = "SES"
+
+        self.lbl_file_name.value = file_name
+        self.lbl_file_name.color = TEXT_MAIN
+        self.lbl_file_meta.value = f"Format: {ext} | Boyut: {file_size_mb:.2f} MB | Yol: {file_path}"
+        self.lbl_status.value = f"Hazır: '{file_name}' seçildi. Deşifreye başlayabilirsiniz."
+        self.lbl_status.color = SUCCESS
+        if hasattr(self, "audio_player") and self.audio_player:
+            self.audio_player.set_audio_source(None)
+
+        self._show_toast(f"Dosya seçildi: {file_name}")
+
+        self._safe_update(self.lbl_file_name)
+        self._safe_update(self.lbl_file_meta)
+        self._safe_update(self.lbl_status)
+        if self.page:
             try:
-                await self.file_picker.pick_files(
-                    allow_multiple=False,
-                    allowed_extensions=["mp4", "mp3", "wav", "m4a", "aac", "mkv", "flac"],
-                )
+                self.page.update()
             except Exception:
                 pass
+
+    def _pick_file_dialog(self, _=None):
+        """Dosya seciciyi guvenli sekilde baslatir."""
+        async def _pick():
+            selected_path = None
+            try:
+                if self.page:
+                    if hasattr(self.page, "services") and self.page.services is not None:
+                        if self.file_picker not in self.page.services:
+                            self.page.services.append(self.file_picker)
+
+                files = await self.file_picker.pick_files(
+                    allow_multiple=False,
+                    allowed_extensions=["mp4", "mp3", "wav", "m4a", "aac", "mkv", "flac"],
+                    file_type=ft.FilePickerFileType.CUSTOM,
+                )
+                if files and len(files) > 0 and getattr(files[0], "path", None):
+                    selected_path = files[0].path
+            except Exception:
+                selected_path = None
+
+            # Flet dosya secici yanit vermezse yerel Windows dosya iletisim kutusu yedegi
+            if not selected_path:
+                try:
+                    import tkinter as tk
+                    from tkinter import filedialog
+                    root = tk.Tk()
+                    root.withdraw()
+                    root.attributes("-topmost", True)
+                    selected_path = filedialog.askopenfilename(
+                        title="Ses veya Video Dosyası Seçin",
+                        filetypes=[
+                            ("Ses ve Video Dosyaları", "*.mp3 *.wav *.mp4 *.m4a *.aac *.mkv *.flac"),
+                            ("Tüm Dosyalar", "*.*")
+                        ]
+                    )
+                    root.destroy()
+                except Exception:
+                    pass
+
+            if selected_path and os.path.exists(selected_path):
+                self._handle_selected_file(selected_path)
 
         if self.page and hasattr(self.page, "run_task"):
             self.page.run_task(_pick)
         else:
             try:
                 import asyncio
-                asyncio.create_task(_pick())
+                asyncio.run(_pick())
             except Exception:
                 pass
 
     def _on_file_picked(self, e: ft.FilePickerResultEvent):
-        """Kullanıcı dosya seçtiğinde tetiklenir."""
-        if not e.files or len(e.files) == 0:
+        """Kullanici dosya sectiginde tetiklenir."""
+        if not e or not getattr(e, "files", None) or len(e.files) == 0:
             return
 
         file_path = e.files[0].path
-        self.selected_file_path = file_path
-        self.active_wav_path = None
-        self.media_info = None
-
-        file_name = os.path.basename(file_path)
-        file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
-
-        self.lbl_file_name.value = file_name
-        self.lbl_file_meta.value = f"Boyut: {file_size_mb:.1f} MB | Yol: {file_path}"
-        self.lbl_status.value = f"Hazır: {file_name} seçildi."
-        self.audio_player.set_audio_source(None)
-
-        self._safe_update(self.lbl_file_name)
-        self._safe_update(self.lbl_file_meta)
-        self._safe_update(self.lbl_status)
+        if file_path:
+            self._handle_selected_file(file_path)
 
     def _fetch_youtube_info(self):
         """YouTube video bilgilerini çeker."""

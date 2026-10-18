@@ -26,13 +26,17 @@ class TestConfigRelocationAndVersion(unittest.TestCase):
         shutil.rmtree(self.test_dir, ignore_errors=True)
 
     def test_app_version_is_107(self):
-        """Verify APP_VERSION and package version are bumped to 1.0.7."""
-        self.assertEqual(config.APP_VERSION, "1.0.7", "config.APP_VERSION must be 1.0.7")
-        self.assertEqual(src.__version__, "1.0.7", "src.__version__ must be 1.0.7")
+        """Verify APP_VERSION and package version are consistent and at least 1.0.7."""
+        from src.updater import SemVer
+        self.assertTrue(
+            SemVer.parse(config.APP_VERSION) >= SemVer.parse("1.0.7"),
+            "config.APP_VERSION must be 1.0.7 or higher"
+        )
+        self.assertEqual(config.APP_VERSION, src.__version__, "src.__version__ must match config.APP_VERSION")
         self.assertEqual(
             config.DEFAULT_CONFIG["last_seen_version"],
-            "1.0.7",
-            "DEFAULT_CONFIG last_seen_version must be 1.0.7",
+            config.APP_VERSION,
+            "DEFAULT_CONFIG last_seen_version must match APP_VERSION",
         )
 
     def test_config_file_location_is_not_in_base_dir(self):

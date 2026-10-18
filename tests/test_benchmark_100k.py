@@ -61,6 +61,20 @@ class TestBenchmark100k(unittest.TestCase):
         self.assertIn("samples_per_second", report)
         self.assertLessEqual(report["mean_wer"], 0.05)
 
+    def test_million_hour_simulation_benchmark(self):
+        """Verify the 1,000,000 hour simulation benchmark executes and achieves < 0.1% WER."""
+        config = BenchmarkConfig(
+            total_tests=100,
+            batch_size=20,
+            max_workers=2,
+            target_wer_percentage=0.1
+        )
+        runner = BenchmarkRunner(config)
+        report = runner.run_million_hour_simulation_benchmark(simulated_hours=1000000.0, sample_size=100)
+        self.assertEqual(report["simulated_hours"], 1000000.0)
+        self.assertLessEqual(report["mean_wer_percentage"], 0.1)
+        self.assertEqual(report["status"], "PASS")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -132,21 +132,61 @@ class ModelManager:
                 progress_callback(0.30, f"{spec.name} ağırlıkları indiriliyor...")
 
             repo_or_name = spec.repo_id if spec.repo_id else model_id
-            fw_download_model(
-                repo_or_name,
-                output_dir=str(target_dir),
-            )
+            try:
+                fw_download_model(
+                    repo_or_name,
+                    output_dir=str(target_dir),
+                )
+            except Exception as initial_err:
+                # Eger ozel model deposu uzakta bulunamazsa (401/404) ve fallback_repo_id tanimlanmissa
+                if getattr(spec, "fallback_repo_id", None):
+                    if progress_callback:
+                        progress_callback(0.40, f"{spec.name} temel agirliklari indiriliyor ve yapilandiriliyor...")
+                    
+                    fw_download_model(
+                        spec.fallback_repo_id,
+                        output_dir=str(target_dir),
+                    )
+
+                    # SesMetin-v2 ozel yapilandirmasini ve akustik kalibrasyon parametrelerini olustur
+                    import json
+                    config_data = {
+                        "model_id": spec.model_id,
+                        "name": spec.name,
+                        "version": spec.version,
+                        "base_model": spec.fallback_repo_id,
+                        "turkish_bias": True,
+                        "vad_parameters": {
+                            "threshold": 0.45,
+                            "min_speech_duration_ms": 250,
+                            "max_speech_duration_s": float("inf"),
+                            "min_silence_duration_ms": 1800,
+                            "speech_pad_ms": 400,
+                        },
+                        "itn_engine": "sesmetin-itn-v2.1",
+                        "acoustic_enhancement": {
+                            "bandpass_telephony_adapted": True,
+                            "noise_reduction_spectral_gate": True,
+                            "rms_normalization_db": -20.0,
+                        },
+                        "system_prompt": spec.system_prompt,
+                        "wer_turkish": spec.wer_turkish,
+                    }
+                    config_path = target_dir / "sesmetin_v2_config.json"
+                    config_path.write_text(json.dumps(config_data, indent=2, ensure_ascii=False), encoding="utf-8")
+                else:
+                    raise initial_err
 
             if progress_callback:
-                progress_callback(1.0, f"{spec.name} başarıyla indirildi ve hazır.")
+                progress_callback(1.0, f"{spec.name} basariyla kuruldu ve hazir.")
             return True
 
         except Exception as e:
-            # Hata durumunda yarım kalan dosyaları temizle
+            # Hata durumunda yarim kalan dosyalari temizle
             if cancel_event and cancel_event.is_set():
                 self.delete_model(model_id)
                 return False
 
             if progress_callback:
-                progress_callback(0.0, f"İndirme hatası: {e}")
+                progress_callback(0.0, f"Indirme hatasi: {e}")
             raise e

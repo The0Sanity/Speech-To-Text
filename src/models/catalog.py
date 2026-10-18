@@ -25,6 +25,7 @@ class ModelSpecification:
     is_proprietary: bool = False
     ct2_quantization: str = "int8"
     repo_id: str = ""
+    fallback_repo_id: str = ""
     files: List[str] = field(default_factory=lambda: ["model.bin", "config.json", "vocabulary.json"])
     system_prompt: str = ""
 
@@ -44,6 +45,7 @@ MODEL_CATALOG: Dict[str, ModelSpecification] = {
         is_proprietary=True,
         ct2_quantization="int8",
         repo_id="The0Sanity/sesmetin-v2-turbo-ct2",
+        fallback_repo_id="Systran/faster-whisper-large-v3-turbo",
         system_prompt="Bu kayıt Türkçe konuşma içermektedir. Kokoro-82M sentetik veri seti ve ITN motoruyla optimize edilmiş v2.1 mimarisi.",
     ),
     "sesmetin-v2-small": ModelSpecification(
@@ -58,6 +60,7 @@ MODEL_CATALOG: Dict[str, ModelSpecification] = {
         is_proprietary=True,
         ct2_quantization="int8",
         repo_id="The0Sanity/sesmetin-v2-small-ct2",
+        fallback_repo_id="Systran/faster-whisper-small",
         system_prompt="Türkçe ses kaydı transkripsiyonu v2.1.",
     ),
     "sesmetin-v2-tiny": ModelSpecification(
@@ -72,6 +75,7 @@ MODEL_CATALOG: Dict[str, ModelSpecification] = {
         is_proprietary=True,
         ct2_quantization="int8",
         repo_id="The0Sanity/sesmetin-v2-tiny-ct2",
+        fallback_repo_id="Systran/faster-whisper-tiny",
         system_prompt="Hızlı Türkçe konuşma transkripsiyonu v2.1.",
     ),
 
@@ -88,6 +92,7 @@ MODEL_CATALOG: Dict[str, ModelSpecification] = {
         is_proprietary=True,
         ct2_quantization="int8",
         repo_id="The0Sanity/sesmetin-v1-turbo-ct2",
+        fallback_repo_id="Systran/faster-whisper-large-v3-turbo",
         system_prompt="Bu kayıt Türkçe konuşma içermektedir. Cümle akışına, noktalama işaretlerine ve Türkçe harflere özen gösteriniz.",
     ),
     "sesmetin-v1-small": ModelSpecification(
@@ -102,6 +107,7 @@ MODEL_CATALOG: Dict[str, ModelSpecification] = {
         is_proprietary=True,
         ct2_quantization="int8",
         repo_id="The0Sanity/sesmetin-v1-small-ct2",
+        fallback_repo_id="Systran/faster-whisper-small",
         system_prompt="Türkçe ses kaydı transkripsiyonu. Noktalama ve imla kurallarına dikkat ediniz.",
     ),
     "sesmetin-v1-tiny": ModelSpecification(
@@ -116,6 +122,7 @@ MODEL_CATALOG: Dict[str, ModelSpecification] = {
         is_proprietary=True,
         ct2_quantization="int8",
         repo_id="The0Sanity/sesmetin-v1-tiny-ct2",
+        fallback_repo_id="Systran/faster-whisper-tiny",
         system_prompt="Hızlı Türkçe konuşma transkripsiyonu.",
     ),
 

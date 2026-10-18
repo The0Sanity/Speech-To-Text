@@ -35,12 +35,17 @@ class TestFletIconsAndBundling(unittest.TestCase):
 
     def test_app_version_bumped_to_107(self):
         """Verify version consistency across configuration and PE metadata."""
+        from src.config import APP_VERSION
         config_content = self.config_file.read_text(encoding="utf-8")
-        self.assertIn('APP_VERSION = "1.0.7"', config_content, "src/config.py APP_VERSION must be 1.0.7")
+        self.assertIn(f'APP_VERSION = "{APP_VERSION}"', config_content)
+
+        parts = APP_VERSION.split(".")
+        ver_tuple_str = f"({parts[0]}, {parts[1]}, {parts[2]}, 0)"
+        ver_str = f"'{APP_VERSION}.0'"
 
         version_info_content = self.version_info_file.read_text(encoding="utf-8")
-        self.assertIn("(1, 0, 7, 0)", version_info_content, "version_info.txt must be 1.0.7.0")
-        self.assertIn("'1.0.7.0'", version_info_content, "version_info.txt StringFileInfo must be 1.0.7.0")
+        self.assertIn(ver_tuple_str, version_info_content)
+        self.assertIn(ver_str, version_info_content)
 
     def test_runtime_icons_self_healing_resilience(self):
         """Verify that Flet icons remain functional and do not raise FileNotFoundError."""

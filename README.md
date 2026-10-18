@@ -122,6 +122,9 @@ Proje kapsamında sentetik Türkçe çoklu konuşmacı diyalogları (kasiyer, m�
 - [x] Zengin Markdown destekli ve akıcı ilerleme çubuklu otomatik güncelleme sistemi.
 - [x] Süreç kilitlenmesini önleyen güvenli güncelleme uygulayıcısı.
 
+### v1.0.4 — İlk Kararlı Sürüm
+- [x] Temel Faster-Whisper INT8 motoru ve Pyannote diarization entegrasyonu.
+
 ### v1.1.0 — Model Merkezi, Önbellek Yönetimi ve Donanım Teşhisi (Planlanan)
 - [ ] Görsel Model Yöneticisi: Tiny, Base, Small, Medium ve Large modellerini arayüzden tek tıkla indirme, silme ve disk alanı yönetimi.
 - [ ] Akıllı Donanım Algılama: NVIDIA CUDA / cuDNN ve CPU AVX2 donanımlarını otomatik tespit edip arayüzden çalışma modu seçimi sağlama.
@@ -132,6 +135,15 @@ Proje kapsamında sentetik Türkçe çoklu konuşmacı diyalogları (kasiyer, m�
 - [ ] Çoklu Dosya Kuyruğu: Birden fazla ses ve video dosyasını sürükle-bırak ile sıraya ekleyerek arka planda otomatik sırayla transkribe etme.
 - [ ] Ses Ön-İşleme Kontrolleri: Yüksek geçiren filtre frekansı, Gürültü Kapısı dB eşiği ve EBU R128 hedef LUFS seviyesini kaydırıcılar ile ayarlama.
 - [ ] Toplu Dışa Aktarma: Kuyruktaki tüm medya dosyalarının transkriptlerini seçilen formatlarda tek tıkla topluca kaydetme.
+
+### v1.3.0 — Gelişmiş Filtreleme ve Özel Sözlük (Planlanan)
+- [ ] Özel sözlük ve terim önceliği desteği.
+
+### v1.4.0 — Canlı Mikrofon Girişi ve Gerçek Zamanlı Deşifre (Planlanan)
+- [ ] Anlık konuşma tanıma ve canlı altyazı akışı.
+
+### v2.0.0 — SesMetin Özel ASR ve Tam Çevrimdışı Yapay Zeka (Planlanan)
+- [ ] SesMetin-v2 özel Türkçe akustik ve dil modeli entegrasyonu.
 
 ---
 

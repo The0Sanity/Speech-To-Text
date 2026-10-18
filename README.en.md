@@ -122,6 +122,9 @@ Evaluation results conducted on non-repeating Turkish multi-speaker dialogue dat
 - [x] Rich Markdown release notes dialog and smooth progress tracking.
 - [x] Clean process termination during update deployment.
 
+### v1.0.4 — Initial Stable Release
+- [x] Core Faster-Whisper INT8 engine and Pyannote diarization integration.
+
 ### v1.1.0 — Model Hub, Cache Manager & Hardware Diagnostics (Planned)
 - [ ] Visual Model Hub: Download, delete, and inspect Tiny, Base, Small, Medium, and Large models directly from the UI.
 - [ ] Hardware Diagnostics: Automated detection for NVIDIA CUDA / cuDNN and CPU AVX2 acceleration.
@@ -132,6 +135,15 @@ Evaluation results conducted on non-repeating Turkish multi-speaker dialogue dat
 - [ ] Multi-File Queue: Drag-and-drop batch transcription queue.
 - [ ] Audio DSP Controls: User-adjustable sliders for high-pass frequency, noise gate threshold, and EBU R128 loudness.
 - [ ] Batch Export: Single-click bulk export for all queued audio files.
+
+### v1.3.0 — Advanced Filtering and Custom Vocabulary (Planned)
+- [ ] Custom terminology bias and domain dictionaries.
+
+### v1.4.0 — Live Microphone Input and Real-Time Transcription (Planned)
+- [ ] Real-time speech recognition and live caption streaming.
+
+### v2.0.0 — SesMetin Custom ASR and Full Offline AI (Planned)
+- [ ] SesMetin-v2 native Turkish acoustic and language model integration.
 
 ---
 
