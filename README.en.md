@@ -64,13 +64,13 @@ No audio or transcript data is ever transmitted to external servers or cloud pro
 
 ## Quick Start
 
-### Option 1: Standalone Application (.exe) — Recommended
+### Option 1: Standalone Portable Application (.exe) or Windows Setup Installer (.exe)
 
-No installation or technical setup required:
+No installation or technical setup required to get started:
 
 1. Visit the [GitHub Releases](https://github.com/The0Sanity/Speech-To-Text/releases) page.
-2. Download the latest `SpeechToText.exe` asset.
-3. Double-click the downloaded executable to run the application immediately.
+2. Choose either `SpeechToText.exe` (portable zero-installation) or `SpeechToText-Setup.exe` (Windows installer wizard).
+3. Run the downloaded file immediately or install with desktop and Start Menu shortcuts.
 
 > [!NOTE]
 > **Windows SmartScreen Notice:**
@@ -120,7 +120,13 @@ To preserve local workstation performance and prevent hardware throttling, model
 
 ## Release Roadmap
 
-### v1.0.9 — Silent PowerShell Updater & Performance Enhancements (Current Release)
+### v1.1.0 — Model Hub, Hardware Diagnostics, Memory HUD & Dual Packaging (Current Release)
+- [x] Visual Model Hub: Download, delete, and inspect Tiny, Base, Small, Medium, Large-v3-Turbo, and full 1550M parameter Large-v3 models directly from the UI.
+- [x] Hardware Diagnostics & Acceleration Modes: Automated detection and mode selection for NVIDIA CUDA GPU or CPU INT8 AVX2 vector acceleration.
+- [x] Performance & Memory HUD: Real-time dynamic RAM/VRAM requirement and system boundary indicators with status badges.
+- [x] Dual Packaging Formats: Standalone portable executable (`SpeechToText.exe`) and Inno Setup Windows installer (`SpeechToText-Setup.exe`).
+
+### v1.0.9 — Silent PowerShell Updater & Performance Enhancements
 - [x] Fully hidden, windowless native PowerShell self-update engine (`CREATE_NO_WINDOW`).
 - [x] PyInstaller process-lock resolution via 30-attempt safe swap and automatic `.bak` rollback.
 - [x] Thread-safe Flet progress synchronization ensuring reliable 100% completion rendering.
@@ -135,12 +141,6 @@ To preserve local workstation performance and prevent hardware throttling, model
 
 ### v1.0.4 — Initial Stable Release
 - [x] Core Faster-Whisper INT8 engine and Pyannote diarization integration.
-
-### v1.1.0 — Model Hub, Cache Manager & Hardware Diagnostics (Planned)
-- [ ] Visual Model Hub: Download, delete, and inspect Tiny, Base, Small, Medium, and Large models directly from the UI.
-- [ ] Hardware Diagnostics: Automated detection for NVIDIA CUDA / cuDNN and CPU AVX2 acceleration.
-- [ ] Dual Packaging: Portable standalone executable and Windows Setup installer.
-- [ ] Resource Monitor: Real-time VRAM and RAM indicators for selected models.
 
 ### v1.2.0 — Batch Processing Queue & DSP Audio Controls (Planned)
 - [ ] Multi-File Queue: Drag-and-drop batch transcription queue.

@@ -78,7 +78,12 @@ from src.youtube_downloader import (
     get_youtube_video_info,
     is_valid_youtube_url,
 )
-from src.hardware import format_memory_size, get_system_hardware_info
+from src.hardware import (
+    evaluate_model_compatibility,
+    format_memory_size,
+    get_system_hardware_info,
+    resolve_execution_device_and_compute,
+)
 from src.models import (
     MODEL_CATALOG,
     ModelCategory,
@@ -186,6 +191,7 @@ class FletSpeechToTextApp:
             ft.dropdown.Option("small (Dengeli)"),
             ft.dropdown.Option("medium (Yüksek Doğruluk)"),
             ft.dropdown.Option("large-v3-turbo (En Yüksek Kalite)"),
+            ft.dropdown.Option("large-v3 (Resmi Tam Kapasite 1550M)"),
             ft.dropdown.Option("base (Hızlı)"),
             ft.dropdown.Option("tiny (Ultra Hızlı)"),
         ]
@@ -206,6 +212,70 @@ class FletSpeechToTextApp:
             color=TEXT_MAIN,
             text_size=12,
             content_padding=ft.Padding.symmetric(horizontal=10),
+            on_select=lambda _: self._on_hardware_or_model_changed(),
+        )
+
+        # Donanım Hızlandırma Kipi
+        hw_mode_options = [
+            ft.dropdown.Option("auto (Otomatik - GPU/CPU Önerilen)"),
+            ft.dropdown.Option("cuda (NVIDIA CUDA GPU Hızlandırma)"),
+            ft.dropdown.Option("cpu (CPU INT8 AVX2 Vektör Hızlandırma)"),
+        ]
+        cfg_hw = self.settings.get("hardware_mode", "auto").lower()
+        init_hw = "auto (Otomatik - GPU/CPU Önerilen)"
+        for opt in hw_mode_options:
+            if opt.key.split()[0].lower() == cfg_hw:
+                init_hw = opt.key
+                break
+
+        self.cmb_hardware_mode = ft.Dropdown(
+            options=hw_mode_options,
+            value=init_hw,
+            height=36,
+            bgcolor=INPUT_BG,
+            border_color=INPUT_BORDER,
+            color=TEXT_MAIN,
+            text_size=12,
+            content_padding=ft.Padding.symmetric(horizontal=10),
+            on_select=lambda _: self._on_hardware_or_model_changed(),
+        )
+
+        # Gerçek Zamanlı Performans & Bellek HUD Kontrolleri
+        self.lbl_hud_ram_req = ft.Text(value="Gereken RAM: -", size=11, color=TEXT_MUTED)
+        self.lbl_hud_sys_ram = ft.Text(value="Sistem: -", size=11, color=TEXT_MUTED)
+        self.lbl_hud_status_badge = ft.Text(value="Tam Uyumlu", size=11, weight=ft.FontWeight.BOLD, color=SUCCESS)
+        self.lbl_hud_execution = ft.Text(value="Kip: -", size=10, color=TEXT_SUBTLE)
+        self.lbl_hud_warning = ft.Text(value="", size=10, color=WARNING, visible=False)
+
+        self.hardware_hud_card = ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Row(
+                        controls=[
+                            ft.Icon(ft.Icons.SPEED_ROUNDED, size=14, color=ACCENT_PRIMARY),
+                            ft.Text("Donanım & Bellek HUD", size=11, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
+                            ft.Container(expand=True),
+                            self.lbl_hud_status_badge,
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    ft.Row(
+                        controls=[
+                            self.lbl_hud_ram_req,
+                            self.lbl_hud_sys_ram,
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    self.lbl_hud_execution,
+                    self.lbl_hud_warning,
+                ],
+                spacing=4,
+            ),
+            bgcolor=INPUT_BG,
+            border=ft.Border.all(1, INPUT_BORDER),
+            border_radius=6,
+            padding=ft.Padding.symmetric(horizontal=10, vertical=8),
         )
 
         self.cmb_lang = ft.Dropdown(
@@ -534,6 +604,66 @@ class FletSpeechToTextApp:
         # Dışa Aktarma Çubuğu
         self.lbl_total_turns = ft.Text(value="0 konuşma parçası", size=11, color=TEXT_MUTED)
 
+        # Donanım & HUD ilk durumunu güncelle
+        self._update_hardware_hud()
+
+    def _get_selected_model_id(self) -> str:
+        """Açılır menüden seçilen modelin kimliğini ayıklar."""
+        raw = getattr(self.cmb_model, "value", None) or "small"
+        return raw.split()[0].strip().lower()
+
+    def _get_selected_hardware_mode(self) -> str:
+        """Açılır menüden seçilen donanım kipini ('auto', 'cuda', 'cpu') ayıklar."""
+        raw = getattr(self.cmb_hardware_mode, "value", None) or "auto"
+        return raw.split()[0].strip().lower()
+
+    def _on_hardware_or_model_changed(self):
+        """Model veya donanım kipi değiştirildiğinde HUD'ı anlık günceller ve ayarları kaydeder."""
+        hw_mode = self._get_selected_hardware_mode()
+        model_id = self._get_selected_model_id()
+        self.settings["hardware_mode"] = hw_mode
+        self.settings["model_size"] = model_id
+        save_settings(self.settings)
+        self._update_hardware_hud()
+
+    def _update_hardware_hud(self):
+        """Seçili model ve donanım kipine göre HUD göstergelerini dinamik günceller."""
+        if not hasattr(self, "cmb_model") or not hasattr(self, "cmb_hardware_mode"):
+            return
+        model_id = self._get_selected_model_id()
+        mode = self._get_selected_hardware_mode()
+        compat = evaluate_model_compatibility(model_id, mode=mode)
+
+        req_ram = compat.get("required_ram_gb", 2.0)
+        avail_ram = compat.get("available_ram_gb", 0.0)
+        tot_ram = compat.get("total_ram_gb", 0.0)
+        dev = compat.get("target_device", "cpu").upper()
+        comp = compat.get("target_compute", "int8")
+
+        self.lbl_hud_ram_req.value = f"Gereken RAM: {req_ram:.1f} GB"
+        self.lbl_hud_sys_ram.value = f"Boş Bellek: {avail_ram:.1f} / {tot_ram:.1f} GB"
+        self.lbl_hud_execution.value = f"İşlem Kipi: {dev} ({comp})"
+
+        status = compat.get("status", "compatible")
+        warning_msg = compat.get("warning_msg", "")
+
+        if status == "tight":
+            self.lbl_hud_status_badge.value = "Sistem Sınırında"
+            self.lbl_hud_status_badge.color = WARNING
+            self.hardware_hud_card.border = ft.Border.all(1, WARNING)
+            if warning_msg:
+                self.lbl_hud_warning.value = warning_msg
+                self.lbl_hud_warning.visible = True
+            else:
+                self.lbl_hud_warning.visible = False
+        else:
+            self.lbl_hud_status_badge.value = "Tam Uyumlu"
+            self.lbl_hud_status_badge.color = SUCCESS
+            self.hardware_hud_card.border = ft.Border.all(1, INPUT_BORDER)
+            self.lbl_hud_warning.visible = False
+
+        self._safe_update(self.hardware_hud_card)
+
     def _on_btn_start_hover(self, e: Any):
         """Başlat butonu üzerine gelindiğinde mikro ölçek ve hafif ton aydınlatması sağlar."""
         if self.btn_start.disabled:
@@ -602,6 +732,9 @@ class FletSpeechToTextApp:
                     ft.Text(value="Model ve Ayrıştırma Ayarları", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
                     ft.Text(value="Whisper Modeli:", size=10, weight=ft.FontWeight.BOLD, color=TEXT_MUTED),
                     self.cmb_model,
+                    ft.Text(value="Donanım & Hızlandırma Kipi:", size=10, weight=ft.FontWeight.BOLD, color=TEXT_MUTED),
+                    self.cmb_hardware_mode,
+                    self.hardware_hud_card,
                     ft.Row(
                         controls=[
                             ft.Column(
@@ -1301,6 +1434,7 @@ class FletSpeechToTextApp:
         save_settings(self.settings)
         self._show_toast(f"'{model_id}' varsayılan model olarak ayarlandı.", is_error=False)
         self.refresh_model_hub()
+        self._update_hardware_hud()
         self._safe_update(self.cmb_model)
 
     def _delete_model_action(self, model_id: str):
@@ -1552,16 +1686,22 @@ class FletSpeechToTextApp:
 
             # Adım 3: Whisper STT (Tembel / İhtiyaç Anında Yükleme)
             self.stepper.set_active_step(2)
-            raw_model = self.cmb_model.value or "small"
-            model_key = raw_model.split()[0].lower()
+            model_key = self._get_selected_model_id()
+            hw_mode = self._get_selected_hardware_mode()
+            exec_dev, exec_comp = resolve_execution_device_and_compute(mode=hw_mode)
             raw_lang = self.cmb_lang.value or "Türkçe (tr)"
             lang_choice = "tr" if "tr" in raw_lang.lower() or "türkçe" in raw_lang.lower() else "auto"
             raw_vad = self.cmb_vad.value or "Yüksek"
             vad_choice = "high" if "yüksek" in raw_vad.lower() or "hassas" in raw_vad.lower() else "normal"
 
-            self._update_progress(0.20, f"3/5: Whisper '{model_key}' modeli hazırlanıyor...")
+            self._update_progress(0.20, f"3/5: Whisper '{model_key}' modeli hazırlanıyor ({exec_dev.upper()} {exec_comp})...")
             from src.transcriber import WhisperTranscriber
-            transcriber = WhisperTranscriber(model_size=model_key, cpu_threads=4)
+            transcriber = WhisperTranscriber(
+                model_size=model_key,
+                cpu_threads=4,
+                device=exec_dev,
+                compute_type=exec_comp,
+            )
 
             def whisper_progress(pct, msg, seg):
                 if self.cancel_requested:

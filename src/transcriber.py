@@ -93,16 +93,26 @@ def build_rolling_prompt(base_prompt: str, previous_text: str, max_context_chars
 
 
 class WhisperTranscriber:
-    """Faster-Whisper motorunu CPU üzerinde INT8 optimizasyonuyla çalıştıran sınıf."""
+    """Faster-Whisper motorunu CPU veya CUDA üzerinde çalıştıran sınıf."""
 
-    def __init__(self, model_size: str = "small", cpu_threads: int = 4):
+    def __init__(
+        self,
+        model_size: str = "small",
+        cpu_threads: int = 4,
+        device: Optional[str] = None,
+        compute_type: Optional[str] = None,
+    ):
         """
         Args:
-            model_size: Model boyutu ("tiny", "base", "small", "medium", "large-v3-turbo")
-            cpu_threads: CPU çekirdek sayısı (i3-12100 için 4 önerilir)
+            model_size: Model boyutu ("tiny", "base", "small", "medium", "large-v3", "large-v3-turbo")
+            cpu_threads: CPU çekirdek sayısı
+            device: Çalışma cihazı ("cpu" veya "cuda")
+            compute_type: Sayısal hassasiyet ("int8", "float16", "float32")
         """
         self.model_size = model_size
         self.cpu_threads = cpu_threads
+        self.device = device or "cpu"
+        self.compute_type = compute_type or "int8"
         self.download_root = str(MODELS_DIR)
         self.model: Optional[WhisperModel] = None
 
@@ -110,7 +120,7 @@ class WhisperTranscriber:
         """Modeli önbellekten veya HuggingFace üzerinden yükler."""
         if self.model is None:
             if status_callback:
-                status_callback(f"'{self.model_size}' modeli belleğe yükleniyor (CPU INT8)...")
+                status_callback(f"'{self.model_size}' modeli belleğe yükleniyor ({self.device.upper()} {self.compute_type})...")
 
             model_path = self.model_size
             try:
@@ -127,8 +137,8 @@ class WhisperTranscriber:
 
             self.model = WhisperModel(
                 model_size_or_path=model_path,
-                device="cpu",
-                compute_type="int8",
+                device=self.device,
+                compute_type=self.compute_type,
                 cpu_threads=self.cpu_threads,
                 download_root=self.download_root,
             )

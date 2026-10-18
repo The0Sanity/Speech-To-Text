@@ -160,6 +160,7 @@ def build_release_notes(
     tag: str,
     changelog_path: Optional[Path] = None,
     sha256_path: Optional[Path] = None,
+    sha256_setup_path: Optional[Path] = None,
     repo: str = "The0Sanity/Speech-To-Text",
 ) -> str:
     """Constructs the complete release notes body for GitHub Releases."""
@@ -179,28 +180,35 @@ def build_release_notes(
     sections: List[str] = [notes_body]
 
     # SHA256 Checksum block
+    checksum_lines = []
     if sha256_path and sha256_path.exists():
         sha_val = sha256_path.read_text(encoding="utf-8").strip()
         if sha_val:
-            sections.append(
-                "### Checksum Verification\n"
-                "Verify the integrity of `SpeechToText.exe` with SHA-256:\n"
-                "```text\n"
-                f"{sha_val}\n"
-                "```\n"
-                "In PowerShell:\n"
-                "```powershell\n"
-                '(Get-FileHash -Algorithm SHA256 .\\SpeechToText.exe).Hash -eq "'
-                + sha_val.split()[0]
-                + '"\n```'
-            )
+            checksum_lines.append(f"- `SpeechToText.exe` (Portable): `{sha_val.split()[0]}`")
+    if sha256_setup_path and sha256_setup_path.exists():
+        sha_setup_val = sha256_setup_path.read_text(encoding="utf-8").strip()
+        if sha_setup_val:
+            checksum_lines.append(f"- `SpeechToText-Setup.exe` (Installer): `{sha_setup_val.split()[0]}`")
+
+    if checksum_lines:
+        sections.append(
+            "### Checksum Verification (SHA-256)\n"
+            "Verify file integrity in PowerShell before running:\n\n"
+            + "\n".join(checksum_lines)
+            + "\n\nExample PowerShell verification:\n"
+            + "```powershell\n"
+            + "(Get-FileHash -Algorithm SHA256 .\\SpeechToText.exe).Hash\n"
+            + "```"
+        )
 
     # Windows SmartScreen Guidance
     sections.append(
         "### Windows Installation & SmartScreen Guidance\n"
-        "- This is a standalone, self-contained Windows executable built locally with PyInstaller.\n"
+        "- **Dual Packaging Formats Provided**:\n"
+        "  - `SpeechToText.exe`: Standalone portable executable. Extract and run directly without installation.\n"
+        "  - `SpeechToText-Setup.exe`: Inno Setup Windows installer with Start Menu and optional Desktop shortcuts.\n"
         '- If Windows SmartScreen displays "Windows protected your PC", click **More info** and select **Run anyway**.\n'
-        "- The binary is timestamped with Authenticode signature for tamper detection."
+        "- Binaries are timestamped with Authenticode signatures for tamper detection."
     )
 
     # Prominent Visual Attribution & Licensing Notice
@@ -218,7 +226,8 @@ def main():
     parser = argparse.ArgumentParser(description="Generate patch notes for GitHub Release.")
     parser.add_argument("--tag", required=True, help="Release tag (e.g. v1.0.6)")
     parser.add_argument("--changelog", default="CHANGELOG.md", help="Path to CHANGELOG.md")
-    parser.add_argument("--sha256", default=None, help="Path to .sha256 file")
+    parser.add_argument("--sha256", default=None, help="Path to portable .sha256 file")
+    parser.add_argument("--sha256-setup", default=None, help="Path to setup .sha256 file")
     parser.add_argument("--output", default=None, help="Output markdown file path")
     parser.add_argument("--repo", default="The0Sanity/Speech-To-Text", help="GitHub repo (owner/name)")
 
@@ -226,11 +235,13 @@ def main():
 
     cl_path = Path(args.changelog) if args.changelog else None
     sha_path = Path(args.sha256) if args.sha256 else None
+    sha_setup_path = Path(args.sha256_setup) if args.sha256_setup else None
 
     notes = build_release_notes(
         tag=args.tag,
         changelog_path=cl_path,
         sha256_path=sha_path,
+        sha256_setup_path=sha_setup_path,
         repo=args.repo,
     )
 

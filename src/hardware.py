@@ -3,7 +3,7 @@
 import os
 import platform
 import sys
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def format_memory_size(bytes_size: float) -> str:
@@ -159,3 +159,92 @@ def get_system_hardware_info() -> Dict[str, Any]:
         "recommended_device": rec_dev,
         "recommended_compute_type": rec_compute,
     }
+
+
+def resolve_execution_device_and_compute(
+    mode: str = "auto",
+    cuda_available: Optional[bool] = None,
+) -> Tuple[str, str]:
+    """Kullanıcı tercihi ve sistem imkanlarına göre nihai cihaz ve hassasiyeti belirler."""
+    if cuda_available is None:
+        cuda_available, _ = detect_cuda_capabilities()
+
+    clean_mode = (mode or "auto").strip().lower()
+
+    if clean_mode == "cuda":
+        if cuda_available:
+            return "cuda", "float16"
+        # CUDA mevcut değilse güvenli biçimde CPU INT8'e düş
+        return "cpu", "int8"
+
+    if clean_mode == "cpu":
+        return "cpu", "int8"
+
+    # auto modu
+    if cuda_available:
+        return "cuda", "float16"
+    return "cpu", "int8"
+
+
+def evaluate_model_compatibility(model_id: str, mode: str = "auto") -> Dict[str, Any]:
+    """Seçili modelin sistem RAM ve VRAM gereksinimlerini karşılaştırıp uyumluluk raporu üretir."""
+    from src.models.catalog import get_model_spec
+
+    spec = get_model_spec(model_id)
+    req_ram_gb = spec.ram_req_gb if spec else 2.0
+    req_size_mb = spec.size_mb if spec else 500
+
+    total_ram, avail_ram = get_memory_info()
+    cuda_avail, cuda_devs = detect_cuda_capabilities()
+    target_device, target_compute = resolve_execution_device_and_compute(mode, cuda_available=cuda_avail)
+
+    vram_avail_gb = 0.0
+    if cuda_devs:
+        vram_avail_gb = float(cuda_devs[0].get("total_vram_gb", 0.0))
+
+    # Uyumluluk kararı
+    status = "compatible"
+    status_label = "Tam Uyumlu"
+    warning_msg = ""
+    can_run = True
+
+    if target_device == "cuda":
+        # GPU VRAM değerlendirmesi
+        # Whisper modelleri int8/fp16 için model boyutunun yaklaşık 1.2 katı VRAM tüketir
+        req_vram_gb = round((req_size_mb * 1.25) / 1024, 2)
+        if vram_avail_gb > 0 and vram_avail_gb < req_vram_gb:
+            status = "tight"
+            status_label = "Sistem Sınırında (Yetersiz VRAM)"
+            warning_msg = f"Seçilen model yaklaşık {req_vram_gb} GB VRAM gerektirir. Cihazınızda {vram_avail_gb} GB VRAM mevcut."
+        else:
+            status = "compatible"
+            status_label = "Tam Uyumlu (CUDA Hızlandırma)"
+    else:
+        # CPU RAM değerlendirmesi
+        if avail_ram < (req_ram_gb * 0.6):
+            status = "tight"
+            status_label = "Sistem Sınırında (Düşük Boş RAM)"
+            warning_msg = f"Model {req_ram_gb} GB RAM gerektirir. Sistemde yalnızca {avail_ram} GB boş RAM var; disk takası yaşanabilir."
+        elif total_ram < req_ram_gb:
+            status = "tight"
+            status_label = "Sistem Sınırında (Yüksek RAM İhtiyacı)"
+            warning_msg = f"Model {req_ram_gb} GB RAM gerektirir. Cihazın toplam belleği {total_ram} GB."
+        else:
+            status = "compatible"
+            status_label = "Tam Uyumlu (AVX2 INT8)"
+
+    return {
+        "model_id": model_id,
+        "mode": mode,
+        "target_device": target_device,
+        "target_compute": target_compute,
+        "status": status,
+        "status_label": status_label,
+        "warning_msg": warning_msg,
+        "can_run": can_run,
+        "required_ram_gb": req_ram_gb,
+        "available_ram_gb": avail_ram,
+        "total_ram_gb": total_ram,
+        "vram_available_gb": vram_avail_gb,
+    }
+

@@ -3,6 +3,31 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.0] - 2026-10-18
+
+### Added / Yenilikler
+- **Intelligent Hardware Acceleration & Mode Selection / Akilli Donanim Hizlandirma ve Kip Secimi**:
+  - Added multi-tier execution modes: `Auto (Otomatik - Onerilen)`, `NVIDIA CUDA GPU Hizlandirma`, and `CPU INT8 (AVX2 Vektor Hizlandirma)`.
+  - Automatic fallback to CPU INT8 if CUDA is unavailable or if device memory is exceeded.
+  - Dynamically configures CTranslate2 execution device and compute type (`cuda/float16` vs `cpu/int8`).
+- **Real-Time Performance & Memory HUD / Gercek Zamanli Donanim ve Bellek Paneli**:
+  - Added reactive performance HUD displaying required model RAM and VRAM alongside live system memory availability.
+  - Color-coded compatibility status badge (`Tam Uyumlu` in green, `Sistem Sinirinda` in amber) with contextual warning notifications for low RAM/VRAM situations.
+  - Instant live recalculation when switching between models or hardware acceleration modes.
+- **Model Catalog Completion (large-v3) / Model Katalogu Tamamlama**:
+  - Added official OpenAI `large-v3` flagship model (1550M parameters, ~3.1 GB) with full CTranslate2 INT8 quantization to both the Model Hub and the transcription dropdown selector.
+- **Dual Packaging Format / Cift Paketleme Formati**:
+  - Introduced official Inno Setup installer script (`packaging/installer.iss`) producing `SpeechToText-Setup.exe` with Start Menu integration, desktop shortcuts, and clean uninstaller.
+  - Retained standalone portable executable (`SpeechToText.exe`) for zero-installation portable usage.
+- **Enhanced Release Automation / Gelismis Surum Is Akisi**:
+  - GitHub Actions release workflow updated to automatically compile, sign, verify, and publish both Portable and Setup executables with dedicated SHA-256 checksums.
+
+### Fixed / Duzeltmeler
+- **Dropdown Event Compatibility / Acilir Menu Olay Uyumlulugu**:
+  - Ensured seamless event binding across Flet framework updates using `on_select` callback handlers.
+- **Model Compatibility Precision / Model Uyumluluk Hesaplamalari**:
+  - Integrated dynamic memory threshold heuristics for system boundary analysis, preventing out-of-memory crashes on resource-constrained workstations.
+
 ## [v1.0.9] - 2026-10-18
 
 ### Added / Yenilikler

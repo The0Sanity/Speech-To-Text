@@ -25,8 +25,9 @@ class TestAntivirusAndInstantLaunch(unittest.TestCase):
         version_file = self.root_dir / "version_info.txt"
         self.assertTrue(version_file.exists(), "version_info.txt must exist")
         content = version_file.read_text(encoding="utf-8")
+        current_filevers = f"filevers=({APP_VERSION.replace('.', ', ')}, 0)"
         self.assertTrue(
-            "filevers=(1, 0, 9, 0)" in content or "filevers=(1, 0, 7, 0)" in content or "filevers=(1, 0, 4, 0)" in content or "filevers=(1, 0, 3, 0)" in content,
+            current_filevers in content or "filevers=(1, 1, 0, 0)" in content or "filevers=(1, 0, 9, 0)" in content,
             "version_info.txt must contain valid filevers",
         )
         self.assertIn("CompanyName", content)

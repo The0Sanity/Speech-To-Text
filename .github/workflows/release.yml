@@ -62,12 +62,49 @@ jobs:
             Write-Host "Local signature status: $($sig.Status)"
           }
 
-      - name: Compute SHA256 Checksum
+      - name: Compute SHA256 Checksum for Standalone Executable
         shell: pwsh
         run: |
           $hash = (Get-FileHash -Algorithm SHA256 "dist\SpeechToText.exe").Hash
           Set-Content -Path "dist\SpeechToText.exe.sha256" -Value $hash -Encoding utf8
-          Write-Host "Generated SHA256: $hash"
+          Write-Host "Generated Portable SHA256: $hash"
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress
+          "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+
+      - name: Build Windows Installer with Inno Setup
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\iscc.exe" packaging\installer.iss
+          if (-not (Test-Path "dist\SpeechToText-Setup.exe")) {
+            throw "dist\SpeechToText-Setup.exe was not created by Inno Setup."
+          }
+          Write-Host "Inno Setup installer created successfully."
+
+      - name: Sign Windows Installer Executable
+        shell: pwsh
+        run: |
+          $cert = Get-ChildItem -Path "Cert:\CurrentUser\My" -CodeSigningCert | Select-Object -First 1
+          if ($cert) {
+            Write-Host "Signing dist\SpeechToText-Setup.exe..."
+            try {
+              $sig = Set-AuthenticodeSignature -FilePath "dist\SpeechToText-Setup.exe" -Certificate $cert -TimestampServer "http://timestamp.digicert.com" -HashAlgorithm SHA256
+              Write-Host "Timestamped installer signature status: $($sig.Status)"
+            } catch {
+              $sig = Set-AuthenticodeSignature -FilePath "dist\SpeechToText-Setup.exe" -Certificate $cert -HashAlgorithm SHA256
+              Write-Host "Local installer signature status: $($sig.Status)"
+            }
+          }
+
+      - name: Compute SHA256 Checksum for Installer Executable
+        shell: pwsh
+        run: |
+          $hash_setup = (Get-FileHash -Algorithm SHA256 "dist\SpeechToText-Setup.exe").Hash
+          Set-Content -Path "dist\SpeechToText-Setup.exe.sha256" -Value $hash_setup -Encoding utf8
+          Write-Host "Generated Installer SHA256: $hash_setup"
 
       - name: Resolve Release Tag Name
         id: resolve_tag
@@ -78,7 +115,7 @@ jobs:
             $tag = "${{ github.ref_name }}"
           }
           if ($tag -eq "main" -or $tag -eq "master") {
-            $tag = "v1.0.0"
+            $tag = "v1.1.0"
           }
           Write-Host "Resolved release tag: $tag"
           "release_tag=$tag" >> $env:GITHUB_OUTPUT
@@ -90,6 +127,7 @@ jobs:
             --tag "${{ steps.resolve_tag.outputs.release_tag }}" `
             --changelog "CHANGELOG.md" `
             --sha256 "dist/SpeechToText.exe.sha256" `
+            --sha256-setup "dist/SpeechToText-Setup.exe.sha256" `
             --output "release_notes.md" `
             --repo "${{ github.repository }}"
           Write-Host "Generated release_notes.md:"
@@ -106,5 +144,7 @@ jobs:
           files: |
             dist/SpeechToText.exe
             dist/SpeechToText.exe.sha256
+            dist/SpeechToText-Setup.exe
+            dist/SpeechToText-Setup.exe.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

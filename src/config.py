@@ -61,7 +61,7 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 SETTINGS_FILE = CONFIG_FILE  # Geriye dönük uyumluluk takma adı
 
 # Uygulama Sürümü ve Depo Bilgileri
-APP_VERSION = "1.0.9"
+APP_VERSION = "1.1.0"
 APP_NAME = "SesMetin Pro"
 GITHUB_REPO_OWNER = "The0Sanity"
 GITHUB_REPO_NAME = "Speech-To-Text"
@@ -73,7 +73,8 @@ for directory in [MODELS_DIR, OUTPUTS_DIR, TEMP_DIR]:
 
 
 DEFAULT_CONFIG: Dict[str, Any] = {
-    "model_size": "small",         # "tiny", "base", "small", "medium", "large-v3-turbo"
+    "model_size": "small",         # "tiny", "base", "small", "medium", "large-v3", "large-v3-turbo"
+    "hardware_mode": "auto",       # "auto", "cuda", "cpu"
     "language": "tr",              # Varsayılan Türkçe
     "speaker_prefix": "X",         # "X1", "X2" formatı için
     "min_speakers": None,          # Otomatik tespit veya tamsayı

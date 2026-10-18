@@ -64,13 +64,13 @@ Hiçbir ses veya metin verisi üçüncü taraf bulut sağlayıcılarına aktarı
 
 ## Hızlı Başlangıç
 
-### Seçenek 1: Bağımsız Uygulama (.exe) — Tavsiye Edilen
+### Seçenek 1: Bağımsız Taşınabilir Uygulama (Portable .exe) veya Kurulum Sihirbazı (Setup .exe)
 
-Kurulum veya Python konfigürasyonu gerekmez:
+Kurulum veya Python konfigürasyonu gerekmeden hemen kullanmaya başlayabilirsiniz:
 
 1. [GitHub Releases](https://github.com/The0Sanity/Speech-To-Text/releases) sayfasına gidin.
-2. En güncel sürümün altındaki `SpeechToText.exe` dosyasını indirin.
-3. İndirdiğiniz dosyaya çift tıklayarak doğrudan çalıştırın.
+2. Tercihinize göre `SpeechToText.exe` (taşınabilir) veya `SpeechToText-Setup.exe` (kurulum sihirbazı) dosyasını indirin.
+3. İndirdiğiniz dosyaya çift tıklayarak doğrudan çalıştırın veya kurun.
 
 > [!NOTE]
 > **Windows SmartScreen Bilgilendirmesi:**
@@ -120,7 +120,13 @@ Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreç
 
 ## Sürüm Yol Haritası ve Yapılacaklar (Roadmap)
 
-### v1.0.9 — Sessiz PowerShell Güncelleyici ve Başarım İyileştirmeleri (Mevcut Sürüm)
+### v1.1.0 — Model Merkezi, Donanım Teşhisi, Bellek HUD ve Çift Paketleme (Mevcut Sürüm)
+- [x] Görsel Model Yöneticisi: Tiny, Base, Small, Medium, Large-v3-Turbo ve tam 1550M parametreli Large-v3 modellerini tek tıkla indirme ve yönetme.
+- [x] Akıllı Donanım Algılama & Çalışma Kipi: NVIDIA CUDA GPU hızlandırma veya CPU INT8 AVX2 vektör hızlandırma seçenekleri ve otomatik geri dönüş.
+- [x] Performans & Bellek HUD: Seçili modelin RAM/VRAM gereksinimlerini sistem kaynaklarıyla kıyaslayan ve riskleri uyaran dinamik panel.
+- [x] Çift Paketleme Formatı: Tek parça taşınabilir `SpeechToText.exe` ve Başlat Menüsü entegrasyonlu `SpeechToText-Setup.exe` Inno Setup kurulum sihirbazı.
+
+### v1.0.9 — Sessiz PowerShell Güncelleyici ve Başarım İyileştirmeleri
 - [x] Tamamen gizli ve penceresiz çalışan PowerShell yerinde güncelleme motoru (`CREATE_NO_WINDOW`).
 - [x] PyInstaller süreç kilitlerini çözen 30 denemeli güvenli taşıma ve otomatik `.bak` geri alma mekanizması.
 - [x] Güncelleme modalında donmayan, %100 tamamlanma garantili thread-safe Flet ilerleme senkronizasyonu.
@@ -135,12 +141,6 @@ Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreç
 
 ### v1.0.4 — İlk Kararlı Sürüm
 - [x] Temel Faster-Whisper INT8 motoru ve Pyannote diarization entegrasyonu.
-
-### v1.1.0 — Model Merkezi, Önbellek Yönetimi ve Donanım Teşhisi (Planlanan)
-- [ ] Görsel Model Yöneticisi: Tiny, Base, Small, Medium ve Large modellerini arayüzden tek tıkla indirme, silme ve disk alanı yönetimi.
-- [ ] Akıllı Donanım Algılama: NVIDIA CUDA / cuDNN ve CPU AVX2 donanımlarını otomatik tespit edip arayüzden çalışma modu seçimi sağlama.
-- [ ] Çift Paketleme Formatı: Taşınabilir tek parça Portable `.exe` ve standart Windows Kurulum Sihirbazı Setup `.exe` seçenekleri.
-- [ ] Performans ve Bellek Göstergesi: Seçilen modelin VRAM ve RAM gereksinimlerini gerçek zamanlı gösteren donanım paneli.
 
 ### v1.2.0 — Toplu Dosya Kuyruğu ve Ses DSP Ayarları (Planlanan)
 - [ ] Çoklu Dosya Kuyruğu: Birden fazla ses ve video dosyasını sürükle-bırak ile sıraya ekleyerek arka planda otomatik sırayla transkribe etme.

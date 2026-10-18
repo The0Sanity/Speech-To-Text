@@ -192,6 +192,19 @@ MODEL_CATALOG: Dict[str, ModelSpecification] = {
         ct2_quantization="int8",
         repo_id="Systran/faster-whisper-large-v3-turbo",
     ),
+    "large-v3": ModelSpecification(
+        model_id="large-v3",
+        name="Faster-Whisper Large-v3",
+        category=ModelCategory.WHISPER,
+        version="official",
+        size_mb=3100,
+        ram_req_gb=6.0,
+        wer_turkish="%3.8 WER",
+        description="Tam 1550M parametreli amiral gemisi resmi Whisper modeli. Yüksek transkripsiyon hassasiyeti.",
+        is_proprietary=False,
+        ct2_quantization="int8",
+        repo_id="Systran/faster-whisper-large-v3",
+    ),
 }
 
 
