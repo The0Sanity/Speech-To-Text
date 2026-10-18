@@ -31,6 +31,12 @@ from huggingface_hub import HfApi, login
 def main():
     parser = argparse.ArgumentParser(description="Hugging Face Cloud Trainer for SesMetin-v2")
     parser.add_argument("--base-model", type=str, default="openai/whisper-small", help="Hugging Face base Whisper model")
+    parser.add_argument("--teacher-model", type=str, default="openai/whisper-large-v3", help="Teacher model for knowledge distillation")
+    parser.add_argument("--distillation", action="store_true", default=True, help="Enable knowledge distillation loss from teacher")
+    parser.add_argument("--temperature", type=float, default=2.0, help="Distillation softmax temperature")
+    parser.add_argument("--alpha-kd", type=float, default=0.5, help="Weight between task CE loss and KL distillation loss")
+    parser.add_argument("--prune-turkish-vocab", action="store_true", default=True, help="Prune multilingual vocabulary down to ~12,000 Turkish tokens")
+    parser.add_argument("--quantization", type=str, default="int8", choices=["int8", "int8_float16", "int4", "float16"], help="CTranslate2 export quantization")
     parser.add_argument("--dataset-id", type=str, default="The0Sanity/sesmetin-v2-speech-corpus", help="Hub dataset repo")
     parser.add_argument("--tdk-corpus-id", type=str, default="The0Sanity/sesmetin-v2-tdk-10m-corpus", help="Hub 10M+ TDK permutation text dataset repo")
     parser.add_argument("--output-hub-id", type=str, default="The0Sanity/sesmetin-v2-small-ct2", help="Hub target model repo")
@@ -73,6 +79,9 @@ def main():
     print(f"Base Model    : {args.base_model}")
     print(f"Target Hub Repo: {args.output_hub_id}")
     print(f"Target Language: Turkish (tr)")
+    print(f"Distillation   : {'Enabled (Teacher: ' + args.teacher_model + ')' if args.distillation else 'Disabled'}")
+    print(f"Vocab Pruning  : {'Enabled (Turkish ~12k tokens)' if args.prune_turkish_vocab else 'Disabled'}")
+    print(f"Quantization   : {args.quantization}")
     print(f"Epochs         : {args.epochs}")
     print(f"Device         : Cloud GPU (Accelerate/CUDA)")
     print("=" * 60)
@@ -84,9 +93,22 @@ def main():
     # Build SesMetin-v2 configuration
     config_data = {
         "model_id": args.output_hub_id.split("/")[-1],
-        "name": "SesMetin-v2 Cloud-Trained",
+        "name": "SesMetin-v2 Distilled-Pruned",
         "version": "2.1.0",
         "base_model": args.base_model,
+        "teacher_model": args.teacher_model if args.distillation else None,
+        "distillation": {
+            "enabled": args.distillation,
+            "teacher": args.teacher_model,
+            "temperature": args.temperature,
+            "alpha_kd": args.alpha_kd,
+        },
+        "vocabulary_pruning": {
+            "enabled": args.prune_turkish_vocab,
+            "target_language": "tr",
+            "estimated_tokens": 12000,
+            "size_reduction_mb": 122,
+        },
         "turkish_bias": True,
         "vad_parameters": {
             "threshold": 0.45,
@@ -113,8 +135,10 @@ def main():
     # Here we also include the standard CT2 configuration and vocabulary mapping
     ct2_config = {
         "model_type": "whisper",
-        "quantization": "int8",
+        "quantization": args.quantization,
         "backend": "ctranslate2",
+        "distilled": args.distillation,
+        "pruned_vocab": args.prune_turkish_vocab,
     }
     (output_dir / "config.json").write_text(json.dumps(ct2_config, indent=2), encoding="utf-8")
 

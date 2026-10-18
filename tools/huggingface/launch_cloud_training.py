@@ -26,6 +26,9 @@ def launch_job(
     flavor: str = "a10g-large",
     timeout: str = "2h",
     base_model: str = "openai/whisper-small",
+    teacher_model: str = "openai/whisper-large-v3",
+    distillation: bool = True,
+    prune_turkish_vocab: bool = True,
     target_repo: str = "The0Sanity/sesmetin-v2-small-ct2",
     job_type: str = "train",
 ) -> None:
@@ -54,6 +57,9 @@ def launch_job(
         print(f"Cloud Hardware   : {flavor} (High-performance GPU)")
         print(f"Timeout          : {timeout}")
         print(f"Base Model       : {base_model}")
+        print(f"Teacher Model    : {teacher_model if distillation else 'N/A'}")
+        print(f"Distillation     : {'Enabled' if distillation else 'Disabled'}")
+        print(f"Vocab Pruning    : {'Enabled (Turkish ~12k tokens)' if prune_turkish_vocab else 'Disabled'}")
         print(f"Target Hub Repo  : {target_repo}")
         print(f"Dataset          : https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus")
         print("Host Machine Note: Zero local CPU/GPU cycles are used; all training runs on Hugging Face cloud.")
@@ -64,9 +70,16 @@ def launch_job(
         sys.exit(1)
 
     print("\nTo submit this job directly via Hugging Face CLI, execute:")
-    cli_cmd = (
-        f'hf jobs uv run --flavor {flavor} --timeout {timeout} --secrets HF_TOKEN "{script_path}"'
-    )
+    cli_flags = f'--flavor {flavor} --timeout {timeout} --secrets HF_TOKEN "{script_path}"'
+    if job_type == "train":
+        extra_flags = f' -- --base-model "{base_model}"'
+        if distillation:
+            extra_flags += f' --teacher-model "{teacher_model}" --distillation'
+        if prune_turkish_vocab:
+            extra_flags += ' --prune-turkish-vocab'
+        cli_flags += extra_flags
+
+    cli_cmd = f"hf jobs uv run {cli_flags}"
     print(f"  {cli_cmd}\n")
 
     print(f"Monitoring Dashboard: https://huggingface.co/{username}")
@@ -79,6 +92,9 @@ def main():
     parser.add_argument("--flavor", type=str, default="a10g-large", help="Hugging Face hardware flavor (e.g., a10g-large, cpu-upgrade)")
     parser.add_argument("--timeout", type=str, default="2h", help="Job timeout limit")
     parser.add_argument("--base-model", type=str, default="openai/whisper-small", help="Base model identifier")
+    parser.add_argument("--teacher-model", type=str, default="openai/whisper-large-v3", help="Teacher model identifier for distillation")
+    parser.add_argument("--no-distillation", dest="distillation", action="store_false", help="Disable knowledge distillation")
+    parser.add_argument("--no-prune-vocab", dest="prune_turkish_vocab", action="store_false", help="Disable Turkish vocabulary pruning")
     parser.add_argument("--target-repo", type=str, default="The0Sanity/sesmetin-v2-small-ct2", help="Target model repository")
     args = parser.parse_args()
 
@@ -86,6 +102,9 @@ def main():
         flavor=args.flavor,
         timeout=args.timeout,
         base_model=args.base_model,
+        teacher_model=args.teacher_model,
+        distillation=args.distillation,
+        prune_turkish_vocab=args.prune_turkish_vocab,
         target_repo=args.target_repo,
         job_type=args.job_type,
     )
