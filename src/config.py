@@ -61,7 +61,7 @@ CONFIG_FILE = CONFIG_DIR / "config.json"
 SETTINGS_FILE = CONFIG_FILE  # Geriye dönük uyumluluk takma adı
 
 # Uygulama Sürümü ve Depo Bilgileri
-APP_VERSION = "1.0.7"
+APP_VERSION = "1.0.9"
 APP_NAME = "SesMetin Pro"
 GITHUB_REPO_OWNER = "The0Sanity"
 GITHUB_REPO_NAME = "Speech-To-Text"

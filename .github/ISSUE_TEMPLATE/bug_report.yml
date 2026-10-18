@@ -1,0 +1,61 @@
+name: Bug Report
+description: File a bug report to help improve SesMetin Pro
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue with SesMetin Pro (Speech-To-Text).
+        Repository: https://github.com/The0Sanity/Speech-To-Text
+  - type: input
+    id: version
+    attributes:
+      label: Application Version
+      description: What version of SesMetin Pro are you running? (e.g. v1.0.9)
+      placeholder: "v1.0.9"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - Windows Server
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Open SesMetin Pro
+        2. Select audio file...
+        3. Click Transcribe
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs or Terminal Output
+      description: Paste any error messages or logs here.
+      render: shell

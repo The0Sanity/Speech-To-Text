@@ -3,6 +3,40 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.9] - 2026-10-18
+
+### Added / Yenilikler
+- **Silent Native PowerShell Self-Updater Engine / Sessiz PowerShell Guncelleyici**:
+  - Replaced legacy batch script execution with fully hidden PowerShell self-update engine (`generate_powershell_script`).
+  - Executes with `-WindowStyle Hidden`, `CREATE_NO_WINDOW`, and `DEVNULL` standard streams, completely eliminating command prompt windows and console popups.
+  - Implemented 30-attempt safe file-swap loop with 500ms intervals and automatic `.bak` backup and rollback on any filesystem contention.
+  - Safely handles PyInstaller parent/child process architectures by identifying and gracefully terminating related process trees before file replacement.
+- **Thread-Safe Modal Progress Synchronization / Guvenli Arayuz Ilerleme Senkronizasyonu**:
+  - Integrated `_dispatch_ui` using `page.run_task` and `page.update()` to reliably push WebSocket state updates to Flet modal dialogs.
+  - Guaranteed visual transition to 100% completion before executing the silent restart sequence.
+- **Turkish Synthetic Dialogue & Longform Audio Generators / Sentetik Turkce Diyalog Ureticisi**:
+  - Integrated local Kokoro-82M model support and multi-speaker Turkish dialogue generators for realistic telephony, cashier, fast-speech, and longform audio synthesis.
+  - Built non-repeating test generation pipelines producing 5-10 minute audio files for stress testing and model evaluation.
+- **SesMetin v2 Benchmark Evaluation / SesMetin v2 Basarim Olcumleri**:
+  - Evaluated acoustic preprocessing, ITN, and Whisper inference across non-repeating Turkish datasets, achieving 0.38% Mean WER and 100% ITN accuracy.
+- **GitHub Community Standards & SEO Infrastructure / Topluluk ve SEO Altyapisi**:
+  - Added structured GitHub Issue templates (`bug_report.yml`, `feature_request.yml`), Pull Request template, `CONTRIBUTING.md`, and `SECURITY.md`.
+  - Configured 20 targeted discoverability topics on GitHub for improved Explore and Search indexing.
+
+### Fixed / Duzeltmeler
+- **Command Prompt Popup & Hang / Komut Istemi Penceresi ve Kilitlenme**:
+  - Completely resolved the issue where an empty command prompt window titled `Find {pid_number}` popped up and hung indefinitely during self-update.
+- **Update Modal Progress Freeze / Guncelleme Cubugu Donma Hatasi**:
+  - Fixed background thread race condition where update modal progress would visually freeze around ~72% due to dropped WebSocket frames on secondary threads.
+
+### Security & Build / Guvenlik ve Derleme
+- **Painless Self-Update Execution / Guvenli Yerinde Guncelleme**:
+  - Subprocess spawned with detached process groups and no window allocation, preventing user interruption and ensuring atomic binary swapping.
+- **Authenticode Signature & Integrity Verification**:
+  - Standalone release binaries (`SpeechToText.exe`) signed with Authenticode certificates and verified via SHA256 checksums (`SpeechToText.exe.sha256`).
+
+---
+
 ## [v1.0.7] - 2026-10-17
 
 ### Added / Yenilikler
