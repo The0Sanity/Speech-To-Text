@@ -26,6 +26,11 @@ on:
         required: false
         default: "0"
         type: string
+      batch_commit_size:
+        description: "Number of shards per atomic Git commit (double-buffered)"
+        required: false
+        default: "5"
+        type: string
       repo_id:
         description: "Target Hugging Face dataset repository"
         required: true
@@ -65,5 +70,6 @@ jobs:
             --total-samples "${{ inputs.total_samples }}" \
             --shard-size "${{ inputs.shard_size }}" \
             --max-shards "${{ inputs.max_shards }}" \
-            --start-shard "${{ inputs.start_shard }}"
+            --start-shard "${{ inputs.start_shard }}" \
+            --batch-commit-size "${{ inputs.batch_commit_size }}"
 

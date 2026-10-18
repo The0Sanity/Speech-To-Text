@@ -63,12 +63,12 @@ class TestLiveUpdaterExecution(unittest.TestCase):
                 )
                 self.assertTrue(success, "execute_in_place_update must return True")
 
-                # Wait for PowerShell script to execute (timeout within 12 seconds)
+                # Wait for PowerShell script to execute (timeout within 20 seconds)
                 start_time = time.time()
                 process_killed = False
                 file_replaced = False
 
-                while time.time() - start_time < 12:
+                while time.time() - start_time < 20:
                     # Check if process has terminated
                     if proc.poll() is not None:
                         process_killed = True

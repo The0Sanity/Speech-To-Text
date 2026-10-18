@@ -160,10 +160,10 @@ class TestTDKCorpusGeneration(unittest.TestCase):
         )
 
         self.assertTrue(result)
-        mock_api.upload_file.assert_called_once()
-        call_kwargs = mock_api.upload_file.call_args[1]
+        mock_api.create_commit.assert_called_once()
+        call_kwargs = mock_api.create_commit.call_args[1]
         self.assertEqual(call_kwargs["repo_id"], "The0Sanity/sesmetin-v2-tdk-10m-corpus")
-        self.assertEqual(call_kwargs["path_in_repo"], "data/train-00000-of-00050.parquet")
+        self.assertEqual(call_kwargs["operations"][0].path_in_repo, "data/train-00000-of-00050.parquet")
 
 
     @patch("tools.huggingface.generate_and_push_tdk_corpus.get_token")

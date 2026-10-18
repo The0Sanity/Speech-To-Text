@@ -14,6 +14,7 @@ import os
 import random
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Optional
 
@@ -25,9 +26,10 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 try:
-    from huggingface_hub import HfApi, get_token
+    from huggingface_hub import CommitOperationAdd, HfApi, get_token
     HAS_HF_HUB = True
 except ImportError:
+    CommitOperationAdd = None
     HfApi = None
     get_token = lambda: None
     HAS_HF_HUB = False
@@ -231,6 +233,40 @@ License: Apache 2.0
 """
 
 
+def prepare_shard_operation(
+    shard_index: int,
+    total_shards: int,
+    parquet_bytes: bytes,
+) -> Any:
+    """Prepares an in-memory CommitOperationAdd for the given shard without disk I/O."""
+    shard_name = f"train-{shard_index:05d}-of-{total_shards:05d}.parquet"
+    path_in_repo = f"data/{shard_name}"
+    if CommitOperationAdd is None:
+        raise RuntimeError("huggingface_hub is required for CommitOperationAdd.")
+    return CommitOperationAdd(
+        path_in_repo=path_in_repo,
+        path_or_fileobj=io.BytesIO(parquet_bytes),
+    )
+
+
+def commit_shard_batch(
+    api: Any,
+    repo_id: str,
+    operations: List[Any],
+    commit_message: str,
+) -> bool:
+    """Commits a batch of operations in a single atomic Git commit transaction."""
+    if not operations:
+        return True
+    api.create_commit(
+        repo_id=repo_id,
+        repo_type="dataset",
+        operations=operations,
+        commit_message=commit_message,
+    )
+    return True
+
+
 def upload_shard_in_memory(
     api: Any,
     repo_id: str,
@@ -239,25 +275,14 @@ def upload_shard_in_memory(
     parquet_bytes: bytes,
 ) -> bool:
     """Uploads a single Parquet shard directly to the Hugging Face dataset repository."""
+    op = prepare_shard_operation(shard_index, total_shards, parquet_bytes)
     shard_name = f"train-{shard_index:05d}-of-{total_shards:05d}.parquet"
-    path_in_repo = f"data/{shard_name}"
-
-    with tempfile.NamedTemporaryFile(suffix=".parquet", delete=False) as tmp:
-        tmp.write(parquet_bytes)
-        tmp_path = tmp.name
-
-    try:
-        api.upload_file(
-            path_or_fileobj=tmp_path,
-            path_in_repo=path_in_repo,
-            repo_id=repo_id,
-            repo_type="dataset",
-            commit_message=f"feat(corpus): add shard {shard_index + 1}/{total_shards} ({shard_name})",
-        )
-        return True
-    finally:
-        if os.path.exists(tmp_path):
-            os.remove(tmp_path)
+    return commit_shard_batch(
+        api=api,
+        repo_id=repo_id,
+        operations=[op],
+        commit_message=f"feat(corpus): add shard {shard_index + 1}/{total_shards} ({shard_name})",
+    )
 
 
 def stream_corpus_to_huggingface(
@@ -267,8 +292,9 @@ def stream_corpus_to_huggingface(
     shard_size: int = 200000,
     max_shards: Optional[int] = None,
     start_shard: int = 0,
+    batch_commit_size: int = 5,
 ) -> str:
-    """Orchestrates generation of 10M+ examples and incremental streaming upload to Hub."""
+    """Orchestrates generation of 10M+ examples with double-buffering and batched commits."""
     if not HAS_HF_HUB:
         raise RuntimeError("huggingface_hub package is required for uploading to Hugging Face.")
 
@@ -283,45 +309,85 @@ def stream_corpus_to_huggingface(
 
     # 1. Upload dataset card and YAML configs
     readme_content = build_dataset_readme(total_samples=total_samples, num_shards=total_num_shards)
-    with tempfile.NamedTemporaryFile(suffix=".md", delete=False, mode="w", encoding="utf-8") as tmp:
-        tmp.write(readme_content)
-        tmp_readme = tmp.name
-    try:
-        api.upload_file(
-            path_or_fileobj=tmp_readme,
-            path_in_repo="README.md",
-            repo_id=repo_id,
-            repo_type="dataset",
-            commit_message="docs: publish declarative Parquet metadata and dataset card",
-        )
-    finally:
-        if os.path.exists(tmp_readme):
-            os.remove(tmp_readme)
+    readme_op = CommitOperationAdd(
+        path_in_repo="README.md",
+        path_or_fileobj=io.BytesIO(readme_content.encode("utf-8")),
+    )
+    commit_shard_batch(
+        api=api,
+        repo_id=repo_id,
+        operations=[readme_op],
+        commit_message="docs: publish declarative Parquet metadata and dataset card",
+    )
 
     # 2. Initialize generator
     logger.info("Initializing TDK Permutation Generator with complete TDK lexicon...")
     generator = TDKPermutationGenerator(seed=42 + start_shard)
     logger.info(f"Loaded {len(generator.vocabulary)} unique clean TDK headwords.")
 
-    # 3. Stream shards incrementally
-    logger.info(f"Beginning streaming of {num_shards} shards ({shard_size:,} rows per shard, starting at shard {start_shard})...")
-    for shard_idx in range(start_shard, start_shard + num_shards):
-        batch = generator.generate_batch(shard_size)
-        parquet_bytes = serialize_shard_to_parquet_bytes(batch)
-        del batch  # Immediate memory reclamation
+    # 3. Stream shards incrementally with double-buffered commit pipelining
+    logger.info(
+        f"Beginning streaming of {num_shards} shards ({shard_size:,} rows per shard, "
+        f"starting at shard {start_shard}, commit batch size: {batch_commit_size})..."
+    )
 
-        logger.info(
-            f"Uploading Shard {shard_idx + 1}/{total_num_shards} "
-            f"({len(parquet_bytes) / (1024 * 1024):.2f} MB compressed Parquet)..."
-        )
-        upload_shard_in_memory(
-            api=api,
-            repo_id=repo_id,
-            shard_index=shard_idx,
-            total_shards=total_num_shards,
-            parquet_bytes=parquet_bytes,
-        )
-        del parquet_bytes  # Immediate memory reclamation
+    pending_ops: List[Any] = []
+    upload_future = None
+    executor = ThreadPoolExecutor(max_workers=1)
+
+    try:
+        for shard_idx in range(start_shard, start_shard + num_shards):
+            batch = generator.generate_batch(shard_size)
+            parquet_bytes = serialize_shard_to_parquet_bytes(batch)
+            del batch  # Immediate memory reclamation
+
+            shard_size_mb = len(parquet_bytes) / (1024 * 1024)
+            logger.info(
+                f"Generated Shard {shard_idx + 1}/{total_num_shards} "
+                f"({shard_size_mb:.2f} MB compressed Parquet in memory)"
+            )
+            op = prepare_shard_operation(shard_idx, total_num_shards, parquet_bytes)
+            pending_ops.append(op)
+            del parquet_bytes
+
+            if len(pending_ops) >= batch_commit_size:
+                if upload_future is not None:
+                    upload_future.result()  # Wait for prior batch commit to complete
+
+                ops_to_commit = list(pending_ops)
+                pending_ops = []
+                first_shard = shard_idx - len(ops_to_commit) + 2
+                last_shard = shard_idx + 1
+                msg = f"feat(corpus): add shards {first_shard}-{last_shard}/{total_num_shards}"
+                logger.info(f"Submitting batched commit for {len(ops_to_commit)} shards ({first_shard}-{last_shard})...")
+                upload_future = executor.submit(
+                    commit_shard_batch,
+                    api=api,
+                    repo_id=repo_id,
+                    operations=ops_to_commit,
+                    commit_message=msg,
+                )
+
+        # Flush any in-flight background commit
+        if upload_future is not None:
+            upload_future.result()
+
+        # Flush final remainder batch if any
+        if pending_ops:
+            first_shard = start_shard + num_shards - len(pending_ops) + 1
+            last_shard = start_shard + num_shards
+            msg = f"feat(corpus): add shards {first_shard}-{last_shard}/{total_num_shards}"
+            logger.info(f"Submitting final remainder commit for {len(pending_ops)} shards ({first_shard}-{last_shard})...")
+            commit_shard_batch(
+                api=api,
+                repo_id=repo_id,
+                operations=pending_ops,
+                commit_message=msg,
+            )
+            pending_ops = []
+
+    finally:
+        executor.shutdown(wait=True)
 
     hub_url = f"https://huggingface.co/datasets/{repo_id}"
     logger.info(f"Successfully published {num_shards} shards to Hugging Face: {hub_url}")
@@ -335,6 +401,7 @@ def main():
     parser.add_argument("--shard-size", type=int, default=200000, help="Samples per Parquet shard")
     parser.add_argument("--max-shards", type=int, default=None, help="Limit number of shards to process")
     parser.add_argument("--start-shard", type=int, default=0, help="Starting shard index")
+    parser.add_argument("--batch-commit-size", type=int, default=5, help="Number of shards per commit transaction")
     args = parser.parse_args()
 
     token = os.environ.get("HF_TOKEN") or (get_token() if HAS_HF_HUB else None)
@@ -349,6 +416,7 @@ def main():
         shard_size=args.shard_size,
         max_shards=args.max_shards,
         start_shard=args.start_shard,
+        batch_commit_size=args.batch_commit_size,
     )
 
 
