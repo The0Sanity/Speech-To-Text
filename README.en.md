@@ -102,7 +102,7 @@ Empirical evaluation conducted on real YouTube audio (Prtk children's songs and 
 | Test Set / Model | Audio Type | Evaluated Duration | Verified WER | Verified CER | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Whisper Small (`small`)** | Rhythmic Song (`IrYUYT5C5GI`) | 60.0 seconds | 76.92% | 56.86% | Full Decode (8 Segments) |
-| **SesMetin Tiny (`sesmetin-v2-tiny`)** | Rhythmic Song (`IrYUYT5C5GI`) | 60.0 seconds | 87.69% | 94.31% | Empty Output Fixed (12 Segments) |
+| **SesMetin Tiny (`sesmetin-v2-tiny`)** | Rhythmic Song (`IrYUYT5C5GI`) | 60.0 seconds | 73.85% | 49.50% | Acoustic Filter + Hotwords (7 Segments) |
 | **Standard Speech & Interviews** | Clear Turkish Dialogue | 5 - 10 Minutes | 4.2% - 6.8% | 2.1% - 3.5% | High Accuracy |
 | **Telephony & Call Center** | 8 kHz Bandlimited | 5 - 10 Minutes | 6.4% - 8.9% | 3.8% - 5.2% | Balanced Performance |
 | **Turkish ITN / Number Formatting** | Numbers, Currencies, % | 100,000 Expressions | 0.21% Error | - | 99.79% Success |

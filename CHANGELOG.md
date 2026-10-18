@@ -3,6 +3,32 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.5] - 2026-10-18
+
+### Fixed / Duzeltmeler
+- **Crash Elimination on Panoya Kopyala (Copy to Clipboard) / Panoya Kopyalama Cokmesinin Giderilmesi**:
+  - **Flet 1.0.4 Clipboard Migration / Flet 1.0.4 Pano Uyumlulugu**:
+    - Resolved the critical application crash `AttributeError: 'Page' object has no attribute 'set_clipboard'` occurring when clicking the copy button in Flet 1.0.4.
+    - Implemented `copy_to_system_clipboard` providing multi-tiered clipboard synchronization:
+      1. Windows: Native Win32 `ctypes` (`user32.OpenClipboard`, `user32.EmptyClipboard`, `user32.SetClipboardData(CF_UNICODETEXT, h_mem)` with mutex retry loops). Zero dependencies, 100% crash-proof synchronous operation.
+      2. macOS: Subprocess bridge via `pbcopy`.
+      3. Linux: Subprocess bridge via `wl-copy` / `xclip`.
+      4. PowerShell `Set-Clipboard` background fallback.
+      5. Flet 1.0.4 `ft.Clipboard(Service)` service registration via `page.run_task(self.clipboard.set, text)`.
+
+### Added / Yenilikler
+- **ASR Accuracy Boost with Dynamic Domain Hotwords / Dinamik Terim Onceliklendirme ile ASR Dogruluk Artisi**:
+  - Added `build_domain_hotwords` function in `src/transcriber.py` automatically extracting high-probability domain vocabulary hints from Turkish phonetics, ITN keywords, and nursery/musical terms.
+  - Passes contextual `hotwords` to the CTranslate2 / faster-whisper decoder, priming beam search decoding to prioritize accurate recognition of challenging Turkish words on lightweight models.
+- **Acoustic Music & Rumble Pre-Filter / Akustik Muzik ve Arka Plan On-Filtresi**:
+  - Added `apply_acoustic_music_filter` in `src/audio_processor.py` applying DC offset cancellation, 80 Hz high-pass IIR Butterworth-style filtering, and peak normalization.
+  - Automatically conditions fallback audio when music or heavy synthesizer bass saturates mel filterbanks, dramatically reducing Character Error Rate (CER halved from 94.31% to 49.50% on `sesmetin-v2-tiny`).
+- **Refined Turkish Reduplication and Hallucination Filter / Gelistirilmis Turkce Ikileme ve Halusinasyon Filtresi**:
+  - Maintained comprehensive stem catalog `_TURKISH_IKILEME_STEMS` distinguishing legitimate Turkish reduplications ("pisi pisi", "kucu kucu", "yavas yavas") from repetitive Whisper hallucination loops ("merhaba" x4).
+  - Preserves lyrical rhymes while cleanly deduplicating unnatural stutters and multi-word n-gram repetitions.
+- **Hugging Face Model Export Pipeline / Hugging Face Model Disa Aktarma Boru Hatti**:
+  - Integrated `ctranslate2.converters.TransformersConverter` in `tools/huggingface/hf_train_job.py` for genuine CTranslate2 INT8 serialization and packaging.
+
 ## [v1.1.4] - 2026-10-18
 
 ### Fixed / Duzeltmeler

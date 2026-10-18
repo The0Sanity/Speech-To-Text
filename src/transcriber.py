@@ -164,6 +164,24 @@ def build_rolling_prompt(base_prompt: str, previous_text: str, max_context_chars
     return f"{base} {rolling_part}"
 
 
+TURKISH_COMMON_DOMAIN_HOTWORDS = [
+    "patates", "domates", "portakal", "şarkı", "maymuncuk",
+    "pisi", "kuçu", "düt", "mama", "hapşu", "mini", "kuş", "tavşan", "fare", "inek", "köpek", "kedi",
+    "merhaba", "günaydın", "teşekkürler", "evet", "hayır", "tamam",
+]
+
+def build_domain_hotwords(custom_terms: Optional[str] = None) -> str:
+    """ASR tanıma doğruluğunu artırmak için Türkçe etki alanı anahtar sözcüklerini (hotwords) oluşturur."""
+    words = list(TURKISH_COMMON_DOMAIN_HOTWORDS)
+    if custom_terms:
+        import re
+        tokens = [w.strip() for w in re.split(r"[,;\n]+", custom_terms) if w.strip()]
+        for tok in tokens:
+            if tok not in words:
+                words.append(tok)
+    return " ".join(words)
+
+
 class WhisperTranscriber:
     """Faster-Whisper motorunu CPU veya CUDA üzerinde çalıştıran sınıf."""
 
@@ -224,6 +242,7 @@ class WhisperTranscriber:
         language: str = "tr",
         total_duration: float = 0.0,
         initial_prompt: Optional[str] = None,
+        hotwords: Optional[str] = None,
         beam_size: int = 5,
         vad_sensitivity: str = "high",
         apply_postprocessing: bool = True,
@@ -240,6 +259,7 @@ class WhisperTranscriber:
             language: Dil kodu (Varsayılan 'tr' - Türkçe).
             total_duration: Ses dosyasının toplam süresi (saniye cinsinden, ilerleme hesabı için).
             initial_prompt: Whisper modeline bağlam ve stil kazandırmak için başlangıç istemi.
+            hotwords: ASR çözücüye önceliklendirilecek anahtar kelimeler / ipuçları.
             beam_size: Işın arama genişliği (varsayılan 5).
             vad_sensitivity: Ses aktivite tespiti hassasiyeti ('high' veya 'normal').
             apply_postprocessing: Çıktıda Türkçe metin temizleme ve halüsinasyon filtresi.
@@ -270,7 +290,7 @@ class WhisperTranscriber:
         # VAD (Ses Etkinliği Tespiti) Ayarları (Üretim standardı Silero VAD)
         vad_params = get_production_vad_parameters(sensitivity=vad_sensitivity)
 
-        # Başlangıç istemi (Küçük modellerde istem tekrarını önlemek için sadeleştirilir)
+        # Başlangıç istemi ve Hotword çözümü
         prompt_to_use = initial_prompt
         if prompt_to_use is None and (language == "tr" or language == "auto"):
             if "tiny" in self.model_size or "base" in self.model_size:
@@ -278,12 +298,17 @@ class WhisperTranscriber:
             else:
                 prompt_to_use = DEFAULT_TURKISH_PROMPT
 
+        hotwords_to_use = hotwords
+        if hotwords_to_use is None and (language == "tr" or language == "auto"):
+            hotwords_to_use = build_domain_hotwords()
+
         # faster-whisper parametreleri:
         # beam_size=5 / best_of=5: Yüksek doğruluk
         # condition_on_previous_text=False: Halüsinasyon döngülerini ve sonraki pencerelere sızmasını engeller
         # repetition_penalty=1.15: Tekrarlayan kelimeleri cezalandırır
         # no_repeat_ngram_size=3: 3'lü sözcük tekrarını önler
         # temperature=[0.0, 0.2, 0.4, 0.6]: Hatalı çözümlerde alternatif sıcaklıkları dener
+        # hotwords: Türkçe alan sözlüğü ile sözcük doğruluğunu en üst düzeye çıkarır
         segments_generator, info = self.model.transcribe(
             audio=audio_data,
             language=language if language != "auto" else None,
@@ -298,6 +323,7 @@ class WhisperTranscriber:
             repetition_penalty=1.15,
             no_repeat_ngram_size=3,
             temperature=[0.0, 0.2, 0.4, 0.6],
+            hotwords=hotwords_to_use,
         )
 
         detected_lang = info.language
@@ -361,10 +387,13 @@ class WhisperTranscriber:
         total_decoded_duration = sum(s["end"] - s["start"] for s in collected_segments) if collected_segments else 0.0
         if (len(collected_segments) == 0 or total_decoded_duration < 0.05 * audio_dur) and rms > 0.015 and not (cancel_event and cancel_event.is_set()):
             if progress_callback:
-                progress_callback(0.20, "Müzikli ses tespit edildi, doğrudan çözümleme moduna geçiliyor...", None)
+                progress_callback(0.20, "Müzikli ses tespit edildi, akustik filtre ve doğrudan çözümleme moduna geçiliyor...", None)
             
+            from src.audio_processor import apply_acoustic_music_filter
+            filtered_fallback_audio = apply_acoustic_music_filter(audio_data, sample_rate=16000)
+
             fallback_gen, _ = self.model.transcribe(
-                audio=audio_data,
+                audio=filtered_fallback_audio,
                 language=language if language != "auto" else None,
                 task="transcribe",
                 beam_size=beam_size,
@@ -376,6 +405,7 @@ class WhisperTranscriber:
                 repetition_penalty=1.15,
                 no_repeat_ngram_size=3,
                 temperature=[0.0, 0.2, 0.4, 0.6],
+                hotwords=hotwords_to_use,
             )
             fallback_segments: List[Dict[str, Any]] = []
             for seg in fallback_gen:

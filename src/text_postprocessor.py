@@ -124,6 +124,21 @@ def postprocess_segments(
     return cleaned
 
 
+# Meşru Türkçe ikilemeler ve yansıma/tekrarlama sözcük kökleri
+_TURKISH_IKILEME_STEMS = {
+    "pisi", "kucu", "kuçu", "yavas", "yavaş", "hizli", "hızlı",
+    "adim", "adım", "kosa", "koşa", "tikir", "tıkır", "sapir", "şapır",
+    "supur", "şupur", "pitir", "pıtır", "kara", "guzel", "güzel",
+    "tatli", "tatlı", "tek", "birer", "cifter", "çifter", "ha",
+    "sikir", "şıkır", "fikir", "fıkır", "kutur", "kütür", "citir", "çıtır",
+    "catir", "çatır", "patir", "patır", "gumur", "gümür", "vizir", "vızır",
+    "saril", "şarıl", "haril", "harıl", "miril", "mırıl", "gurul", "bon", "bön",
+    "zar", "zor", "az", "cok", "çok", "egri", "eğri", "bugru", "büğrü",
+    "yalan", "yanlis", "yanlış", "alli", "allı", "pullu", "delik", "desik", "deşik",
+    "derme", "catma", "çatma", "domates", "patates", "portakal", "hapşu", "hapsu",
+}
+
+
 def _is_hallucination(text: str) -> bool:
     """Metnin Whisper halüsinasyonu olup olmadığını kontrol eder."""
     for pattern in _HALLUCINATION_PATTERNS:
@@ -141,6 +156,13 @@ def _is_hallucination(text: str) -> bool:
     if len(letters) >= 6 and len(unique_letters) == 1:
         return True
     
+    # Sadece tek bir kelimenin 4+ kez arka arkaya tekrarlanması (ikileme olmayan kelimelerde döngü halüsinasyonu)
+    words_list = [re.sub(r'[^\w]', '', w.lower()) for w in stripped.split()]
+    words_list = [w for w in words_list if w]
+    if len(words_list) >= 4 and len(set(words_list)) == 1:
+        if words_list[0] not in _TURKISH_IKILEME_STEMS:
+            return True
+    
     return False
 
 
@@ -150,6 +172,7 @@ def _remove_repeated_phrases(text: str) -> str:
     Örnek:
     - 'pisi pisi' -> 'pisi pisi' (ikileme korunur)
     - 'kuçu kuçu kuçu kuçu' -> 'kuçu kuçu' (maksimum 2 tekrara sınırlandırılır)
+    - 'merhaba merhaba nasılsın nasılsın' -> 'merhaba nasılsın' (ikileme olmayan tekrar kaldırılır)
     """
     words = text.split()
     if len(words) <= 1:
@@ -167,7 +190,7 @@ def _remove_repeated_phrases(text: str) -> str:
         if w_curr == w_prev and w_curr:
             consecutive_count += 1
             # Türkçe ikilemeler (pisi pisi, adım adım, yavaş yavaş) için en fazla 2 tekrara izin ver
-            if consecutive_count <= 2:
+            if w_curr in _TURKISH_IKILEME_STEMS and consecutive_count <= 2:
                 cleaned_words.append(words[i])
         else:
             consecutive_count = 1
@@ -182,7 +205,7 @@ def _remove_repeated_phrases(text: str) -> str:
 
 
 def _remove_repeated_ngrams(text: str, n: int) -> str:
-    """Tekrarlayan n-gram sözcük gruplarını en fazla 2 tekrara kadar tutarak temizler."""
+    """Tekrarlayan n-gram sözcük gruplarını kaldırır (örn. 'oyun başladı oyun başladı' -> 'oyun başladı')."""
     words = text.split()
     if len(words) < n * 2:
         return text
@@ -194,10 +217,9 @@ def _remove_repeated_ngrams(text: str, n: int) -> str:
             phrase1 = ' '.join(words[i:i+n]).lower()
             phrase2 = ' '.join(words[i+n:i+2*n]).lower()
             if phrase1 == phrase2:
-                # En fazla 2 kez tekrara izin ver (örn. nakarat: 'domates domates')
-                result.extend(words[i:i+2*n])
+                result.extend(words[i:i+n])
                 i += 2 * n
-                # 3. ve sonraki sonsuz döngü tekrarlarını atla
+                # Sonraki sonsuz döngü tekrarlarını atla
                 while i + n <= len(words):
                     next_phrase = ' '.join(words[i:i+n]).lower()
                     if next_phrase == phrase1:

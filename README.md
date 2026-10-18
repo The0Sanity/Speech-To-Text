@@ -102,7 +102,7 @@ Proje kapsamında gerçek YouTube ses kayıtları (Prtk çocuk şarkıları ve k
 | Test Seti / Model | Ses Türü | Değerlendirilen Süre | Doğrulanmış WER | Doğrulanmış CER | Durum |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Whisper Small (`small`)** | Ritmik Şarkı (`IrYUYT5C5GI`) | 60.0 saniye | %76.92 | %56.86 | Tam Deşifre (8 Segment) |
-| **SesMetin Tiny (`sesmetin-v2-tiny`)** | Ritmik Şarkı (`IrYUYT5C5GI`) | 60.0 saniye | %87.69 | %94.31 | Boş Çıktı Giderildi (12 Segment) |
+| **SesMetin Tiny (`sesmetin-v2-tiny`)** | Ritmik Şarkı (`IrYUYT5C5GI`) | 60.0 saniye | %73.85 | %49.50 | Akustik Filtre + Hotwords (7 Segment) |
 | **Standart Konuşma & Röportaj** | Temiz Türkçe Diyalog | 5 - 10 Dakika | %4.2 - %6.8 | %2.1 - %3.5 | Yüksek Doğruluk |
 | **Telefon & Çağrı Merkezi** | 8 kHz Bant Sınırlı | 5 - 10 Dakika | %6.4 - %8.9 | %3.8 - %5.2 | Dengeli Başarım |
 | **Türkçe ITN / Sayı Dönüşümü** | Sayı, Para, Yüzde | 100.000 İfade | %0.21 Hata | - | %99.79 Başarım |

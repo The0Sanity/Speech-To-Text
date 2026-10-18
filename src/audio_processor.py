@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import uuid
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from src.config import TEMP_DIR
 
@@ -249,3 +249,44 @@ def cleanup_temp_file(file_path: Optional[str]) -> None:
             os.remove(file_path)
         except Exception as e:
             print(f"Geçici dosya silinemedi: {e}")
+
+
+def apply_acoustic_music_filter(
+    audio_data: Any,
+    sample_rate: int = 16000,
+    cutoff_hz: float = 80.0,
+) -> Any:
+    """Müzikli veya synthesizer ritimli kayıtlarda konuşma netliğini artırmak için akustik filtre uygular.
+
+    1. DC bileşenini (ortalama sıfırlama) kaldırır.
+    2. 80Hz altındaki sub-bass ve mikrofon vuruntusu gürültülerini süzerek ses formiklerini korur.
+    3. Tepe normalizasyonu ile genliği dengeler.
+    """
+    import numpy as np
+
+    if not isinstance(audio_data, np.ndarray):
+        audio_data = np.asarray(audio_data, dtype=np.float32)
+
+    if len(audio_data) == 0:
+        return audio_data
+
+    # 1. DC offset kaldır
+    cleaned = audio_data - float(np.mean(audio_data))
+
+    # 2. Basit ve kararlı tek kutuplu IIR high-pass filtre
+    dt = 1.0 / float(sample_rate)
+    rc = 1.0 / (2.0 * np.pi * float(cutoff_hz))
+    alpha = rc / (rc + dt)
+
+    filtered = np.empty_like(cleaned)
+    filtered[0] = cleaned[0]
+    for i in range(1, len(cleaned)):
+        filtered[i] = alpha * (filtered[i - 1] + cleaned[i] - cleaned[i - 1])
+
+    # 3. Tepe normalizasyonu (peak normalization)
+    peak = float(np.max(np.abs(filtered)))
+    if peak > 1e-4:
+        filtered = filtered * (0.95 / peak)
+
+    return filtered.astype(np.float32)
+

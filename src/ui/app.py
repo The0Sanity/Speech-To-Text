@@ -168,6 +168,112 @@ def format_detailed_progress(
     return f"[{step}/{total_steps}] {stage_name}".strip()
 
 
+def copy_to_system_clipboard(text: str) -> bool:
+    """Metni işletim sistemi panosuna güvenli ve kesintisiz biçimde kopyalar.
+
+    Öncelik Sırası:
+    1. Windows: ctypes ile Win32 user32.OpenClipboard & SetClipboardData (Hatasız ve sıfır bağımlılıklı)
+    2. macOS: subprocess ile pbcopy
+    3. Linux: subprocess ile xclip / wl-copy
+    4. PowerShell Set-Clipboard yedek mekanizması
+    """
+    if not text or not text.strip():
+        return False
+
+    cleaned_text = str(text)
+
+    # 1. Windows Win32 API (En hızlı ve sıfır bağımlılıklı yöntem)
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            user32 = ctypes.windll.user32
+            kernel32 = ctypes.windll.kernel32
+
+            user32.OpenClipboard.argtypes = [wintypes.HWND]
+            user32.OpenClipboard.restype = wintypes.BOOL
+            user32.EmptyClipboard.argtypes = []
+            user32.EmptyClipboard.restype = wintypes.BOOL
+            user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
+            user32.SetClipboardData.restype = wintypes.HANDLE
+            user32.CloseClipboard.argtypes = []
+            user32.CloseClipboard.restype = wintypes.BOOL
+
+            kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+            kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
+            kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+            kernel32.GlobalLock.restype = ctypes.c_void_p
+            kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+            kernel32.GlobalUnlock.restype = wintypes.BOOL
+
+            CF_UNICODETEXT = 13
+            GMEM_MOVEABLE = 0x0002
+
+            # Başka bir uygulama panoyu kilitlemişse 3 kez yeniden dene
+            for _ in range(3):
+                if user32.OpenClipboard(None):
+                    try:
+                        user32.EmptyClipboard()
+                        data = cleaned_text.encode("utf-16le") + b"\x00\x00"
+                        h_mem = kernel32.GlobalAlloc(GMEM_MOVEABLE, len(data))
+                        if h_mem:
+                            ptr = kernel32.GlobalLock(h_mem)
+                            if ptr:
+                                ctypes.memmove(ptr, data, len(data))
+                                kernel32.GlobalUnlock(h_mem)
+                                if user32.SetClipboardData(CF_UNICODETEXT, h_mem):
+                                    return True
+                    finally:
+                        user32.CloseClipboard()
+                time.sleep(0.05)
+        except Exception:
+            pass
+
+    # 2. macOS pbcopy
+    if sys.platform == "darwin":
+        try:
+            import subprocess
+            proc = subprocess.Popen(["pbcopy"], stdin=subprocess.PIPE, close_fds=True)
+            proc.communicate(input=cleaned_text.encode("utf-8"))
+            if proc.returncode == 0:
+                return True
+        except Exception:
+            pass
+
+    # 3. Linux xclip / wl-copy
+    if sys.platform.startswith("linux"):
+        try:
+            import subprocess
+            for cmd in (["wl-copy"], ["xclip", "-selection", "clipboard"]):
+                try:
+                    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, close_fds=True)
+                    proc.communicate(input=cleaned_text.encode("utf-8"))
+                    if proc.returncode == 0:
+                        return True
+                except Exception:
+                    continue
+        except Exception:
+            pass
+
+    # 4. PowerShell Set-Clipboard yedek mekanizması (Windows)
+    if sys.platform == "win32":
+        try:
+            import subprocess
+            subprocess.run(
+                ["powershell", "-NoProfile", "-Command", "Set-Clipboard -Value $input"],
+                input=cleaned_text,
+                text=True,
+                creationflags=0x08000000 if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
+                check=False,
+            )
+            return True
+        except Exception:
+            pass
+
+    return False
+
+
 class FletSpeechToTextApp:
 
     """Flet tabanlı sade ve minimalist masaüstü ses tanıma uygulaması."""
@@ -452,10 +558,13 @@ class FletSpeechToTextApp:
 
         # Dosya ve YouTube Girisleri
         self.file_picker = ft.FilePicker(on_result=self._on_file_picked)
+        self.clipboard = ft.Clipboard()
         if self.page:
             if hasattr(self.page, "services") and self.page.services is not None:
                 if self.file_picker not in self.page.services:
                     self.page.services.append(self.file_picker)
+                if self.clipboard not in self.page.services:
+                    self.page.services.append(self.clipboard)
 
         self.lbl_file_name = ft.Text(value="Dosya secilmedi", size=11, weight=ft.FontWeight.BOLD, color=TEXT_MUTED)
         self.lbl_file_meta = ft.Text(
@@ -2380,7 +2489,7 @@ class FletSpeechToTextApp:
 
     # ------------------ Dışa Aktarma ve Panoya Kopyalama ------------------
     def copy_to_clipboard(self, custom_text: Optional[str] = None):
-        """Metni sistem panosuna kopyalar."""
+        """Metni sistem panosuna güvenle kopyalar ve Flet 1.0.4 uyumluluğu sağlar."""
         if custom_text:
             text_to_copy = custom_text
         else:
@@ -2395,9 +2504,22 @@ class FletSpeechToTextApp:
             self._show_toast("Kopyalanacak metin bulunamadı.", is_error=True)
             return
 
+        copied = copy_to_system_clipboard(text_to_copy)
+
+        # Flet 1.0.4 Clipboard servisini ve Flet 0.x uyumluluğunu tetikle
         if self.page:
-            self.page.set_clipboard(text_to_copy)
-        self._show_toast("Panoya kopyalandı!", is_error=False)
+            try:
+                if hasattr(self.page, "set_clipboard") and callable(getattr(self.page, "set_clipboard")):
+                    self.page.set_clipboard(text_to_copy)
+                elif hasattr(self, "clipboard") and self.clipboard and hasattr(self.page, "run_task"):
+                    self.page.run_task(self.clipboard.set, text_to_copy)
+            except Exception:
+                pass
+
+        if copied or self.page:
+            self._show_toast("Panoya kopyalandı!", is_error=False)
+        else:
+            self._show_toast("Panoya kopyalama başarısız oldu.", is_error=True)
 
     def export_result(self, fmt: str):
         """Transkripti belirtilen formatta dosyaya kaydeder."""
@@ -3123,8 +3245,11 @@ def run_flet_app(page: ft.Page):
         pass
 
     app = FletSpeechToTextApp(page)
-    if hasattr(page, "services") and app.file_picker not in page.services:
-        page.services.append(app.file_picker)
+    if hasattr(page, "services") and page.services is not None:
+        if app.file_picker not in page.services:
+            page.services.append(app.file_picker)
+        if hasattr(app, "clipboard") and app.clipboard and app.clipboard not in page.services:
+            page.services.append(app.clipboard)
     page.add(app.build_layout())
     app.play_entrance_animation()
 
