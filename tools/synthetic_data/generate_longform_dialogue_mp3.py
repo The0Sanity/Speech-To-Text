@@ -7,7 +7,9 @@ audio files with accompanying ground-truth manifests and optional G.711 telephon
 """
 
 import argparse
+import asyncio
 import hashlib
+import io
 import json
 import logging
 import math
@@ -20,6 +22,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import soundfile as sf
+from scipy import signal
+
+try:
+    import edge_tts
+    HAS_EDGE_TTS = True
+except ImportError:
+    edge_tts = None
+    HAS_EDGE_TTS = False
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(BASE_DIR))
@@ -42,7 +52,7 @@ class DialogueTurn:
     canonical_text: str
     start_time_sec: float = 0.0
     end_time_sec: float = 0.0
-    voice_id: str = "af_bella"
+    voice_id: str = "tr-TR-EmelNeural"
 
 
 @dataclass
@@ -57,20 +67,20 @@ class CycledDialogueScriptGenerator:
     """Procedurally generates multi-turn retail transactions with cycled template slots."""
 
     CASHIERS = [
-        ("Zeynep", "af_bella", "female"),
-        ("Ayşe", "af_sarah", "female"),
-        ("Elif", "bf_emma", "female"),
-        ("Mehmet", "am_adam", "male"),
-        ("Burak", "am_michael", "male"),
+        ("Zeynep", "tr-TR-EmelNeural", "female"),
+        ("Ayşe", "tr-TR-EmelNeural", "female"),
+        ("Elif", "tr-TR-EmelNeural", "female"),
+        ("Mehmet", "tr-TR-AhmetNeural", "male"),
+        ("Burak", "tr-TR-AhmetNeural", "male"),
     ]
 
     CUSTOMERS = [
-        ("Ahmet", "am_adam", "male"),
-        ("Ali", "am_michael", "male"),
-        ("Can", "bm_george", "male"),
-        ("Fatma", "af_bella", "female"),
-        ("Merve", "af_sarah", "female"),
-        ("Selin", "bf_emma", "female"),
+        ("Ahmet", "tr-TR-AhmetNeural", "male"),
+        ("Ali", "tr-TR-AhmetNeural", "male"),
+        ("Can", "tr-TR-AhmetNeural", "male"),
+        ("Fatma", "tr-TR-EmelNeural", "female"),
+        ("Merve", "tr-TR-EmelNeural", "female"),
+        ("Selin", "tr-TR-EmelNeural", "female"),
     ]
 
     ITEMS = [
@@ -131,7 +141,7 @@ class CycledDialogueScriptGenerator:
 
             # Ensure cashier and customer voices don't clash
             if cust_voice == cashier_voice:
-                cust_voice = "am_adam" if cashier_gender == "female" else "af_bella"
+                cust_voice = "tr-TR-AhmetNeural" if cashier_voice == "tr-TR-EmelNeural" else "tr-TR-EmelNeural"
 
             title_cashier = "Hanım" if cashier_gender == "female" else "Bey"
             title_cust = "Bey" if cust_gender == "male" else "Hanım"
@@ -311,6 +321,58 @@ class CycledDialogueScriptGenerator:
         return max(1.2, round(len(words) / 2.3, 2))
 
 
+async def _synthesize_turn_neural_async(
+    text: str,
+    voice: str = "tr-TR-EmelNeural",
+    target_sr: int = 16000,
+    pitch: str = "+0Hz",
+    rate: str = "+0%",
+    max_retries: int = 2
+) -> np.ndarray:
+    """Synthesize Turkish spoken words using Microsoft Edge neural TTS with voice fallback."""
+    if not HAS_EDGE_TTS:
+        raise RuntimeError("edge-tts package is not installed.")
+
+    voices_to_try = [(voice, pitch, rate)]
+    if voice != "tr-TR-EmelNeural":
+        # Fallback to Emel with lower pitch for male customer turns
+        voices_to_try.append(("tr-TR-EmelNeural", "-35Hz", "-5%"))
+
+    last_exc = None
+    for cur_voice, cur_pitch, cur_rate in voices_to_try:
+        for attempt in range(max_retries):
+            try:
+                communicate = edge_tts.Communicate(
+                    text=text,
+                    voice=cur_voice,
+                    pitch=cur_pitch,
+                    rate=cur_rate
+                )
+                buffer = bytearray()
+                async for chunk in communicate.stream():
+                    if chunk["type"] == "audio":
+                        buffer.extend(chunk["data"])
+
+                if buffer:
+                    raw_audio, sr = sf.read(io.BytesIO(buffer), dtype="float32")
+                    if raw_audio.ndim > 1:
+                        raw_audio = np.mean(raw_audio, axis=1)
+
+                    if sr != target_sr:
+                        num_resampled = int(len(raw_audio) * target_sr / sr)
+                        raw_audio = signal.resample(raw_audio, num_resampled).astype(np.float32)
+
+                    return raw_audio
+                else:
+                    last_exc = ValueError(f"No audio stream returned for text: {text[:30]}")
+            except Exception as exc:
+                last_exc = exc
+
+            await asyncio.sleep(0.3 * (attempt + 1))
+
+    raise last_exc or RuntimeError(f"Neural TTS failed after retries.")
+
+
 class LongFormMP3Generator:
     """Generates continuous multi-speaker audio and encodes standard 16kHz MP3."""
 
@@ -326,6 +388,43 @@ class LongFormMP3Generator:
         self.script_generator = CycledDialogueScriptGenerator()
         self.registry = registry or SampleRegistry()
 
+    async def _synthesize_all_turns_async(
+        self,
+        turns: List[DialogueTurn],
+        concurrency: int = 3
+    ) -> List[np.ndarray]:
+        """Synthesize all turns in parallel with bounded concurrency and harmonic fallback."""
+        sem = asyncio.Semaphore(concurrency)
+
+        async def synth_turn(turn: DialogueTurn) -> np.ndarray:
+            async with sem:
+                if HAS_EDGE_TTS:
+                    try:
+                        return await _synthesize_turn_neural_async(
+                            text=turn.spoken_text,
+                            voice=turn.voice_id,
+                            target_sr=self.sample_rate
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "Neural TTS synthesis failed for turn %d (%s): %s. Falling back to harmonic.",
+                            turn.turn_index, turn.spoken_text[:30], exc
+                        )
+                # Fallback to procedural harmonic waveform
+                dur = max(1.2, len(turn.spoken_text.split()) / 2.3)
+                return self._synthesize_turn_waveform(
+                    duration_sec=dur,
+                    voice_id=turn.voice_id,
+                    speaker_role=turn.speaker_role
+                )
+
+        tasks = [synth_turn(turn) for turn in turns]
+        return await asyncio.gather(*tasks)
+
+    def _synthesize_all_turns(self, turns: List[DialogueTurn]) -> List[np.ndarray]:
+        """Synchronous wrapper to run async turn synthesis."""
+        return asyncio.run(self._synthesize_all_turns_async(turns))
+
     def generate(
         self,
         target_duration_minutes: float = 5.0,
@@ -336,21 +435,24 @@ class LongFormMP3Generator:
         target_duration_sec = target_duration_minutes * 60.0
         script = self.script_generator.generate_script(target_duration_sec)
 
+        # Register sentences in SampleRegistry to enforce zero data leakage
+        for turn in script.turns:
+            self.registry.register_sample(turn.canonical_text, split="longform_mp3")
+
+        # Synthesize real speech waveforms for all dialogue turns
+        turn_waveforms = self._synthesize_all_turns(script.turns)
+
         audio_chunks: List[np.ndarray] = []
         pause_samples = int(self.sample_rate * 0.5)  # 500ms silence between turns
         silence_segment = np.zeros(pause_samples, dtype=np.float32)
 
-        for turn in script.turns:
-            # Register sentence in SampleRegistry to enforce zero data leakage
-            self.registry.register_sample(turn.canonical_text, split="longform_mp3")
+        current_time = 0.0
+        for turn, turn_audio in zip(script.turns, turn_waveforms):
+            turn_dur = float(len(turn_audio) / self.sample_rate)
+            turn.start_time_sec = round(current_time, 2)
+            turn.end_time_sec = round(current_time + turn_dur, 2)
+            current_time += turn_dur + 0.5
 
-            # Synthesize turn audio waveform
-            turn_duration = turn.end_time_sec - turn.start_time_sec
-            turn_audio = self._synthesize_turn_waveform(
-                duration_sec=turn_duration,
-                voice_id=turn.voice_id,
-                speaker_role=turn.speaker_role
-            )
             audio_chunks.append(turn_audio)
             audio_chunks.append(silence_segment)
 
@@ -435,7 +537,7 @@ class LongFormMP3Generator:
         t = np.linspace(0, duration_sec, n_samples, endpoint=False, dtype=np.float32)
 
         # Pitch assignment (female voice ~220Hz, male voice ~125Hz)
-        is_female = voice_id.startswith("af_") or voice_id.startswith("bf_") or speaker_role == "kasiyer"
+        is_female = voice_id.startswith("af_") or voice_id.startswith("bf_") or "emel" in voice_id.lower() or speaker_role == "kasiyer"
         f0 = 215.0 if is_female else 125.0
 
         # Natural speech pitch micro-variation

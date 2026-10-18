@@ -109,6 +109,21 @@ class TestLongFormDialogueMP3(unittest.TestCase):
         self.assertIn("TL", transcribed_text)
         self.assertTrue("%" in transcribed_text or "indirim" in transcribed_text)
 
+    def test_neural_tts_synthesis_properties(self):
+        """Verify turn speech waveforms have valid audio properties and non-zero dynamic energy."""
+        generator = LongFormMP3Generator(output_dir=self.output_dir)
+        script = self.script_gen.generate_script(target_duration_seconds=10.0)
+        self.assertGreater(len(script.turns), 0)
+
+        # Synthesize first turn
+        first_turn = script.turns[0]
+        waveform = generator._synthesize_all_turns([first_turn])[0]
+
+        self.assertIsInstance(waveform, np.ndarray)
+        self.assertGreater(len(waveform), int(16000 * 0.5))
+        self.assertGreater(float(np.std(waveform)), 0.01)
+
 
 if __name__ == "__main__":
     unittest.main()
+

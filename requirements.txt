@@ -36,3 +36,4 @@ yt-dlp==2026.8.19
 
 flet>=1.0.4
 flet-desktop>=1.0.4
+edge-tts>=7.0.0
