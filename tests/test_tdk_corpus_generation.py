@@ -165,5 +165,36 @@ class TestTDKCorpusGeneration(unittest.TestCase):
         self.assertEqual(call_kwargs["path_in_repo"], "data/train-00000-of-00050.parquet")
 
 
+    @patch("tools.huggingface.generate_and_push_tdk_corpus.get_token")
+    @patch("tools.huggingface.generate_and_push_tdk_corpus.HfApi")
+    def test_08_automatic_token_fallback_when_env_unset(self, mock_hf_api, mock_get_token):
+        """Pipeline must automatically resolve stored OAuth token when HF_TOKEN env var is missing."""
+        mock_get_token.return_value = "hf_stored_token_abc123"
+        mock_api = MagicMock()
+        mock_hf_api.return_value = mock_api
+
+        from tools.huggingface.generate_and_push_tdk_corpus import stream_corpus_to_huggingface
+        with patch.dict(os.environ, {}, clear=True):
+            # Should not raise exception
+            result = stream_corpus_to_huggingface(
+                token="hf_stored_token_abc123",
+                repo_id="The0Sanity/sesmetin-v2-tdk-10m-corpus",
+                total_samples=10,
+                shard_size=10,
+                max_shards=1,
+            )
+            self.assertIn("The0Sanity/sesmetin-v2-tdk-10m-corpus", result)
+
+    def test_09_cloud_training_workflow_exists_and_valid(self):
+        """GitHub Actions cloud training workflow must exist and have correct trigger inputs."""
+        workflow_path = BASE_DIR / ".github" / "workflows" / "cloud_train.yml"
+        self.assertTrue(workflow_path.exists(), "cloud_train.yml must exist")
+        content = workflow_path.read_text(encoding="utf-8")
+        self.assertIn("workflow_dispatch:", content)
+        self.assertIn("HF_TOKEN", content)
+        self.assertIn("openai/whisper-small", content)
+        self.assertIn("The0Sanity/Speech-To-Text", content)
+
+
 if __name__ == "__main__":
     unittest.main()

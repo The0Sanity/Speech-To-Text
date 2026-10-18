@@ -10,7 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from huggingface_hub import HfApi
+from huggingface_hub import HfApi, get_token
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -30,10 +30,10 @@ def launch_job(
     job_type: str = "train",
 ) -> None:
     """Prepares and launches the training or dataset job on Hugging Face cloud infrastructure."""
-    token = os.environ.get("HF_TOKEN")
+    token = os.environ.get("HF_TOKEN") or get_token()
     if not token:
-        print("Error: HF_TOKEN environment variable is required to launch Hugging Face Jobs.")
-        print("Please set your Hugging Face write token before launching.")
+        print("Error: HF_TOKEN environment variable or huggingface-cli login is required.")
+        print("Please authenticate using 'hf auth login' or set HF_TOKEN before launching.")
         sys.exit(1)
 
     username = check_auth(token)

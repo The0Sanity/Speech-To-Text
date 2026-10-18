@@ -25,10 +25,11 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 try:
-    from huggingface_hub import HfApi
+    from huggingface_hub import HfApi, get_token
     HAS_HF_HUB = True
 except ImportError:
     HfApi = None
+    get_token = lambda: None
     HAS_HF_HUB = False
 
 from tools.huggingface.tdk_lexicon import TDKLexicon
@@ -317,9 +318,9 @@ def main():
     parser.add_argument("--max-shards", type=int, default=None, help="Limit number of shards to process")
     args = parser.parse_args()
 
-    token = os.environ.get("HF_TOKEN")
+    token = os.environ.get("HF_TOKEN") or (get_token() if HAS_HF_HUB else None)
     if not token:
-        print("Error: HF_TOKEN environment variable is required to publish to Hugging Face Hub.")
+        print("Error: HF_TOKEN environment variable or huggingface-cli login is required to publish to Hugging Face Hub.")
         sys.exit(1)
 
     stream_corpus_to_huggingface(

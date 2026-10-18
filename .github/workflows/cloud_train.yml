@@ -1,0 +1,64 @@
+# SesMetin Pro - Cloud Model Training & Packaging Pipeline
+# Official Repository: https://github.com/The0Sanity/Speech-To-Text
+
+name: Cloud Training & Model Packaging
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_model:
+        description: "Hugging Face base Whisper model"
+        required: true
+        default: "openai/whisper-small"
+        type: string
+      target_repo:
+        description: "Target Hugging Face model repository"
+        required: true
+        default: "The0Sanity/sesmetin-v2-small-ct2"
+        type: string
+      epochs:
+        description: "Number of fine-tuning epochs"
+        required: false
+        default: "3"
+        type: string
+      batch_size:
+        description: "Per-device training batch size"
+        required: false
+        default: "16"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  cloud-train:
+    name: Fine-Tune and Package SesMetin-v2
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers datasets peft accelerate evaluate ctranslate2 huggingface_hub pyarrow
+
+      - name: Run Cloud Training Pipeline
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python tools/huggingface/hf_train_job.py \
+            --base-model "${{ inputs.base_model }}" \
+            --output-hub-id "${{ inputs.target_repo }}" \
+            --epochs ${{ inputs.epochs }} \
+            --batch-size ${{ inputs.batch_size }} \
+            --streaming
