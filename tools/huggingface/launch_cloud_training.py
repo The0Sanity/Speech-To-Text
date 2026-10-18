@@ -27,8 +27,9 @@ def launch_job(
     timeout: str = "2h",
     base_model: str = "openai/whisper-small",
     target_repo: str = "The0Sanity/sesmetin-v2-small-ct2",
+    job_type: str = "train",
 ) -> None:
-    """Prepares and launches the training job on Hugging Face cloud infrastructure."""
+    """Prepares and launches the training or dataset job on Hugging Face cloud infrastructure."""
     token = os.environ.get("HF_TOKEN")
     if not token:
         print("Error: HF_TOKEN environment variable is required to launch Hugging Face Jobs.")
@@ -38,18 +39,28 @@ def launch_job(
     username = check_auth(token)
     print(f"Authenticated as Hugging Face user: {username}")
     print("=" * 65)
-    print("Hugging Face Cloud GPU Training Launcher")
-    print(f"Cloud Hardware   : {flavor} (High-performance GPU)")
-    print(f"Timeout          : {timeout}")
-    print(f"Base Model       : {base_model}")
-    print(f"Target Hub Repo  : {target_repo}")
-    print(f"Dataset          : https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus")
-    print("Host Machine Note: Zero local CPU/GPU cycles are used; all training runs on Hugging Face cloud.")
+
+    if job_type == "generate-tdk-corpus":
+        script_path = BASE_DIR / "tools" / "huggingface" / "cloud_tdk_10m_job.py"
+        flavor = "cpu-upgrade" if flavor == "a10g-large" else flavor
+        print("Hugging Face Cloud 10M+ TDK Dataset Generator Launcher")
+        print(f"Cloud Hardware   : {flavor} (High-throughput CPU/RAM)")
+        print(f"Timeout          : {timeout}")
+        print(f"Target Hub Repo  : https://huggingface.co/datasets/The0Sanity/sesmetin-v2-tdk-10m-corpus")
+        print("Host Machine Note: Zero local CPU/GPU cycles are used; all 10M rows generate on cloud.")
+    else:
+        script_path = BASE_DIR / "tools" / "huggingface" / "hf_train_job.py"
+        print("Hugging Face Cloud GPU Training Launcher")
+        print(f"Cloud Hardware   : {flavor} (High-performance GPU)")
+        print(f"Timeout          : {timeout}")
+        print(f"Base Model       : {base_model}")
+        print(f"Target Hub Repo  : {target_repo}")
+        print(f"Dataset          : https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus")
+        print("Host Machine Note: Zero local CPU/GPU cycles are used; all training runs on Hugging Face cloud.")
     print("=" * 65)
 
-    script_path = BASE_DIR / "tools" / "huggingface" / "hf_train_job.py"
     if not script_path.exists():
-        print(f"Error: Training script not found at {script_path}")
+        print(f"Error: Script not found at {script_path}")
         sys.exit(1)
 
     print("\nTo submit this job directly via Hugging Face CLI, execute:")
@@ -63,8 +74,9 @@ def launch_job(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SesMetin-v2 Hugging Face Cloud Training Launcher")
-    parser.add_argument("--flavor", type=str, default="a10g-large", help="Hugging Face hardware flavor (e.g., a10g-large, t4-medium)")
+    parser = argparse.ArgumentParser(description="SesMetin-v2 Hugging Face Cloud Job Launcher")
+    parser.add_argument("--job-type", type=str, choices=["train", "generate-tdk-corpus"], default="train", help="Type of cloud job")
+    parser.add_argument("--flavor", type=str, default="a10g-large", help="Hugging Face hardware flavor (e.g., a10g-large, cpu-upgrade)")
     parser.add_argument("--timeout", type=str, default="2h", help="Job timeout limit")
     parser.add_argument("--base-model", type=str, default="openai/whisper-small", help="Base model identifier")
     parser.add_argument("--target-repo", type=str, default="The0Sanity/sesmetin-v2-small-ct2", help="Target model repository")
@@ -75,6 +87,7 @@ def main():
         timeout=args.timeout,
         base_model=args.base_model,
         target_repo=args.target_repo,
+        job_type=args.job_type,
     )
 
 

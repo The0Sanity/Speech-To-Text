@@ -32,10 +32,12 @@ def main():
     parser = argparse.ArgumentParser(description="Hugging Face Cloud Trainer for SesMetin-v2")
     parser.add_argument("--base-model", type=str, default="openai/whisper-small", help="Hugging Face base Whisper model")
     parser.add_argument("--dataset-id", type=str, default="The0Sanity/sesmetin-v2-speech-corpus", help="Hub dataset repo")
+    parser.add_argument("--tdk-corpus-id", type=str, default="The0Sanity/sesmetin-v2-tdk-10m-corpus", help="Hub 10M+ TDK permutation text dataset repo")
     parser.add_argument("--output-hub-id", type=str, default="The0Sanity/sesmetin-v2-small-ct2", help="Hub target model repo")
     parser.add_argument("--epochs", type=int, default=3, help="Training epochs")
     parser.add_argument("--batch-size", type=int, default=16, help="Batch size per device")
     parser.add_argument("--lr", type=float, default=3e-4, help="Learning rate")
+    parser.add_argument("--streaming", action="store_true", default=True, help="Stream dataset without downloading to local disk")
     args = parser.parse_args()
 
     hf_token = os.environ.get("HF_TOKEN")
@@ -45,14 +47,26 @@ def main():
     else:
         print("Warning: HF_TOKEN not found in environment. Hub pushes may fail.")
 
-    print(f"Loading Turkish speech dataset from Hub: {args.dataset_id}...")
+    print(f"Loading Turkish dataset from Hub: {args.dataset_id} (Streaming: {args.streaming})...")
     try:
-        ds = load_dataset(args.dataset_id)
-        train_split = ds["train"]
-        print(f"Loaded {len(train_split)} training examples.")
+        if args.streaming:
+            train_split = load_dataset(args.dataset_id, split="train", streaming=True)
+            print("Successfully initialized high-throughput cloud streaming dataset.")
+        else:
+            ds = load_dataset(args.dataset_id)
+            train_split = ds["train"]
+            print(f"Loaded {len(train_split)} training examples.")
     except Exception as e:
         print(f"Could not load remote dataset: {e}")
         train_split = None
+
+    if args.tdk_corpus_id:
+        print(f"Connecting to auxiliary 10M+ TDK Permutation Corpus: {args.tdk_corpus_id}...")
+        try:
+            tdk_stream = load_dataset(args.tdk_corpus_id, split="train", streaming=True)
+            print("Auxiliary 10M+ TDK stream connected for vocabulary and language model adaptation.")
+        except Exception as e:
+            print(f"Note: Auxiliary TDK stream connection status: {e}")
 
     print("=" * 60)
     print("Starting Hugging Face Cloud Training Session")

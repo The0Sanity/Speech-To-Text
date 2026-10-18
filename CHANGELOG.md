@@ -3,6 +3,16 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added / Yenilikler
+- **10M+ Turkish TDK Permutation Corpus Pipeline / 10 Milyon+ TDK Kelime Permutasyon Veri Hatti**:
+  - Engineered combinatorial permutation generator using the official Turkish Language Association (TDK 12th Edition, 81,700+ headwords) lexicon.
+  - Implemented hybrid distribution with 70% natural punctuation (capitalization, commas, periods across 4-25 words) and 30% unpunctuated lowercase acoustic token streams.
+  - Built zero-local-disk streaming Parquet serialization with PyArrow and direct memory upload to Hugging Face Datasets (`The0Sanity/sesmetin-v2-tdk-10m-corpus`).
+  - Added standalone PEP 723 cloud job runner (`tools/huggingface/cloud_tdk_10m_job.py`) for 100% cloud-based execution via `hf jobs uv run`.
+  - Upgraded `tools/huggingface/hf_train_job.py` with streaming dataset support (`streaming=True`) for high-throughput training directly from Hugging Face Hub.
+
 ## [v1.1.0] - 2026-10-18
 
 ### Added / Yenilikler

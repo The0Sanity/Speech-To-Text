@@ -112,8 +112,8 @@ class TestUIVisualSnapshot(unittest.TestCase):
         draw.text((430, 10), "v1.0.0", fill="#60cdff", font=f_small_bold)
         draw.rounded_rectangle([484, 6, 626, 30], radius=4, fill="#2d2d2d", outline="#383838", width=1)
         draw.text((494, 10), "Güncellemeleri Denetle", fill="#ffffff", font=f_small)
-        # Pencere butonları (simge)
-        draw.text((W - 90, 10), "—   [ ]   ✕", fill="#888888", font=f_small)
+        # Pencere butonlari (ASCII)
+        draw.text((W - 90, 10), "—   [ ]   X", fill="#888888", font=f_small)
         draw.line([0, 38, W, 38], fill="#2d2d2d", width=1)
 
         # 2. Sol Panel: Giriş ve Yapılandırma (Genişlik: 360px, x: 16 -> 376)
@@ -189,7 +189,7 @@ class TestUIVisualSnapshot(unittest.TestCase):
         for idx, (st_name, active) in enumerate(steps):
             sx = 416 + idx * 168
             draw.ellipse([sx, stepper_y, sx + 18, stepper_y + 18], fill="#0078d4" if active else "#333333")
-            draw.text((sx + 5, stepper_y + 3), "✓" if active else str(idx + 1), fill="#ffffff", font=f_small_bold)
+            draw.text((sx + 5, stepper_y + 3), "OK" if active else str(idx + 1), fill="#ffffff", font=f_small_bold)
             draw.text((sx + 24, stepper_y + 3), st_name, fill="#ffffff" if active else "#666666", font=f_small)
             if idx < len(steps) - 1:
                 draw.line([sx + 110, stepper_y + 9, sx + 158, stepper_y + 9], fill="#0078d4" if active else "#333333", width=2)
