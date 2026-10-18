@@ -126,7 +126,13 @@ To preserve local workstation performance and prevent hardware throttling, model
 
 ## Release Roadmap
 
-### v1.1.2 — UI Visual Feedback, YouTube Prtk Speech Corpus & Model Synchronization (Current Release)
+### v1.1.3 — PyInstaller Environment Isolation & Auto-Updater DLL Crash Fix (Current Release)
+- [x] PyInstaller `_MEIPASS2` Isolation: Dual-layer environment scrubbing in Python launcher and PowerShell script eliminating the `Failed to load Python DLL ... python312.dll (LoadLibrary: Belirtilen modül bulunamadı)` crash.
+- [x] Win32 File Lock Verification & Adaptive Replacement: Non-blocking Win32 file lock probe verifying complete process termination and adaptive retry loops against antivirus locks.
+- [x] Asset-Specific SHA256 Checksum Matching: Prioritizes exact asset filename matching (`SpeechToText.exe: <hash>`) in release notes over generic hash captures.
+- [x] Dev-Mode Subprocess Sanitization: Sanitized child process environments and removed `shell=True` in non-frozen developer execution.
+
+### v1.1.2 — UI Visual Feedback, YouTube Prtk Speech Corpus & Model Synchronization
 - [x] Model Dropdown Installation Indicators: Tags each dropdown option with `[Indirildi]` or `[Indirilmedi]` alongside a reactive status badge and quick-download action.
 - [x] YouTube "Bilgi Al" Real-Time Visual Feedback: Animated progress ring, live metadata cards, green "Video Hazir" status chip, and desktop toast notifications.
 - [x] State-Aware Start & Cancel Ergonomics: "Iptal" button is strictly hidden when idle; upon starting transcription, "Transkripsiyonu Baslat" is hidden and full-width "Islemi Iptal Et" button appears with instant cancellation.

@@ -99,20 +99,22 @@ class TestV110HardwareAndHUD(unittest.TestCase):
         self.assertIn("dist/SpeechToText-Setup.exe", content)
         self.assertIn("dist/SpeechToText-Setup.exe.sha256", content)
 
-    def test_09_version_synchronization_v111(self):
-        """All version references across config, init, and PE info must strictly synchronize to 1.1.1."""
+    def test_09_version_synchronization(self):
+        """All version references across config, init, and PE info must strictly synchronize with APP_VERSION."""
         from pathlib import Path
         import src
         from src.config import APP_VERSION, DEFAULT_CONFIG
 
-        self.assertEqual(APP_VERSION, "1.1.1")
-        self.assertEqual(src.__version__, "1.1.1")
-        self.assertEqual(DEFAULT_CONFIG.get("last_seen_version"), "1.1.1")
+        self.assertEqual(src.__version__, APP_VERSION)
+        self.assertEqual(DEFAULT_CONFIG.get("last_seen_version"), APP_VERSION)
         self.assertEqual(DEFAULT_CONFIG.get("hardware_mode"), "auto")
 
+        v_parts = APP_VERSION.split(".")
+        v_tuple_str = f"({v_parts[0]}, {v_parts[1]}, {v_parts[2]}, 0)"
+        v_str_info = f"'{APP_VERSION}.0'"
         ver_info = Path("version_info.txt").read_text(encoding="utf-8")
-        self.assertIn("(1, 1, 1, 0)", ver_info)
-        self.assertIn("'1.1.1.0'", ver_info)
+        self.assertIn(v_tuple_str, ver_info)
+        self.assertIn(v_str_info, ver_info)
 
 
 if __name__ == "__main__":

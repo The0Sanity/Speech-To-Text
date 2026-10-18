@@ -376,6 +376,13 @@ $TargetName = '{cur_name}'
 $CurDir = '{cur_dir}'
 $MaxRetries = {retries}
 
+# 0. PyInstaller ve Python ortam degiskenlerini PowerShell surecinden temizle (_MEIPASS2 LoadLibrary hatasini onler)
+$pyVars = @('_MEIPASS2', '_MEIPASS', 'PYTHONPATH', 'PYTHONHOME', 'PYTHONSTARTUP', 'PYTHONEXECUTABLE', 'PYTHONNOUSERSITE', 'PYI_PARENT_PID')
+foreach ($v in $pyVars) {{
+    Remove-Item -Path "Env:\\$v" -ErrorAction SilentlyContinue
+    [System.Environment]::SetEnvironmentVariable($v, $null, [System.EnvironmentVariableTarget]::Process)
+}}
+
 # 1. Hedef sureci ve tum surec agacini sonlandir
 try {{
     Wait-Process -Id $TargetPid -Timeout 6 -ErrorAction SilentlyContinue
@@ -383,6 +390,10 @@ try {{
 
 try {{
     Stop-Process -Id $TargetPid -Force -ErrorAction SilentlyContinue
+}} catch {{}}
+
+try {{
+    taskkill /F /PID $TargetPid /T 2>$null
 }} catch {{}}
 
 # PyInstaller bootloader ve diger kilitli surecleri sonlandir
@@ -394,14 +405,41 @@ try {{
     }}
 }} catch {{}}
 
-Start-Sleep -Milliseconds 600
+# Calisan exe'nin tum dosya kilitlerinin cozulmesini bekle
+for ($w = 0; $w -lt 25; $w++) {{
+    try {{
+        if (Test-Path -LiteralPath $CurExe) {{
+            $fs = [System.IO.File]::Open($CurExe, [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+            if ($fs) {{
+                $fs.Close()
+                $fs.Dispose()
+                break
+            }}
+        }} else {{
+            break
+        }}
+    }} catch {{
+        Start-Sleep -Milliseconds 250
+    }}
+}}
 
-# 2. Mevcut exe dosyasini .bak olarak yedekle
+Start-Sleep -Milliseconds 400
+
+# 2. Mevcut exe dosyasini .bak olarak yedekle (Dongulu deneme)
 if (Test-Path -LiteralPath $BackupExe) {{
     Remove-Item -LiteralPath $BackupExe -Force -ErrorAction SilentlyContinue
 }}
-if (Test-Path -LiteralPath $CurExe) {{
-    Move-Item -LiteralPath $CurExe -Destination $BackupExe -Force -ErrorAction SilentlyContinue
+$backedUp = $false
+for ($b = 0; $b -lt $MaxRetries; $b++) {{
+    try {{
+        if (Test-Path -LiteralPath $CurExe) {{
+            Move-Item -LiteralPath $CurExe -Destination $BackupExe -Force -ErrorAction Stop
+        }}
+        $backedUp = $true
+        break
+    }} catch {{
+        Start-Sleep -Milliseconds 300
+    }}
 }}
 
 # 3. Yeni surumu hedef konuma kopyala ve dogrula
@@ -418,7 +456,7 @@ for ($i = 0; $i -lt $MaxRetries; $i++) {{
             break
         }}
     }} catch {{
-        Start-Sleep -Milliseconds 500
+        Start-Sleep -Milliseconds 400
     }}
 }}
 
@@ -427,12 +465,20 @@ if (-not $copySuccess -or -not (Test-Path -LiteralPath $CurExe)) {{
     if (Test-Path -LiteralPath $BackupExe) {{
         Move-Item -LiteralPath $BackupExe -Destination $CurExe -Force -ErrorAction SilentlyContinue
     }}
+    foreach ($v in $pyVars) {{
+        Remove-Item -Path "Env:\\$v" -ErrorAction SilentlyContinue
+        [System.Environment]::SetEnvironmentVariable($v, $null, [System.EnvironmentVariableTarget]::Process)
+    }}
     Start-Process -FilePath $CurExe -WorkingDirectory $CurDir
     Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
     exit 1
 }}
 
-# 5. Guncellenmis yeni surumu baslat
+# 5. Guncellenmis yeni surumu baslatmadan once ortam degiskenlerinin tamamen temiz oldugundan emin ol
+foreach ($v in $pyVars) {{
+    Remove-Item -Path "Env:\\$v" -ErrorAction SilentlyContinue
+    [System.Environment]::SetEnvironmentVariable($v, $null, [System.EnvironmentVariableTarget]::Process)
+}}
 Start-Process -FilePath $CurExe -WorkingDirectory $CurDir
 
 # 6. Yedek ve calisan betik dosyasini temizle
@@ -477,6 +523,20 @@ exit 0
                 str(ps_path),
             ]
 
+            # PyInstaller ve Python ortam degiskenlerini arindirarak cocuk surece sizmasini engelle
+            clean_env = os.environ.copy()
+            for v in [
+                "_MEIPASS2",
+                "_MEIPASS",
+                "PYTHONPATH",
+                "PYTHONHOME",
+                "PYTHONSTARTUP",
+                "PYTHONEXECUTABLE",
+                "PYTHONNOUSERSITE",
+                "PYI_PARENT_PID",
+            ]:
+                clean_env.pop(v, None)
+
             subprocess.Popen(
                 cmd_args,
                 creationflags=creationflags,
@@ -484,6 +544,7 @@ exit 0
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 close_fds=True,
+                env=clean_env,
             )
             return True
         except Exception:
@@ -632,17 +693,27 @@ class AutoUpdater:
 
         assets = payload.get("assets", [])
         best_exe = find_best_executable_asset(assets, app_name="SpeechToText")
-
-        # Saglama toplami (checksum) varligi ara
-        expected_sha256 = None
-        hash_match = re.search(r'\b([a-fA-F0-9]{64})\b', body)
-        if hash_match:
-            expected_sha256 = hash_match.group(1).lower()
-
         has_exe = best_exe is not None
         asset_name = best_exe.get("name") if best_exe else None
         download_url = best_exe.get("browser_download_url") if best_exe else None
         asset_size = int(best_exe.get("size", 0)) if best_exe else 0
+
+        # Saglama toplami (checksum) varligi ara
+        expected_sha256 = None
+        if asset_name:
+            # Oncelik 1: Varlik dosya adi veya dosya kok adiyla iliskili hash (orn: `SpeechToText.exe`: `...`)
+            escaped_name = re.escape(asset_name)
+            escaped_stem = re.escape(Path(asset_name).stem)
+            pattern = rf"(?:{escaped_name}|{escaped_stem})[`\"\s:*]+([a-fA-F0-9]{{64}})"
+            match = re.search(pattern, body, re.IGNORECASE)
+            if match:
+                expected_sha256 = match.group(1).lower()
+
+        # Oncelik 2: Genel 64 karakterli hex hash arama (tek hash varsa)
+        if not expected_sha256:
+            hash_match = re.search(r"\b([a-fA-F0-9]{64})\b", body)
+            if hash_match:
+                expected_sha256 = hash_match.group(1).lower()
 
         return UpdateInfo(
             version=remote_version,
@@ -768,7 +839,21 @@ class AutoUpdater:
                 if downloaded_exe != dest:
                     import shutil
                     shutil.copy2(str(downloaded_exe), str(dest))
-                subprocess.Popen([str(dest)], shell=True)
+
+                clean_env = os.environ.copy()
+                for v in [
+                    "_MEIPASS2",
+                    "_MEIPASS",
+                    "PYTHONPATH",
+                    "PYTHONHOME",
+                    "PYTHONSTARTUP",
+                    "PYTHONEXECUTABLE",
+                    "PYTHONNOUSERSITE",
+                    "PYI_PARENT_PID",
+                ]:
+                    clean_env.pop(v, None)
+
+                subprocess.Popen([str(dest)], env=clean_env)
                 time.sleep(0.8)
                 os._exit(0)
             except Exception:
