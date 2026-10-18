@@ -37,6 +37,8 @@ class TestUIStartTranscription(unittest.TestCase):
         sample_file.write_bytes(b"dummy" * 50)
         self.app.selected_file_path = str(sample_file)
 
+        self.app.model_manager.is_model_installed = MagicMock(return_value=True)
+
         # Call start_transcription
         self.app.start_transcription()
 
@@ -60,6 +62,18 @@ class TestUIStartTranscription(unittest.TestCase):
         with patch.object(self.app, "_show_toast") as mock_toast:
             self.app.start_transcription()
             mock_toast.assert_called_once()
+            self.assertFalse(self.app.is_processing)
+
+    def test_04_start_transcription_with_uninstalled_model_prompts_download(self):
+        """Starting transcription with an uninstalled model should open confirmation dialog."""
+        sample_file = Path(self.temp_dir) / "test.mp3"
+        sample_file.write_bytes(b"dummy" * 50)
+        self.app.selected_file_path = str(sample_file)
+        self.app.model_manager.is_model_installed = MagicMock(return_value=False)
+
+        with patch.object(self.app, "_prompt_download_before_transcription") as mock_prompt:
+            self.app.start_transcription()
+            mock_prompt.assert_called_once()
             self.assertFalse(self.app.is_processing)
 
 

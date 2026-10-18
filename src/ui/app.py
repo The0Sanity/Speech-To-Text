@@ -94,7 +94,82 @@ from src.models import (
 )
 
 
+def parse_model_id_from_dropdown_value(value: Optional[str]) -> str:
+    """Açılır menü metninden model_id anahtarını ayıklar."""
+    if not value:
+        return "small"
+    raw = value.strip()
+    return raw.split()[0].lower()
+
+
+def build_model_dropdown_options(model_manager: Optional[ModelManager] = None) -> List[ft.dropdown.Option]:
+    """Model kataloğundaki modelleri indirilme durum etiketleriyle ([İndirildi] / [İndirilmedi]) açılır menü seçeneklerine dönüştürür."""
+    raw_specs = [
+        ("sesmetin-v2-turbo", "sesmetin-v2-turbo (Özel Türkçe v2 Turbo)"),
+        ("sesmetin-v2-small", "sesmetin-v2-small (Özel Türkçe v2 Dengeli)"),
+        ("sesmetin-v2-tiny", "sesmetin-v2-tiny (Özel Türkçe v2 Hızlı)"),
+        ("sesmetin-v1-turbo", "sesmetin-v1-turbo (Özel Türkçe Turbo)"),
+        ("sesmetin-v1-small", "sesmetin-v1-small (Özel Türkçe Dengeli)"),
+        ("sesmetin-v1-tiny", "sesmetin-v1-tiny (Özel Türkçe Ultra Hızlı)"),
+        ("small", "small (Dengeli)"),
+        ("medium", "medium (Yüksek Doğruluk)"),
+        ("large-v3-turbo", "large-v3-turbo (En Yüksek Kalite)"),
+        ("large-v3", "large-v3 (Resmi Tam Kapasite 1550M)"),
+        ("base", "base (Hızlı)"),
+        ("tiny", "tiny (Ultra Hızlı)"),
+    ]
+
+    options: List[ft.dropdown.Option] = []
+    for mid, label in raw_specs:
+        is_inst = model_manager.is_model_installed(mid) if model_manager else False
+        status_tag = "[İndirildi]" if is_inst else "[İndirilmedi]"
+        full_text = f"{label} {status_tag}"
+        options.append(ft.dropdown.Option(full_text))
+    return options
+
+
+def resolve_model_card_state(
+    spec: ModelSpecification,
+    current_active_model_id: str,
+    is_installed: bool,
+    is_downloading: bool,
+) -> Dict[str, bool]:
+    """Model kartı için buton ve durum rozeti durumlarını güvenli biçimde belirler."""
+    is_active = (current_active_model_id.lower() == spec.model_id.lower())
+    return {
+        "is_downloading": is_downloading,
+        "is_active_default": is_active and is_installed,
+        "is_selected_uninstalled": is_active and not is_installed,
+        "show_download_button": not is_downloading and not is_installed,
+        "show_delete_button": not is_downloading and is_installed,
+        "show_set_default_button": not is_downloading and is_installed and not is_active,
+    }
+
+
+def determine_transcription_button_visibility(is_processing: bool) -> Dict[str, bool]:
+    """Transkripsiyon Başlat ve İptal butonlarının durum odaklı görünürlüklerini belirler."""
+    return {
+        "start_visible": not is_processing,
+        "cancel_visible": is_processing,
+    }
+
+
+def format_detailed_progress(
+    step: int,
+    total_steps: int = 5,
+    step_pct: Optional[float] = None,
+    stage_name: str = "",
+) -> str:
+    """İlerleme çubuğu ve durum etiketi için alt adım ve yüzde metnini biçimlendirir."""
+    if step_pct is not None:
+        pct_clamped = max(0.0, min(1.0, float(step_pct)))
+        pct_int = int(round(pct_clamped * 100))
+        return f"[{step}/{total_steps} - %{pct_int}] {stage_name}".strip()
+    return f"[{step}/{total_steps}] {stage_name}".strip()
+
+
 class FletSpeechToTextApp:
+
     """Flet tabanlı sade ve minimalist masaüstü ses tanıma uygulaması."""
 
     APP_VERSION = APP_VERSION
@@ -181,25 +256,12 @@ class FletSpeechToTextApp:
         )
 
         # 1. Sol Panel: Model ve Ayrıştırma Açılır Menüleri (Dropdown - Salt Okunur / Sadece Tıklanabilir)
-        model_dropdown_options = [
-            ft.dropdown.Option("sesmetin-v2-turbo (Özel Türkçe v2 Turbo)"),
-            ft.dropdown.Option("sesmetin-v2-small (Özel Türkçe v2 Dengeli)"),
-            ft.dropdown.Option("sesmetin-v2-tiny (Özel Türkçe v2 Hızlı)"),
-            ft.dropdown.Option("sesmetin-v1-turbo (Özel Türkçe Turbo)"),
-            ft.dropdown.Option("sesmetin-v1-small (Özel Türkçe Dengeli)"),
-            ft.dropdown.Option("sesmetin-v1-tiny (Özel Türkçe Ultra Hızlı)"),
-            ft.dropdown.Option("small (Dengeli)"),
-            ft.dropdown.Option("medium (Yüksek Doğruluk)"),
-            ft.dropdown.Option("large-v3-turbo (En Yüksek Kalite)"),
-            ft.dropdown.Option("large-v3 (Resmi Tam Kapasite 1550M)"),
-            ft.dropdown.Option("base (Hızlı)"),
-            ft.dropdown.Option("tiny (Ultra Hızlı)"),
-        ]
+        model_dropdown_options = build_model_dropdown_options(self.model_manager)
 
         cfg_model = self.settings.get("model_size", "small")
-        init_val = "small (Dengeli)"
+        init_val = model_dropdown_options[6].key
         for opt in model_dropdown_options:
-            if opt.key.split()[0].lower() == cfg_model.lower():
+            if parse_model_id_from_dropdown_value(opt.key) == cfg_model.lower():
                 init_val = opt.key
                 break
 
@@ -214,6 +276,9 @@ class FletSpeechToTextApp:
             content_padding=ft.Padding.symmetric(horizontal=10),
             on_select=lambda _: self._on_hardware_or_model_changed(),
         )
+
+        self.model_status_badge_container = ft.Container(padding=ft.Padding.only(top=2, bottom=4))
+
 
         # Donanım Hızlandırma Kipi
         hw_mode_options = [
@@ -460,26 +525,49 @@ class FletSpeechToTextApp:
             visible=True,
         )
 
+        self.btn_fetch_yt = ft.FilledButton(
+            content=ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.SEARCH, size=13, color=TEXT_MAIN),
+                    ft.Text("Bilgi Al", size=11, weight=ft.FontWeight.W_500),
+                ],
+                spacing=4,
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            bgcolor=BTN_NEUTRAL,
+            color=TEXT_MAIN,
+            height=34,
+            on_click=lambda _: self._fetch_youtube_info(),
+        )
+
+        self.box_yt_status_indicator = ft.Row(
+            controls=[
+                ft.Icon(ft.Icons.CHECK_CIRCLE, size=12, color=SUCCESS),
+                ft.Text("Video Hazır", size=10, weight=ft.FontWeight.BOLD, color=SUCCESS),
+            ],
+            spacing=4,
+            visible=False,
+        )
+
+
         self.box_yt_input = ft.Container(
             content=ft.Column(
                 controls=[
                     ft.Row(
                         controls=[
                             self.yt_url_entry,
-                            ft.FilledButton(
-                                content=ft.Text("Bilgi Al", size=11, weight=ft.FontWeight.W_500),
-                                bgcolor=BTN_NEUTRAL,
-                                color=TEXT_MAIN,
-                                height=34,
-                                on_click=lambda _: self._fetch_youtube_info(),
-                            ),
+                            self.btn_fetch_yt,
                         ],
                         spacing=6,
                     ),
                     ft.Container(
                         content=ft.Column(
-                            controls=[self.lbl_yt_title, self.lbl_yt_meta],
-                            spacing=2,
+                            controls=[
+                                self.box_yt_status_indicator,
+                                self.lbl_yt_title,
+                                self.lbl_yt_meta,
+                            ],
+                            spacing=3,
                         ),
                         bgcolor=INPUT_BG,
                         border_radius=4,
@@ -490,6 +578,7 @@ class FletSpeechToTextApp:
             ),
             visible=False,
         )
+
 
         # Ses Oynatıcı Önizleme Çubuğu
         self.audio_player = AudioPlayerBar()
@@ -515,16 +604,25 @@ class FletSpeechToTextApp:
         )
 
         self.btn_cancel = ft.FilledButton(
-            content=ft.Text("İptal", size=12, weight=ft.FontWeight.W_500),
-            bgcolor=BTN_NEUTRAL,
+            content=ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.STOP_CIRCLE, size=15, color=TEXT_MAIN),
+                    ft.Text("İşlemi İptal Et", size=12, weight=ft.FontWeight.BOLD),
+                ],
+                spacing=6,
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            bgcolor=DANGER,
             color=TEXT_MAIN,
             height=38,
-            width=70,
+            expand=True,
+            visible=False,
             disabled=True,
             animate_scale=ft.Animation(150, ft.AnimationCurve.EASE_OUT),
             on_hover=self._on_btn_cancel_hover,
             on_click=lambda _: self.request_cancel(),
         )
+
 
         # 2. Sağ Panel: İstatistik Kartları (Metrics Ribbon)
         self.badge_duration = MetricCard(title="Süre", value="00:00")
@@ -606,11 +704,12 @@ class FletSpeechToTextApp:
 
         # Donanım & HUD ilk durumunu güncelle
         self._update_hardware_hud()
+        self._update_model_status_badge()
 
     def _get_selected_model_id(self) -> str:
         """Açılır menüden seçilen modelin kimliğini ayıklar."""
         raw = getattr(self.cmb_model, "value", None) or "small"
-        return raw.split()[0].strip().lower()
+        return parse_model_id_from_dropdown_value(raw)
 
     def _get_selected_hardware_mode(self) -> str:
         """Açılır menüden seçilen donanım kipini ('auto', 'cuda', 'cpu') ayıklar."""
@@ -625,6 +724,174 @@ class FletSpeechToTextApp:
         self.settings["model_size"] = model_id
         save_settings(self.settings)
         self._update_hardware_hud()
+        self._update_model_status_badge()
+
+    def refresh_model_dropdown_options(self, target_model_id: Optional[str] = None):
+        """Açılır menüdeki model listesini ve indirilme etiketlerini ([İndirildi] / [İndirilmedi]) günceller."""
+        if not hasattr(self, "cmb_model"):
+            return
+        if target_model_id is None:
+            target_model_id = self.settings.get("model_size") or self._get_selected_model_id()
+        new_options = build_model_dropdown_options(self.model_manager)
+        self.cmb_model.options = new_options
+        for opt in new_options:
+            if parse_model_id_from_dropdown_value(opt.key) == target_model_id:
+                self.cmb_model.value = opt.key
+                break
+        self._safe_update(self.cmb_model)
+        self._update_model_status_badge()
+
+    def _update_model_status_badge(self):
+        """Seçili modelin indirilme durumuna göre açılır menünün altındaki rozeti günceller."""
+        if not hasattr(self, "model_status_badge_container") or not hasattr(self, "cmb_model"):
+            return
+
+        model_id = self._get_selected_model_id()
+        is_inst = self.model_manager.is_model_installed(model_id)
+        is_dl = model_id in self.active_downloads
+
+        if is_dl:
+            self.model_status_badge_container.content = ft.Row(
+                controls=[
+                    ft.ProgressRing(width=12, height=12, stroke_width=2, color=ACCENT_PRIMARY),
+                    ft.Text("Model indiriliyor...", size=11, color=ACCENT_LIGHT, weight=ft.FontWeight.W_500),
+                ],
+                spacing=6,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        elif is_inst:
+            self.model_status_badge_container.content = ft.Row(
+                controls=[
+                    ft.Icon(ft.Icons.CHECK_CIRCLE, size=13, color=SUCCESS),
+                    ft.Text("Model hazır (Yerel depoda mevcut)", size=11, color=SUCCESS, weight=ft.FontWeight.W_500),
+                ],
+                spacing=4,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        else:
+            spec = get_model_spec(model_id)
+            size_str = f"~{spec.size_mb} MB" if spec else ""
+            self.model_status_badge_container.content = ft.Container(
+                content=ft.Row(
+                    controls=[
+                        ft.Row(
+                            controls=[
+                                ft.Icon(ft.Icons.INFO_OUTLINE, size=13, color=WARNING),
+                                ft.Text(f"Model indirilmedi ({size_str})", size=11, color=WARNING, weight=ft.FontWeight.W_500),
+                            ],
+                            spacing=4,
+                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        ),
+                        ft.TextButton(
+                            content=ft.Row(
+                                controls=[
+                                    ft.Icon(ft.Icons.DOWNLOAD, size=12, color=ACCENT_LIGHT),
+                                    ft.Text("Modeli İndir", size=11, weight=ft.FontWeight.BOLD, color=ACCENT_LIGHT),
+                                ],
+                                spacing=3,
+                            ),
+                            style=ft.ButtonStyle(padding=ft.Padding.symmetric(horizontal=6, vertical=0)),
+                            on_click=lambda _, mid=model_id: self._download_model_from_main(mid),
+                        ),
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
+                bgcolor=INPUT_BG,
+                border=ft.Border.all(1, WARNING),
+                border_radius=4,
+                padding=ft.Padding.symmetric(horizontal=8, vertical=4),
+            )
+        self._safe_update(self.model_status_badge_container)
+
+    def _download_model_from_main(self, model_id: str, auto_start_after: bool = False):
+        """Ana ekrandaki model durum rozetinden indirme işlemini başlatır."""
+        if model_id in self.active_downloads:
+            self._show_toast(f"'{model_id}' zaten indiriliyor.", is_error=False)
+            return
+
+        cancel_ev = threading.Event()
+        self.active_downloads[model_id] = cancel_ev
+
+        def _prog(pct, msg):
+            self._update_progress(pct, f"Model indiriliyor: {msg}")
+            if hasattr(self, "model_status_badge_container"):
+                pct_str = f"%{int(pct * 100)}" if pct > 0 else ""
+                self.model_status_badge_container.content = ft.Row(
+                    controls=[
+                        ft.ProgressRing(width=12, height=12, stroke_width=2, color=ACCENT_PRIMARY),
+                        ft.Text(f"İndiriliyor {pct_str}...", size=11, color=ACCENT_LIGHT, weight=ft.FontWeight.W_500),
+                    ],
+                    spacing=6,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                )
+                self._safe_update(self.model_status_badge_container)
+
+        self.model_status_badge_container.content = ft.Row(
+            controls=[
+                ft.ProgressRing(width=12, height=12, stroke_width=2, color=ACCENT_PRIMARY),
+                ft.Text("İndirme başlatılıyor...", size=11, color=ACCENT_LIGHT, weight=ft.FontWeight.W_500),
+            ],
+            spacing=6,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+        self._safe_update(self.model_status_badge_container)
+        self._show_toast(f"'{model_id}' modeli indiriliyor...", is_error=False)
+
+        def _worker():
+            try:
+                self.model_manager.download_model(
+                    model_id,
+                    progress_callback=_prog,
+                    cancel_event=cancel_ev,
+                )
+                self._show_toast(f"'{model_id}' modeli başarıyla indirildi!", is_error=False)
+                self.refresh_model_dropdown_options()
+                self.refresh_model_hub()
+                if auto_start_after:
+                    self.start_transcription()
+            except Exception as e:
+                if not cancel_ev.is_set():
+                    self._show_toast(f"Model indirme hatası: {e}", is_error=True)
+                self._update_model_status_badge()
+            finally:
+                self.active_downloads.pop(model_id, None)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _prompt_download_before_transcription(self, model_key: str, size_str: str):
+        """Henüz indirilmemiş bir modelle transkripsiyon başlatıldığında onay iletişim penceresi gösterir."""
+        def _close_dlg():
+            dlg.open = False
+            self._safe_update(dlg)
+
+        def _confirm_and_download(_):
+            _close_dlg()
+            self._download_model_from_main(model_key, auto_start_after=True)
+
+        dlg = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Model İndirme Onayı", weight=ft.FontWeight.BOLD),
+            content=ft.Text(
+                f"Seçilen '{model_key}' modeli henüz yerel diskte mevcut değil ({size_str}).\n\n"
+                f"Transkripsiyona devam edebilmek için modelin indirilmesi gerekmektedir. Şimdi indirilip transkripsiyon başlatılsın mı?"
+            ),
+            actions=[
+                ft.TextButton("İptal", on_click=lambda _: _close_dlg()),
+                ft.FilledButton(
+                    "İndir ve Başlat",
+                    bgcolor=ACCENT_PRIMARY,
+                    color=TEXT_MAIN,
+                    on_click=_confirm_and_download,
+                ),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        if self.page:
+            self.page.dialog = dlg
+            dlg.open = True
+            self.page.update()
+
 
     def _update_hardware_hud(self):
         """Seçili model ve donanım kipine göre HUD göstergelerini dinamik günceller."""
@@ -732,7 +999,9 @@ class FletSpeechToTextApp:
                     ft.Text(value="Model ve Ayrıştırma Ayarları", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
                     ft.Text(value="Whisper Modeli:", size=10, weight=ft.FontWeight.BOLD, color=TEXT_MUTED),
                     self.cmb_model,
+                    self.model_status_badge_container,
                     ft.Text(value="Donanım & Hızlandırma Kipi:", size=10, weight=ft.FontWeight.BOLD, color=TEXT_MUTED),
+
                     self.cmb_hardware_mode,
                     self.hardware_hud_card,
                     ft.Row(
@@ -804,11 +1073,12 @@ class FletSpeechToTextApp:
                     self.stepper,
                     ft.Row(
                         controls=[
-                            ft.Container(content=self.btn_start, expand=True),
+                            self.btn_start,
                             self.btn_cancel,
                         ],
                         spacing=8,
                     ),
+
                     self.progress_bar,
                     self.lbl_status,
                 ],
@@ -1237,14 +1507,20 @@ class FletSpeechToTextApp:
 
     def _create_model_card(self, spec: ModelSpecification) -> ft.Control:
         """Tek bir model için bilgi ve eylem kartı oluşturur."""
-        current_active = (self.cmb_model.value or "").split()[0].lower()
-        is_active = (current_active == spec.model_id.lower())
+        current_active = self._get_selected_model_id()
         is_installed = self.model_manager.is_model_installed(spec.model_id)
         is_downloading = spec.model_id in self.active_downloads
 
+        card_state = resolve_model_card_state(
+            spec=spec,
+            current_active_model_id=current_active,
+            is_installed=is_installed,
+            is_downloading=is_downloading,
+        )
+
         # Eylem Kontrolleri
         action_controls = []
-        if is_downloading:
+        if card_state["is_downloading"]:
             action_controls = [
                 ft.ProgressBar(width=120, bgcolor=INPUT_BG, color=ACCENT_PRIMARY),
                 ft.Text("İndiriliyor...", size=11, color=ACCENT_LIGHT),
@@ -1254,7 +1530,7 @@ class FletSpeechToTextApp:
                     style=ft.ButtonStyle(color=DANGER),
                 ),
             ]
-        elif is_active:
+        elif card_state["is_active_default"]:
             action_controls = [
                 ft.Container(
                     content=ft.Row(
@@ -1271,7 +1547,7 @@ class FletSpeechToTextApp:
                     padding=ft.Padding.symmetric(horizontal=8, vertical=4),
                 ),
             ]
-            if is_installed:
+            if card_state["show_delete_button"]:
                 action_controls.append(
                     ft.TextButton(
                         "Modeli Sil",
@@ -1279,7 +1555,39 @@ class FletSpeechToTextApp:
                         style=ft.ButtonStyle(color=DANGER),
                     )
                 )
-        elif is_installed:
+        elif card_state["is_selected_uninstalled"]:
+            action_controls = [
+                ft.Container(
+                    content=ft.Row(
+                        controls=[
+                            ft.Icon(ft.Icons.INFO_OUTLINE, size=13, color=WARNING),
+                            ft.Text("Seçili (İndirilmedi)", size=11, weight=ft.FontWeight.BOLD, color=WARNING),
+                        ],
+                        spacing=4,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    bgcolor=INPUT_BG,
+                    border=ft.Border.all(1, WARNING),
+                    border_radius=4,
+                    padding=ft.Padding.symmetric(horizontal=8, vertical=4),
+                ),
+                ft.FilledButton(
+                    content=ft.Row(
+                        controls=[
+                            ft.Icon(ft.Icons.DOWNLOAD, size=13, color=TEXT_MAIN),
+                            ft.Text("Hemen İndir", size=11, weight=ft.FontWeight.W_600),
+                        ],
+                        spacing=4,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    bgcolor=ACCENT_PRIMARY,
+                    color=TEXT_MAIN,
+                    height=28,
+                    style=ft.ButtonStyle(padding=ft.Padding.symmetric(horizontal=12, vertical=0)),
+                    on_click=lambda _, mid=spec.model_id: self._start_model_download(mid),
+                ),
+            ]
+        elif card_state["show_set_default_button"]:
             action_controls = [
                 ft.FilledButton(
                     content=ft.Text("Varsayılan Yap", size=11, weight=ft.FontWeight.W_600),
@@ -1313,6 +1621,7 @@ class FletSpeechToTextApp:
                     on_click=lambda _, mid=spec.model_id: self._start_model_download(mid),
                 ),
             ]
+
 
         # Durum Rozeti
         if is_installed:
@@ -1411,6 +1720,7 @@ class FletSpeechToTextApp:
             finally:
                 self.active_downloads.pop(model_id, None)
                 self.refresh_model_hub()
+                self.refresh_model_dropdown_options()
 
         threading.Thread(target=_worker, daemon=True).start()
         self.refresh_model_hub()
@@ -1423,19 +1733,16 @@ class FletSpeechToTextApp:
         self.active_downloads.pop(model_id, None)
         self._show_toast(f"'{model_id}' indirmesi iptal edildi.", is_error=False)
         self.refresh_model_hub()
+        self.refresh_model_dropdown_options()
 
     def _set_default_model(self, model_id: str):
         """Seçilen modeli varsayılan transkripsiyon modeli olarak ayarlar."""
-        for opt in self.cmb_model.options:
-            if opt.key.split()[0].lower() == model_id.lower():
-                self.cmb_model.value = opt.key
-                break
         self.settings["model_size"] = model_id
         save_settings(self.settings)
+        self.refresh_model_dropdown_options(target_model_id=model_id)
         self._show_toast(f"'{model_id}' varsayılan model olarak ayarlandı.", is_error=False)
         self.refresh_model_hub()
         self._update_hardware_hud()
-        self._safe_update(self.cmb_model)
 
     def _delete_model_action(self, model_id: str):
         """Modeli yerel diskten siler."""
@@ -1445,6 +1752,8 @@ class FletSpeechToTextApp:
         else:
             self._show_toast(f"'{model_id}' modeli silinemedi veya zaten yok.", is_error=True)
         self.refresh_model_hub()
+        self.refresh_model_dropdown_options()
+
 
     def play_entrance_animation(self):
         """Arayüz bölümlerinin kademeli açılış (staggered entrance) animasyonunu tetikler."""
@@ -1569,7 +1878,7 @@ class FletSpeechToTextApp:
             self._handle_selected_file(file_path)
 
     def _fetch_youtube_info(self):
-        """YouTube video bilgilerini çeker."""
+        """YouTube video bilgilerini çeker ve durum geri bildirimlerini dinamik günceller."""
         url = self.yt_url_entry.value.strip() if self.yt_url_entry.value else ""
         if not url:
             self._show_toast("Lütfen geçerli bir YouTube URL'si giriniz.", is_error=True)
@@ -1579,8 +1888,23 @@ class FletSpeechToTextApp:
             self._show_toast("Geçersiz YouTube bağlantısı!", is_error=True)
             return
 
-        self.lbl_yt_title.value = "Video bilgileri alınıyor..."
+        self.btn_fetch_yt.disabled = True
+        self.btn_fetch_yt.content = ft.Row(
+            controls=[
+                ft.ProgressRing(width=12, height=12, stroke_width=2, color=TEXT_MAIN),
+                ft.Text("Bilgiler Alınıyor...", size=11, weight=ft.FontWeight.W_500),
+            ],
+            spacing=4,
+            alignment=ft.MainAxisAlignment.CENTER,
+        )
+        self.lbl_yt_title.value = "Video bilgileri sorgulanıyor..."
+        self.lbl_yt_meta.value = "YouTube sunucularına bağlanılıyor..."
+        if hasattr(self, "box_yt_status_indicator"):
+            self.box_yt_status_indicator.visible = False
+            self._safe_update(self.box_yt_status_indicator)
+        self._safe_update(self.btn_fetch_yt)
         self._safe_update(self.lbl_yt_title)
+        self._safe_update(self.lbl_yt_meta)
 
         def _worker():
             try:
@@ -1591,16 +1915,44 @@ class FletSpeechToTextApp:
                 dur_str = f"{duration_sec // 60}:{duration_sec % 60:02d}"
                 self.lbl_yt_meta.value = f"Kanal: {info.get('uploader', '-')} | Süre: {dur_str}"
                 self.lbl_status.value = f"YouTube hazır: {info.get('title')}"
+                if hasattr(self, "box_yt_status_indicator"):
+                    self.box_yt_status_indicator.visible = True
+                    self._safe_update(self.box_yt_status_indicator)
+                self.btn_fetch_yt.disabled = False
+                self.btn_fetch_yt.content = ft.Row(
+                    controls=[
+                        ft.Icon(ft.Icons.CHECK, size=13, color=SUCCESS),
+                        ft.Text("Bilgiler Alındı", size=11, weight=ft.FontWeight.BOLD),
+                    ],
+                    spacing=4,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                )
+                self._show_toast("YouTube video bilgisi başarıyla alındı.", is_error=False)
             except Exception as err:
                 self.lbl_yt_title.value = "Hata oluştu"
                 self.lbl_yt_meta.value = clean_error_message(str(err) or "Bilinmeyen hata")
                 self.lbl_status.value = "YouTube bilgisi alınamadı."
+                if hasattr(self, "box_yt_status_indicator"):
+                    self.box_yt_status_indicator.visible = False
+                    self._safe_update(self.box_yt_status_indicator)
+                self.btn_fetch_yt.disabled = False
+                self.btn_fetch_yt.content = ft.Row(
+                    controls=[
+                        ft.Icon(ft.Icons.SEARCH, size=13, color=TEXT_MAIN),
+                        ft.Text("Bilgi Al", size=11, weight=ft.FontWeight.W_500),
+                    ],
+                    spacing=4,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                )
+                self._show_toast(f"YouTube bilgisi alınamadı: {clean_error_message(str(err))}", is_error=True)
 
+            self._safe_update(self.btn_fetch_yt)
             self._safe_update(self.lbl_yt_title)
             self._safe_update(self.lbl_yt_meta)
             self._safe_update(self.lbl_status)
 
         threading.Thread(target=_worker, daemon=True).start()
+
 
     # ------------------ Transkripsiyon Boru Hattı ------------------
     def start_transcription(self):
@@ -1613,8 +1965,18 @@ class FletSpeechToTextApp:
             self._show_toast("Lütfen önce bir yerel dosya veya YouTube bağlantısı seçin!", is_error=True)
             return
 
+        model_key = self._get_selected_model_id()
+        if not self.model_manager.is_model_installed(model_key):
+            spec = get_model_spec(model_key)
+            size_str = f"~{spec.size_mb} MB" if spec else "belirtilmemiş boyut"
+            self._prompt_download_before_transcription(model_key, size_str)
+            return
+
         self.is_processing = True
         self.cancel_requested = False
+        vis = determine_transcription_button_visibility(is_processing=True)
+        self.btn_start.visible = vis["start_visible"]
+        self.btn_cancel.visible = vis["cancel_visible"]
         self.btn_start.disabled = True
         self.btn_cancel.disabled = False
         self.progress_bar.value = None
@@ -1640,12 +2002,12 @@ class FletSpeechToTextApp:
 
         try:
             # Adım 1: Medya Hazırlama / Ses Çıkarma
-            self._update_progress(0.05, "1/5: Ses dosyası hazırlanıyor...")
             self.stepper.set_active_step(0)
+            self._update_progress(0.04, format_detailed_progress(1, 5, 0.10, "Medya dosyası doğrulanıyor..."))
 
             if media_source.startswith("http://") or media_source.startswith("https://"):
                 def yt_prog(pct, msg):
-                    self._update_progress(0.05 + (pct * 0.10), f"1/5: {msg}")
+                    self._update_progress(0.04 + (pct * 0.12), format_detailed_progress(1, 5, pct, f"YouTube sesi indiriliyor: {msg}"))
 
                 try:
                     wav_path, _ = download_youtube_audio(media_source, progress_callback=yt_prog)
@@ -1654,11 +2016,13 @@ class FletSpeechToTextApp:
                     raise RuntimeError(f"YouTube sesi indirilemedi: {clean_error_message(dl_err)}")
             else:
                 try:
+                    self._update_progress(0.08, format_detailed_progress(1, 5, 0.40, "Ses akışı 16kHz WAV formatına ayrıştırılıyor..."))
                     temp_wav = extract_audio_to_wav(
                         media_source,
                         normalize_loudness=bool(self.chk_loudnorm.value),
                         apply_bandpass=bool(self.chk_enhance.value),
                     )
+                    self._update_progress(0.16, format_detailed_progress(1, 5, 1.0, "Ses dosyası hazırlandı."))
                 except Exception as ext_err:
                     raise RuntimeError(f"Ses dönüştürülemedi: {ext_err}")
 
@@ -1672,11 +2036,12 @@ class FletSpeechToTextApp:
             # Adım 2: Ses Ön-İyileştirme
             if self.chk_enhance.value:
                 self.stepper.set_active_step(1)
-                self._update_progress(0.18, "2/5: Ses frekans ve gürültü dengesi optimize ediliyor...")
+                self._update_progress(0.18, format_detailed_progress(2, 5, 0.50, "Akustik gürültü filtresi ve bant optimizasyonu uygulanıyor..."))
                 try:
                     out_enh = str(TEMP_DIR / f"enhanced_{os.path.basename(temp_wav)}")
                     enhanced_wav = enhance_audio(temp_wav, out_enh)
                     audio_for_stt = enhanced_wav
+                    self._update_progress(0.20, format_detailed_progress(2, 5, 1.0, "Ses iyileştirme tamamlandı."))
                 except Exception as enh_err:
                     print(f"Ses iyileştirme atlandı: {enh_err}")
                     audio_for_stt = temp_wav
@@ -1694,7 +2059,7 @@ class FletSpeechToTextApp:
             raw_vad = self.cmb_vad.value or "Yüksek"
             vad_choice = "high" if "yüksek" in raw_vad.lower() or "hassas" in raw_vad.lower() else "normal"
 
-            self._update_progress(0.20, f"3/5: Whisper '{model_key}' modeli hazırlanıyor ({exec_dev.upper()} {exec_comp})...")
+            self._update_progress(0.22, format_detailed_progress(3, 5, None, f"Whisper '{model_key}' modeli RAM/VRAM belleğe yükleniyor ({exec_dev.upper()} {exec_comp})..."))
             from src.transcriber import WhisperTranscriber
             transcriber = WhisperTranscriber(
                 model_size=model_key,
@@ -1706,8 +2071,8 @@ class FletSpeechToTextApp:
             def whisper_progress(pct, msg, seg):
                 if self.cancel_requested:
                     raise InterruptedError("Kullanıcı iptal etti.")
-                scaled = 0.20 + (pct * 0.55)
-                self._update_progress(scaled, f"3/5: {msg}")
+                scaled = 0.22 + (pct * 0.54)
+                self._update_progress(scaled, format_detailed_progress(3, 5, pct, f"Whisper çözümleme: {msg}"))
 
             vocab_prompt = self.entry_vocab.value.strip() if self.entry_vocab.value else None
             stt_segments = transcriber.transcribe(
@@ -1733,7 +2098,7 @@ class FletSpeechToTextApp:
 
             # Adım 4: Konuşmacı Ayrıştırma (Diarization - Tembel / İhtiyaç Anında Yükleme)
             self.stepper.set_active_step(3)
-            self._update_progress(0.78, "4/5: Konuşmacılar ayrıştırılıyor...")
+            self._update_progress(0.78, format_detailed_progress(4, 5, 0.10, "Konuşmacı akustik profilleri ayrıştırılıyor..."))
 
             raw_prefix = self.cmb_prefix.value or "X"
             prefix_val = raw_prefix.split()[0]
@@ -1753,7 +2118,7 @@ class FletSpeechToTextApp:
 
             def diarizer_progress(pct, msg):
                 scaled = 0.76 + (pct * 0.14)
-                self._update_progress(scaled, f"4/5: {msg}")
+                self._update_progress(scaled, format_detailed_progress(4, 5, pct, f"Konuşmacı ayrıştırma: {msg}"))
 
             diar_intervals = diarizer.diarize(
                 audio_path=audio_for_stt,
@@ -1764,7 +2129,7 @@ class FletSpeechToTextApp:
 
             # Adım 5: Hizalama ve Çıktı Oluşturma
             self.stepper.set_active_step(4)
-            self._update_progress(0.92, "5/5: Konuşmalar ve metin blokları hizalanıyor...")
+            self._update_progress(0.92, format_detailed_progress(5, 5, 0.50, "Konuşmalar ve metin blokları hizalanıyor..."))
 
             aligned_transcript = align_transcription_and_diarization(
                 transcription_segments=stt_segments,
@@ -1799,6 +2164,9 @@ class FletSpeechToTextApp:
             if not self.transcribed_data:
                 self._render_transcript_cards([])
             self.is_processing = False
+            vis = determine_transcription_button_visibility(is_processing=False)
+            self.btn_start.visible = vis["start_visible"]
+            self.btn_cancel.visible = vis["cancel_visible"]
             self.btn_start.disabled = False
             self.btn_cancel.disabled = True
             self._safe_update(self.btn_start)
@@ -1817,7 +2185,11 @@ class FletSpeechToTextApp:
             self.cancel_requested = True
             if hasattr(self, "cancel_event"):
                 self.cancel_event.set()
+            self.btn_cancel.disabled = True
             self.lbl_status.value = "İptal ediliyor, lütfen bekleyin..."
+            self._safe_update(self.btn_cancel)
+            self._safe_update(self.lbl_status)
+
             self._safe_update(self.lbl_status)
 
     # ------------------ Transkript Yönetimi ve Filtreleme ------------------
