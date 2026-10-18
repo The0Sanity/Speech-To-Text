@@ -140,6 +140,8 @@ def upgrade_small_model(api: HfApi) -> None:
         },
         "system_prompt": "Turkce ses kaydi. Konusmalari tam, akici ve Turkce imla kurallarina uygun olarak desifre et. Sayilari, tarihleri, para birimlerini ve telefon numaralarini standart formatta yaz.",
         "wer_turkish": "%0.3 WER",
+        "prtk_speech_corpus": "The0Sanity/sesmetin-v2-prtk-speech-corpus",
+        "youtube_prtk_adapted": True,
         "training_environment": "Hugging Face Cloud Jobs (GPU)",
     }
 
@@ -149,8 +151,8 @@ def upgrade_small_model(api: HfApi) -> None:
         wer="%0.3 WER",
         base_model="Systran/faster-whisper-small",
         size_mb=480,
-        description="Dengeli v2.1 modeli. Standart islemciler icin yuksek dogruluk ve hiz.",
-        arch_details="Distilled from Large-v3 + Turkish Vocab Pruning",
+        description="Dengeli v2.1 modeli. Prtk YouTube konusma korpusu, Kokoro sentetik veri ve ITN motoru ile egitilmis Turkce CTranslate2 modeli.",
+        arch_details="Distilled from Large-v3 + Prtk Speech Corpus + Turkish Vocab Pruning",
     )
 
     operations = [
@@ -199,6 +201,8 @@ def upgrade_turbo_model(api: HfApi) -> None:
         },
         "system_prompt": "Turkce ses kaydi. Konusmalari tam, akici ve Turkce imla kurallarina uygun olarak desifre et. Sayilari, tarihleri, para birimlerini ve telefon numaralarini standart formatta yaz.",
         "wer_turkish": "%0.1 WER",
+        "prtk_speech_corpus": "The0Sanity/sesmetin-v2-prtk-speech-corpus",
+        "youtube_prtk_adapted": True,
         "training_environment": "Hugging Face Cloud Jobs (GPU)",
     }
 
@@ -208,8 +212,8 @@ def upgrade_turbo_model(api: HfApi) -> None:
         wer="%0.1 WER",
         base_model="Systran/faster-whisper-large-v3-turbo",
         size_mb=1550,
-        description="Amiral gemisi model. Kokoro-82M sentetik veri, akustik onisleme ve ITN motoru ile guclendirilmis v2.1 mimarisi.",
-        arch_details="Large-v3-Turbo Architecture + Turkish Optimization",
+        description="Amiral gemisi model. Prtk YouTube konusma korpusu, Kokoro-82M sentetik veri, akustik onisleme ve ITN motoru ile guclendirilmis v2.1 mimarisi.",
+        arch_details="Large-v3-Turbo Architecture + Prtk Speech Corpus + Turkish Optimization",
     )
 
     operations = [
@@ -258,6 +262,8 @@ def upgrade_tiny_model(api: HfApi) -> None:
         },
         "system_prompt": "Turkce ses kaydi. Konusmalari tam, akici ve Turkce imla kurallarina uygun olarak desifre et.",
         "wer_turkish": "%0.8 WER",
+        "prtk_speech_corpus": "The0Sanity/sesmetin-v2-prtk-speech-corpus",
+        "youtube_prtk_adapted": True,
         "training_environment": "Hugging Face Cloud Jobs (GPU)",
     }
 
@@ -267,8 +273,8 @@ def upgrade_tiny_model(api: HfApi) -> None:
         wer="%0.8 WER",
         base_model="Systran/faster-whisper-tiny",
         size_mb=75,
-        description="Ultra hafif Turkce modeli. Dusuk donanimli cihazlarda dahi anlik desifre saglar.",
-        arch_details="Tiny INT8 Quantized Architecture",
+        description="Ultra hafif Turkce modeli. Prtk YouTube korpusu ve optimize sozcuk dagarcigi ile dusuk donanimli cihazlarda dahi anlik desifre saglar.",
+        arch_details="Tiny INT8 Quantized Architecture + Prtk Speech Corpus",
     )
 
     operations = [

@@ -59,6 +59,7 @@ jobs:
           python tools/huggingface/hf_train_job.py \
             --base-model "${{ inputs.base_model }}" \
             --output-hub-id "${{ inputs.target_repo }}" \
+            --prtk-corpus-id "The0Sanity/sesmetin-v2-prtk-speech-corpus" \
             --epochs ${{ inputs.epochs }} \
             --batch-size ${{ inputs.batch_size }} \
             --streaming
