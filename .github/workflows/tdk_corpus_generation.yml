@@ -21,6 +21,11 @@ on:
         required: false
         default: "100"
         type: string
+      start_shard:
+        description: "Starting shard index (for resuming or parallel sharding)"
+        required: false
+        default: "0"
+        type: string
       repo_id:
         description: "Target Hugging Face dataset repository"
         required: true
@@ -59,4 +64,6 @@ jobs:
             --repo-id "${{ inputs.repo_id }}" \
             --total-samples "${{ inputs.total_samples }}" \
             --shard-size "${{ inputs.shard_size }}" \
-            --max-shards "${{ inputs.max_shards }}"
+            --max-shards "${{ inputs.max_shards }}" \
+            --start-shard "${{ inputs.start_shard }}"
+

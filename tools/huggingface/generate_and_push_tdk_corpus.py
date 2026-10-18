@@ -266,6 +266,7 @@ def stream_corpus_to_huggingface(
     total_samples: int = 10000000,
     shard_size: int = 200000,
     max_shards: Optional[int] = None,
+    start_shard: int = 0,
 ) -> str:
     """Orchestrates generation of 10M+ examples and incremental streaming upload to Hub."""
     if not HAS_HF_HUB:
@@ -275,12 +276,13 @@ def stream_corpus_to_huggingface(
     logger.info(f"Ensuring Hugging Face dataset repository exists: {repo_id}")
     api.create_repo(repo_id=repo_id, repo_type="dataset", exist_ok=True)
 
-    num_shards = (total_samples + shard_size - 1) // shard_size
+    total_num_shards = (total_samples + shard_size - 1) // shard_size
+    num_shards = total_num_shards - start_shard
     if max_shards is not None:
         num_shards = min(num_shards, max_shards)
 
     # 1. Upload dataset card and YAML configs
-    readme_content = build_dataset_readme(total_samples=total_samples, num_shards=num_shards)
+    readme_content = build_dataset_readme(total_samples=total_samples, num_shards=total_num_shards)
     with tempfile.NamedTemporaryFile(suffix=".md", delete=False, mode="w", encoding="utf-8") as tmp:
         tmp.write(readme_content)
         tmp_readme = tmp.name
@@ -298,25 +300,25 @@ def stream_corpus_to_huggingface(
 
     # 2. Initialize generator
     logger.info("Initializing TDK Permutation Generator with complete TDK lexicon...")
-    generator = TDKPermutationGenerator(seed=42)
+    generator = TDKPermutationGenerator(seed=42 + start_shard)
     logger.info(f"Loaded {len(generator.vocabulary)} unique clean TDK headwords.")
 
     # 3. Stream shards incrementally
-    logger.info(f"Beginning streaming of {num_shards} shards ({shard_size:,} rows per shard)...")
-    for shard_idx in range(num_shards):
+    logger.info(f"Beginning streaming of {num_shards} shards ({shard_size:,} rows per shard, starting at shard {start_shard})...")
+    for shard_idx in range(start_shard, start_shard + num_shards):
         batch = generator.generate_batch(shard_size)
         parquet_bytes = serialize_shard_to_parquet_bytes(batch)
         del batch  # Immediate memory reclamation
 
         logger.info(
-            f"Uploading Shard {shard_idx + 1}/{num_shards} "
+            f"Uploading Shard {shard_idx + 1}/{total_num_shards} "
             f"({len(parquet_bytes) / (1024 * 1024):.2f} MB compressed Parquet)..."
         )
         upload_shard_in_memory(
             api=api,
             repo_id=repo_id,
             shard_index=shard_idx,
-            total_shards=num_shards,
+            total_shards=total_num_shards,
             parquet_bytes=parquet_bytes,
         )
         del parquet_bytes  # Immediate memory reclamation
@@ -332,6 +334,7 @@ def main():
     parser.add_argument("--total-samples", type=int, default=10000000, help="Total samples to generate")
     parser.add_argument("--shard-size", type=int, default=200000, help="Samples per Parquet shard")
     parser.add_argument("--max-shards", type=int, default=None, help="Limit number of shards to process")
+    parser.add_argument("--start-shard", type=int, default=0, help="Starting shard index")
     args = parser.parse_args()
 
     token = os.environ.get("HF_TOKEN") or (get_token() if HAS_HF_HUB else None)
@@ -345,6 +348,7 @@ def main():
         total_samples=args.total_samples,
         shard_size=args.shard_size,
         max_shards=args.max_shards,
+        start_shard=args.start_shard,
     )
 
 
