@@ -411,8 +411,8 @@ class WhisperTranscriber:
                 fallback_segments.append(s_dict)
                 if audio_dur > 0 and progress_callback:
                     p_frac = min(0.75, 0.20 + (seg.end / audio_dur) * 0.55)
-                    progress_callback(p_frac, f"Çözümleniyor: [{seg.end:.1f}s / {audio_dur:.1f}s] - \"{t_clean[:35]}...\"", s_dict)
-            if len(fallback_segments) > len(collected_segments):
+            total_fallback_dur = sum(s["end"] - s["start"] for s in fallback_segments)
+            if total_fallback_dur > total_decoded_duration or len(fallback_segments) > len(collected_segments):
                 collected_segments = fallback_segments
 
         # Çıktıya Türkçe son-işleme uygula (halüsinasyonları, ITN ve dolgu sözcükleri temizler)
