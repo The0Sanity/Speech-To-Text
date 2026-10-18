@@ -20,6 +20,9 @@ ENV/
 *.zip
 settings.json
 config.json
+.env
+*.env
+.env.*
 
 # AI Assistant and local instruction files
 CLAUDE.md

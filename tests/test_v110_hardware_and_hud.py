@@ -84,7 +84,7 @@ class TestV110HardwareAndHUD(unittest.TestCase):
         iss_path = Path("packaging/installer.iss")
         self.assertTrue(iss_path.exists())
         content = iss_path.read_text(encoding="utf-8")
-        self.assertIn('#define MyAppVersion "1.1.0"', content)
+        self.assertIn('#define MyAppVersion "1.1.1"', content)
         self.assertIn("OutputBaseFilename=SpeechToText-Setup", content)
         self.assertIn("ArchitecturesAllowed=x64compatible", content)
 
@@ -99,20 +99,20 @@ class TestV110HardwareAndHUD(unittest.TestCase):
         self.assertIn("dist/SpeechToText-Setup.exe", content)
         self.assertIn("dist/SpeechToText-Setup.exe.sha256", content)
 
-    def test_09_version_synchronization_v110(self):
-        """All version references across config, init, and PE info must strictly synchronize to 1.1.0."""
+    def test_09_version_synchronization_v111(self):
+        """All version references across config, init, and PE info must strictly synchronize to 1.1.1."""
         from pathlib import Path
         import src
         from src.config import APP_VERSION, DEFAULT_CONFIG
 
-        self.assertEqual(APP_VERSION, "1.1.0")
-        self.assertEqual(src.__version__, "1.1.0")
-        self.assertEqual(DEFAULT_CONFIG.get("last_seen_version"), "1.1.0")
+        self.assertEqual(APP_VERSION, "1.1.1")
+        self.assertEqual(src.__version__, "1.1.1")
+        self.assertEqual(DEFAULT_CONFIG.get("last_seen_version"), "1.1.1")
         self.assertEqual(DEFAULT_CONFIG.get("hardware_mode"), "auto")
 
         ver_info = Path("version_info.txt").read_text(encoding="utf-8")
-        self.assertIn("(1, 1, 0, 0)", ver_info)
-        self.assertIn("'1.1.0.0'", ver_info)
+        self.assertIn("(1, 1, 1, 0)", ver_info)
+        self.assertIn("'1.1.1.0'", ver_info)
 
 
 if __name__ == "__main__":

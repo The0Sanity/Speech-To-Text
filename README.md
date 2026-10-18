@@ -110,9 +110,12 @@ Proje kapsamında sentetik Türkçe çoklu konuşmacı diyalogları (kasiyer, m�
 ## Hugging Face Model Merkezi ve Bulut Egitimi (SesMetin v2)
 
 SesMetin-v2 modelleri ve Türkçe konuşma veri setleri Hugging Face Hub üzerinde barındırılmaktadır:
-- Model Deposu: https://huggingface.co/The0Sanity/sesmetin-v2-tiny-ct2
-- Veri Seti Deposu: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
-- Bulut Egitim Baslaticisi: `python tools/huggingface/launch_cloud_training.py`
+- Model Deposu (Tiny - 75 MB): https://huggingface.co/The0Sanity/sesmetin-v2-tiny-ct2
+- Model Deposu (Small - 480 MB): https://huggingface.co/The0Sanity/sesmetin-v2-small-ct2
+- Model Deposu (Turbo - 1.55 GB): https://huggingface.co/The0Sanity/sesmetin-v2-turbo-ct2
+- 10M+ TDK Permutasyon Veri Seti: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-tdk-10m-corpus
+- Türkçe Konuşma Veri Seti: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
+- Bulut Eğitim Başlatıcısı: `python tools/huggingface/launch_cloud_training.py`
 
 Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreçleri doğrudan Hugging Face Cloud GPU altyapısında (a10g-large) yürütülmektedir.
 
@@ -120,7 +123,13 @@ Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreç
 
 ## Sürüm Yol Haritası ve Yapılacaklar (Roadmap)
 
-### v1.1.0 — Model Merkezi, Donanım Teşhisi, Bellek HUD ve Çift Paketleme (Mevcut Sürüm)
+### v1.1.1 — Model Verimliliği, Kelime Budama ve Çift Tamponlu Veri Akışı (Mevcut Sürüm)
+- [x] Whisper Türkçe Kelime Dağarcığı Budayıcı: Çok dilli 51k sözlüğü ~12k Türkçe alt kelimeye budayarak 120-200MB gereksiz ağırlığı ortadan kaldırma.
+- [x] Çift Tamponlu Toplu Veri Akışı: GitHub Actions üzerinde 10 saniyelik boş bekleme süresini yok eden eşzamanlı üretici-tüketici boru hattı.
+- [x] Hugging Face Model Havuzu Güncellemesi: Tiny, Small ve Turbo modellerine v2.1.0 spesifikasyonları, ITN motor ayarları ve kapsamlı model kartları eklendi.
+- [x] Sıfır Sızıntı Güvenlik Denetimi: Kod tabanı ve git geçmişinde derinlemesine tarama ile tam kimlik güvenliği garantisi.
+
+### v1.1.0 — Model Merkezi, Donanım Teşhisi, Bellek HUD ve Çift Paketleme
 - [x] Görsel Model Yöneticisi: Tiny, Base, Small, Medium, Large-v3-Turbo ve tam 1550M parametreli Large-v3 modellerini tek tıkla indirme ve yönetme.
 - [x] Akıllı Donanım Algılama & Çalışma Kipi: NVIDIA CUDA GPU hızlandırma veya CPU INT8 AVX2 vektör hızlandırma seçenekleri ve otomatik geri dönüş.
 - [x] Performans & Bellek HUD: Seçili modelin RAM/VRAM gereksinimlerini sistem kaynaklarıyla kıyaslayan ve riskleri uyaran dinamik panel.

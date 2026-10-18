@@ -115,7 +115,7 @@ jobs:
             $tag = "${{ github.ref_name }}"
           }
           if ($tag -eq "main" -or $tag -eq "master") {
-            $tag = "v1.1.0"
+            $tag = "v1.1.1"
           }
           Write-Host "Resolved release tag: $tag"
           "release_tag=$tag" >> $env:GITHUB_OUTPUT

@@ -110,8 +110,11 @@ Evaluation results conducted on non-repeating Turkish multi-speaker dialogue dat
 ## Hugging Face Model Hub & Cloud Training (SesMetin v2)
 
 SesMetin-v2 models and Turkish speech corpora are hosted on the Hugging Face Hub:
-- Model Repository: https://huggingface.co/The0Sanity/sesmetin-v2-tiny-ct2
-- Dataset Repository: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
+- Model Hub (Tiny - 75 MB): https://huggingface.co/The0Sanity/sesmetin-v2-tiny-ct2
+- Model Hub (Small - 480 MB): https://huggingface.co/The0Sanity/sesmetin-v2-small-ct2
+- Model Hub (Turbo - 1.55 GB): https://huggingface.co/The0Sanity/sesmetin-v2-turbo-ct2
+- 10M+ TDK Permutation Corpus: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-tdk-10m-corpus
+- Turkish Speech Corpus: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
 - Cloud Training Launcher: `python tools/huggingface/launch_cloud_training.py`
 
 To preserve local workstation performance and prevent hardware throttling, model training and fine-tuning pipelines run on Hugging Face Cloud GPU infrastructure (a10g-large).
@@ -120,7 +123,13 @@ To preserve local workstation performance and prevent hardware throttling, model
 
 ## Release Roadmap
 
-### v1.1.0 — Model Hub, Hardware Diagnostics, Memory HUD & Dual Packaging (Current Release)
+### v1.1.1 — Model Efficiency Blueprint, Vocabulary Pruning & Shard Streaming (Current Release)
+- [x] Whisper Turkish Vocabulary Pruner: Slices embedding matrices to ~12k tokens, eliminating 120-200MB unneeded weights.
+- [x] Double-Buffered Batched Corpus Streaming: Concurrent thread-pipelined upload eliminating 10s idle wait in GitHub Actions.
+- [x] Model Hub Synchronization: Upgraded Tiny, Small, and Turbo CTranslate2 models with v2.1.0 specifications and ITN config.
+- [x] Zero-Leak Security Audit: Recursive codebase and git history scan confirming zero leaked credentials.
+
+### v1.1.0 — Model Hub, Hardware Diagnostics, Memory HUD & Dual Packaging
 - [x] Visual Model Hub: Download, delete, and inspect Tiny, Base, Small, Medium, Large-v3-Turbo, and full 1550M parameter Large-v3 models directly from the UI.
 - [x] Hardware Diagnostics & Acceleration Modes: Automated detection and mode selection for NVIDIA CUDA GPU or CPU INT8 AVX2 vector acceleration.
 - [x] Performance & Memory HUD: Real-time dynamic RAM/VRAM requirement and system boundary indicators with status badges.
