@@ -187,9 +187,12 @@ class TestFletUI(unittest.TestCase):
         self.assertIsNotNone(app.left_column_container.animate_opacity)
         self.assertIsNotNone(app.right_column_container.animate_opacity)
 
-        # Kademeli animasyonu çalıştır
+        # Kademeli animasyonu calistir
         app.play_entrance_animation()
-        time.sleep(0.3)
+        for _ in range(30):
+            if app.right_column_container.opacity == 1.0:
+                break
+            time.sleep(0.05)
         self.assertEqual(app.header_container.opacity, 1.0)
         self.assertEqual(app.left_column_container.opacity, 1.0)
         self.assertEqual(app.right_column_container.opacity, 1.0)

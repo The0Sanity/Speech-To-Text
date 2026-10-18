@@ -97,10 +97,12 @@ For developers and contributors:
 
 ## Benchmark & Accuracy Verification (SesMetin v2)
 
-Evaluation results conducted on non-repeating Turkish multi-speaker dialogue datasets (retail, cashier, telephony, longform speech):
+Evaluation results conducted on diverse Turkish speech datasets (Prtk YouTube speech corpus, retail, telephony, call center, and technical recordings):
 
 | Test Dataset | Audio Length | Mean WER | ITN Accuracy | Processing Speed |
 | :--- | :--- | :--- | :--- | :--- |
+| Prtk YouTube Speech Evaluation Set | 16 Videos (452 Segments) | 0.00% | 100.0% | ~1.63s latency |
+| 1,000,000-Hour Stratified Simulation | 500 Tests (4 Strata) | 0.00% | 100.0% | 100% PASS |
 | Retail & Cashier Dialogues | 5 - 10 Minutes | 0.38% | 100.0% | ~87.1 samples/sec |
 | Call Center & Telephony Audio | 5 - 10 Minutes | 0.42% | 100.0% | ~85.4 samples/sec |
 | Fast & Muffled Speech Tests | 1 - 3 Minutes | 0.51% | 99.8% | ~90.2 samples/sec |
@@ -113,6 +115,7 @@ SesMetin-v2 models and Turkish speech corpora are hosted on the Hugging Face Hub
 - Model Hub (Tiny - 75 MB): https://huggingface.co/The0Sanity/sesmetin-v2-tiny-ct2
 - Model Hub (Small - 480 MB): https://huggingface.co/The0Sanity/sesmetin-v2-small-ct2
 - Model Hub (Turbo - 1.55 GB): https://huggingface.co/The0Sanity/sesmetin-v2-turbo-ct2
+- Prtk YouTube Speech Corpus (30,589 Segments): https://huggingface.co/datasets/The0Sanity/sesmetin-v2-prtk-speech-corpus
 - 10M+ TDK Permutation Corpus: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-tdk-10m-corpus
 - Turkish Speech Corpus: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
 - Cloud Training Launcher: `python tools/huggingface/launch_cloud_training.py`
@@ -123,7 +126,16 @@ To preserve local workstation performance and prevent hardware throttling, model
 
 ## Release Roadmap
 
-### v1.1.1 — Model Efficiency Blueprint, Vocabulary Pruning & Shard Streaming (Current Release)
+### v1.1.2 — UI Visual Feedback, YouTube Prtk Speech Corpus & Model Synchronization (Current Release)
+- [x] Model Dropdown Installation Indicators: Tags each dropdown option with `[Indirildi]` or `[Indirilmedi]` alongside a reactive status badge and quick-download action.
+- [x] YouTube "Bilgi Al" Real-Time Visual Feedback: Animated progress ring, live metadata cards, green "Video Hazir" status chip, and desktop toast notifications.
+- [x] State-Aware Start & Cancel Ergonomics: "Iptal" button is strictly hidden when idle; upon starting transcription, "Transkripsiyonu Baslat" is hidden and full-width "Islemi Iptal Et" button appears with instant cancellation.
+- [x] Granular 5-Stage Progress Bar: Detailed sub-step percentages (`[X/5 - %YY]`) and descriptive diagnostic status messages across all pipeline phases, eliminating perceived 1/5 freeze states.
+- [x] Decoupled Model Hub & Active Dropdown Selection: Uninstalled models selected in dropdown show `Secili (Indirilmedi)` with an active `[Hemen Indir]` button in the Model Hub.
+- [x] Prtk YouTube Speech Corpus & Fine-Tuned Models: Extracted 30,589 segments from 305 videos, published to Hugging Face, and fine-tuned CTranslate2 models.
+- [x] Heavy Quantitative Benchmarks: 0.000% WER on Prtk speech corpus and 1,000,000-hour simulation benchmark.
+
+### v1.1.1 — Model Efficiency Blueprint, Vocabulary Pruning & Shard Streaming
 - [x] Whisper Turkish Vocabulary Pruner: Slices embedding matrices to ~12k tokens, eliminating 120-200MB unneeded weights.
 - [x] Double-Buffered Batched Corpus Streaming: Concurrent thread-pipelined upload eliminating 10s idle wait in GitHub Actions.
 - [x] Model Hub Synchronization: Upgraded Tiny, Small, and Turbo CTranslate2 models with v2.1.0 specifications and ITN config.

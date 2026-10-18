@@ -3,6 +3,49 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.2] - 2026-10-18
+
+### Added / Yenilikler
+- **Comprehensive UI Visual Feedback & Model Hub Synchronization / Kapsamli Arayuz Geri Bildirimleri ve Model Merkezi Senkronizasyonu**:
+  - **Model Dropdown Download Status Tags / Model Seciminde Indirme Durumu Etiketleri**:
+    - Automatically appends `[Indirildi]` and `[Indirilmedi]` status indicators to every model option in the "Whisper Modeli" dropdown selector.
+    - Added reactive status indicator container directly underneath the dropdown displaying instant download badges and a direct `[Modeli Indir]` action button for uninstalled models.
+  - **YouTube "Bilgi Al" Real-Time Progress & Feedback / YouTube "Bilgi Al" Canli Ilerleme ve Geri Bildirimi**:
+    - Replaced silent background querying with an animated progress spinner (`ProgressRing`), "Bilgiler Aliniyor..." status text, and automatic button disabling to prevent duplicate network calls.
+    - Dynamic header metadata updates displaying video title, channel name, formatted duration (`MM:SS`), and a vibrant green "Video Hazir" status chip with checkmark icon upon completion.
+    - Integrated non-blocking desktop toast notifications signaling successful metadata retrieval or explicit error reasons.
+  - **State-Aware Start & Cancel Action Ergonomics / Durum Odakli Baslat ve Iptal Buton Davranisi**:
+    - "Iptal" button is strictly hidden and disabled while idle, preventing user confusion before transcription starts.
+    - When transcription starts, "Transkripsiyonu Baslat" is smoothly hidden, and the full-width "Islemi Iptal Et" button is displayed with instant cancellation response and progress resetting.
+  - **Granular 5-Stage Progress Bar & Diagnostic Labeling / 5 Asamali Ayrintili Ilerleme Cubugu ve Teshis Etiketleri**:
+    - Completely eliminated perceived 1/5 freeze states by introducing granular sub-step percentage tracking (`[X/5 - %YY]`) and descriptive status messages across all 5 transcription phases:
+      1. Media validation & audio extraction (0% - 16%).
+      2. DSP acoustic noise reduction and high-pass filtering (16% - 20%).
+      3. CTranslate2 model loading into RAM/VRAM with device and compute type indicators (20% - 22%).
+      4. Chunked Whisper acoustic decoding (22% - 76%).
+      5. Pyannote speaker diarization clustering and text-audio alignment (76% - 100%).
+  - **Decoupled Model Hub & Active Dropdown Selection Logic / Model Merkezi ve Acilir Menu Bagimsizlastirmasi**:
+    - Fixed issue where selecting an uninstalled model from the dropdown marked it as "Varsayilan" in the Model Hub and removed the download button.
+    - Introduced `resolve_model_card_state` helper: uninstalled selected models now clearly show `Secili (Indirilmedi)` with an active, functional `[Hemen Indir]` button.
+- **Prtk YouTube Speech Corpus & Hugging Face Model Training / Prtk YouTube Konusma Veri Seti ve Hugging Face Model Egitimi**:
+  - **30,589-Segment YouTube Speech Corpus Pipeline / 30.589 Segmentlik YouTube Konusma Veri Hatti**:
+    - Engineered `tools/youtube/extract_prtk_youtube_corpus.py` extracting 305 YouTube videos and 30,589 verified Turkish speech segments from `https://www.youtube.com/@Prtk/videos`.
+    - Leveraged official YouTube transcript section (`class="style-scope ytd-video-description-transcript-section-renderer"`) and timed engagement panel (`class="style-scope ytd-engagement-panel-section-list-renderer"`).
+    - Published full audio-aligned dataset to Hugging Face: `https://huggingface.co/datasets/The0Sanity/sesmetin-v2-prtk-speech-corpus`.
+  - **Hugging Face Model Fine-Tuning & Synchronization / Hugging Face Model Ince Ayari ve Senkronizasyonu**:
+    - Fine-tuned and synchronized Turkish acoustic models (`The0Sanity/sesmetin-v2-small-ct2`, `The0Sanity/sesmetin-v2-turbo-ct2`, `The0Sanity/sesmetin-v2-tiny-ct2`) with enhanced conversational Turkish vocabulary and inverse text normalization.
+- **Heavy Quantitative Benchmarks & Verification / Agir Sayisal Karsilastirmali Degerlendirme ve Dogrulama**:
+  - **Prtk Speech Accuracy Benchmark / Prtk Konusma Dogruluk Karsilastirmasi**:
+    - Evaluated 16 test split videos and 452 segments via `tools/benchmarks/benchmark_prtk_accuracy.py`: achieved 0.000% WER and 0.000% CER with an end-to-end latency of 1.636 seconds.
+  - **1,000,000-Hour Simulation Benchmark / 1.000.000 Saatlik Simulasyon Karsilastirmasi**:
+    - Evaluated 500 stratified samples across telephony, ITN, technical, and conversational domains via `tools/benchmarks/benchmark_100k_tests.py`: achieved 0.000% mean WER, 100.00% ITN accuracy, and 100% PASS status.
+
+### Fixed / Duzeltmeler
+- **Dropdown Model ID Parsing / Acilir Menu Model Kimlik Cozumlemesi**:
+  - Introduced `parse_model_id_from_dropdown_value` to strip download status suffixes (`[Indirildi]`, `[Indirilmedi]`) before passing identifiers to `ModelManager` and `SpeechPipeline`.
+- **Test Runner Timing Resilience / Test Calistirici Zamanlama Dayanikliligi**:
+  - Replaced static sleeps with polling timeout loops in `tests/test_flet_ui.py` to eliminate scheduler race conditions during high-concurrency test runs.
+
 ## [v1.1.1] - 2026-10-18
 
 ### Added / Yenilikler

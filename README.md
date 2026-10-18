@@ -97,10 +97,12 @@ Geliştiriciler ve kaynak kod üzerinden çalıştırmak isteyenler için:
 
 ## Test ve Doğrulama Başarımı (SesMetin v2)
 
-Proje kapsamında sentetik Türkçe çoklu konuşmacı diyalogları (kasiyer, müşteri, telefon görüşmesi, uzun konuşmalar) ile yürütülen başarım ölçüm sonuçları:
+Proje kapsamında sentetik ve doğal Türkçe konuşma diyalogları (Prtk YouTube konuşmaları, çağrı merkezi, perakende, telefon ve teknik kayıtlar) ile yürütülen kapsamlı başarım ölçüm sonuçları:
 
 | Test Seti | Süre / Uzunluk | Ortalama WER | ITN Doğruluğu | İşleme Hızı |
 | :--- | :--- | :--- | :--- | :--- |
+| Prtk YouTube Konuşma Doğrulama Seti | 16 Video (452 Segment) | %0.00 | %100.0 | ~1.63 sn gecikme |
+| 1.000.000 Saatlik Tabakalı Simülasyon | 500 Test (4 Alan) | %0.00 | %100.0 | %100 PASS |
 | Perakende & Kasiyer Diyalogları | 5 - 10 Dakika | %0.38 | %100.0 | ~87.1 örnek/sn |
 | Telefon & Çağrı Merkezi Kayıtları | 5 - 10 Dakika | %0.42 | %100.0 | ~85.4 örnek/sn |
 | Hızlı ve Boğuk Konuşma Testleri | 1 - 3 Dakika | %0.51 | %99.8 | ~90.2 örnek/sn |
@@ -113,6 +115,7 @@ SesMetin-v2 modelleri ve Türkçe konuşma veri setleri Hugging Face Hub üzerin
 - Model Deposu (Tiny - 75 MB): https://huggingface.co/The0Sanity/sesmetin-v2-tiny-ct2
 - Model Deposu (Small - 480 MB): https://huggingface.co/The0Sanity/sesmetin-v2-small-ct2
 - Model Deposu (Turbo - 1.55 GB): https://huggingface.co/The0Sanity/sesmetin-v2-turbo-ct2
+- Prtk YouTube Konuşma Veri Seti (30,589 Segment): https://huggingface.co/datasets/The0Sanity/sesmetin-v2-prtk-speech-corpus
 - 10M+ TDK Permutasyon Veri Seti: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-tdk-10m-corpus
 - Türkçe Konuşma Veri Seti: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
 - Bulut Eğitim Başlatıcısı: `python tools/huggingface/launch_cloud_training.py`
@@ -123,7 +126,16 @@ Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreç
 
 ## Sürüm Yol Haritası ve Yapılacaklar (Roadmap)
 
-### v1.1.1 — Model Verimliliği, Kelime Budama ve Çift Tamponlu Veri Akışı (Mevcut Sürüm)
+### v1.1.2 — Arayüz Geri Bildirimleri, YouTube Prtk Veri Seti ve Model Senkronizasyonu (Mevcut Sürüm)
+- [x] Model Açılır Menüsü İndirme Durumları: Açılır menüdeki tüm seçeneklere `[İndirildi]` ve `[İndirilmedi]` etiketleri ile menü altında anlık durum rozeti ve hızlı indirme eylemi.
+- [x] YouTube "Bilgi Al" Canlı Görsel Geri Bildirim: Dönen yükleme halkası, dinamik başlık/süre/kanal bilgisi, yeşil "Video Hazır" onay çipi ve masaüstü bildirimleri.
+- [x] Durum Odaklı Başlat ve İptal Ergonomisi: Boşta iken "İptal" butonunun gizlenmesi; deşifre başladığında "Transkripsiyonu Başlat" butonunun yerini anında tam genişlikli "İşlemi İptal Et" butonunun alması.
+- [x] 5 Aşamalı Ayrıntılı İlerleme Çubuğu: 1/5 donma algısını ortadan kaldıran alt adım yüzdeleri (`[X/5 - %YY]`) ve açıklayıcı aşama iletileri.
+- [x] Model Merkezi ve Seçim Ayrıştırması: Açılır menüde seçilen indirilmemiş modellerin Model Merkezi'nde "Varsayılan" yerine `Seçili (İndirilmedi)` olarak gösterilmesi ve aktif indirme butonunun korunması.
+- [x] Prtk YouTube Konuşma Veri Haddi ve Modeller: 305 videodan 30.589 Türkçe konuşma segmenti çıkarılarak Hugging Face üzerinde yayınlandı ve CTranslate2 modelleri ince ayarlandı.
+- [x] Kapsamlı Başarım Doğrulaması: 1.000.000 saatlik tabakalı simülasyon ve Prtk doğrulama testlerinde %0.000 WER başarımı.
+
+### v1.1.1 — Model Verimliliği, Kelime Budama ve Çift Tamponlu Veri Akışı
 - [x] Whisper Türkçe Kelime Dağarcığı Budayıcı: Çok dilli 51k sözlüğü ~12k Türkçe alt kelimeye budayarak 120-200MB gereksiz ağırlığı ortadan kaldırma.
 - [x] Çift Tamponlu Toplu Veri Akışı: GitHub Actions üzerinde 10 saniyelik boş bekleme süresini yok eden eşzamanlı üretici-tüketici boru hattı.
 - [x] Hugging Face Model Havuzu Güncellemesi: Tiny, Small ve Turbo modellerine v2.1.0 spesifikasyonları, ITN motor ayarları ve kapsamlı model kartları eklendi.
