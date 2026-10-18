@@ -65,6 +65,7 @@ def postprocess_segments(
 
     cleaned = []
     prev_text = ""
+    consecutive_identical_seg_count = 1
     
     for seg in segments:
         text = seg.get("text", "").strip()
@@ -76,7 +77,7 @@ def postprocess_segments(
         if remove_hallucinations and _is_hallucination(text):
             continue
         
-        # 2. Tekrarlayan cümle kontrolü
+        # 2. Tekrarlayan cümle kontrolü (Türkçe ikilemeleri korur)
         if remove_repeated_phrases:
             text = _remove_repeated_phrases(text)
         
@@ -101,11 +102,15 @@ def postprocess_segments(
         if len(text_stripped) < min_segment_chars:
             continue
         
-        # 5. Tamamen aynı ardışık segment tekrarı kontrolü
+        # 6. Ardışık segment tekrarı kontrolü (Şarkılarda nakarat tekrarlarını 2 sefere kadar korur)
         normalized_curr = _normalize_for_comparison(text)
         normalized_prev = _normalize_for_comparison(prev_text)
         if normalized_curr == normalized_prev and normalized_curr:
-            continue
+            consecutive_identical_seg_count += 1
+            if consecutive_identical_seg_count > 2:
+                continue
+        else:
+            consecutive_identical_seg_count = 1
         
         new_seg = seg.copy()
         new_seg["text"] = text
@@ -125,32 +130,50 @@ def _is_hallucination(text: str) -> bool:
         if re.fullmatch(pattern, text.strip()):
             return True
     
-    # Çok kısa ve sadece tekrar eden tek karakter/kelime
-    words = text.strip().split()
-    if len(words) >= 4:
-        unique_words = set(w.lower() for w in words)
-        if len(unique_words) == 1:
-            return True  # Aynı kelime 4+ kez tekrar
+    stripped = text.strip()
+    # Sadece semboller ve boşluklardan ibaretse
+    letters = re.sub(r'[^\w]', '', stripped)
+    if not letters:
+        return True
+    
+    # Sadece tek bir harfin 6+ kez tekrarlanması (örn. 'a a a a a a')
+    unique_letters = set(letters.lower())
+    if len(letters) >= 6 and len(unique_letters) == 1:
+        return True
     
     return False
 
 
 def _remove_repeated_phrases(text: str) -> str:
-    """Cümle içinde tekrarlanan sözcük gruplarını temizler.
+    """Cümle içinde tekrarlanan sözcük gruplarını temizlerken Türkçe ikilemeleri korur.
     
-    Örnek: 'merhaba merhaba nasılsın nasılsın' -> 'merhaba nasılsın'
+    Örnek:
+    - 'pisi pisi' -> 'pisi pisi' (ikileme korunur)
+    - 'kuçu kuçu kuçu kuçu' -> 'kuçu kuçu' (maksimum 2 tekrara sınırlandırılır)
     """
-    # Remove consecutive duplicate words
     words = text.split()
     if len(words) <= 1:
         return text
     
+    def norm(w: str) -> str:
+        return re.sub(r'[^\w]', '', w.lower())
+
     cleaned_words = [words[0]]
+    consecutive_count = 1
+    
     for i in range(1, len(words)):
-        if words[i].lower() != words[i-1].lower():
+        w_curr = norm(words[i])
+        w_prev = norm(words[i - 1])
+        if w_curr == w_prev and w_curr:
+            consecutive_count += 1
+            # Türkçe ikilemeler (pisi pisi, adım adım, yavaş yavaş) için en fazla 2 tekrara izin ver
+            if consecutive_count <= 2:
+                cleaned_words.append(words[i])
+        else:
+            consecutive_count = 1
             cleaned_words.append(words[i])
     
-    # Remove repeated 2-3 word phrases
+    # Çoklu sözcük grupları tekrarı (2 ve 3 sözcüklü kalıplar)
     result = ' '.join(cleaned_words)
     for phrase_len in [3, 2]:
         result = _remove_repeated_ngrams(result, phrase_len)
@@ -159,7 +182,7 @@ def _remove_repeated_phrases(text: str) -> str:
 
 
 def _remove_repeated_ngrams(text: str, n: int) -> str:
-    """Tekrarlayan n-gram sözcük gruplarını kaldırır."""
+    """Tekrarlayan n-gram sözcük gruplarını en fazla 2 tekrara kadar tutarak temizler."""
     words = text.split()
     if len(words) < n * 2:
         return text
@@ -171,9 +194,10 @@ def _remove_repeated_ngrams(text: str, n: int) -> str:
             phrase1 = ' '.join(words[i:i+n]).lower()
             phrase2 = ' '.join(words[i+n:i+2*n]).lower()
             if phrase1 == phrase2:
-                result.extend(words[i:i+n])
+                # En fazla 2 kez tekrara izin ver (örn. nakarat: 'domates domates')
+                result.extend(words[i:i+2*n])
                 i += 2 * n
-                # Skip further repeats of the same phrase
+                # 3. ve sonraki sonsuz döngü tekrarlarını atla
                 while i + n <= len(words):
                     next_phrase = ' '.join(words[i:i+n]).lower()
                     if next_phrase == phrase1:

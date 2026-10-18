@@ -3,6 +3,32 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.4] - 2026-10-18
+
+### Fixed / Duzeltmeler
+- **Elimination of Empty Transcription Outputs on Turkish Music & Songs / Muzikli Turkce Kayitlarda Bos Cikti Hatasinin Giderilmesi**:
+  - **Silero VAD Music False-Negative Elimination / Silero VAD Muzik Yanilgisinin Giderilmesi**:
+    - Resolved an issue where Silero VAD with high sensitivity thresholds incorrectly classified children's songs, nursery rhymes, and recordings with background instruments (e.g. `https://www.youtube.com/watch?v=IrYUYT5C5GI`) as non-speech noise, stripping over 95% of audible speech before reaching the decoder.
+    - Added automatic audio energy (RMS) monitoring and adaptive fallback: if initial VAD decoding produces fewer than 5% speech coverage on audible recordings (RMS > 0.015), the transcriber automatically re-processes the audio without VAD (`vad_filter=False`) using robust anti-repetition decoding.
+  - **Non-Destructive Trailing Loop Cleaning / Parca Silme Yerine Akilli Sonlandirma**:
+    - Replaced catastrophic whole-segment deletion (`should_filter_segment` discarding 30-second segments when zlib compression ratio > 2.4) with `clean_trailing_repetitions`.
+    - Detects repeating 1, 2, 3, or 4-gram trailing hallucination loops and truncates the repetition tail to a maximum of 2 iterations while fully preserving all preceding valid transcribed speech.
+  - **Preservation of Turkish Reduplications & Rhymes / Turkce Ikilemelerin ve Sarki Sozlerinin Korunmasi**:
+    - Enhanced `src/text_postprocessor.py` to recognize Turkish reduplications (*ikilemeler*) such as "pisi pisi", "kucu kucu", "yavas yavas", "patates patates". Consecutive duplicate words are now allowed up to 2 times instead of being collapsed destructively.
+    - Refactored `_is_hallucination` so meaningful Turkish words repeating rhythmically in songs or choruses are no longer purged as noise hallucinations.
+    - Allowed consecutive identical chorus segments up to 2 times, preserving lyrical musical verses.
+  - **Prompt Regurgitation Mitigation / Istem Tekrari Onleme**:
+    - Configured `WhisperTranscriber` to bypass long synthetic system prompts on `tiny` and `base` architectures, preventing smaller decoders from regurgitating the prompt instead of listening to faint audio.
+
+### Added / Yenilikler
+- **100% Empirical Audio Benchmark Suite / %100 Ampirik Gercek Ses Karsilastirma Paketi**:
+  - Completely rewrote `tools/benchmarks/benchmark_prtk_accuracy.py` to eliminate all simulated/mocked hypotheses (`hyp_text = ref_text`).
+  - The suite now executes genuine CTranslate2 inference across multiple models (`Systran/faster-whisper-small`, `The0Sanity/sesmetin-v2-tiny-ct2`) on actual audio extracted from `https://www.youtube.com/watch?v=IrYUYT5C5GI` and computes verifiable Word Error Rate (WER) and Character Error Rate (CER) against user ground truth.
+  - Generates authentic JSON reports at `dataset/prtk_speech_corpus/benchmark_prtk_report.json` with reproducible metrics and complete hypothesis text.
+- **Unit Test Coverage for Anti-Loop and Reduplication Engines**:
+  - Implemented `tests/test_transcriber_anti_loop.py` validating trailing repetition truncation and adaptive VAD parameters.
+  - Implemented `tests/test_postprocessor_reduplication.py` validating Turkish reduplication preservation, non-destructive chorus retention, and junk hallucination filtering.
+
 ## [v1.1.3] - 2026-10-18
 
 ### Fixed / Duzeltmeler

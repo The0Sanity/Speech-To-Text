@@ -41,6 +41,64 @@ def get_production_vad_parameters(sensitivity: str = "high") -> Dict[str, Any]:
     }
 
 
+def get_adaptive_vad_parameters(sensitivity: str = "high", is_music: bool = False) -> Dict[str, Any]:
+    """Müzikli parçalar ve şarkılar için adaptif VAD parametreleri üretir."""
+    if is_music:
+        return {
+            "threshold": 0.15,
+            "min_speech_duration_ms": 100,
+            "max_speech_duration_s": float("inf"),
+            "min_silence_duration_ms": 600,
+            "speech_pad_ms": 300,
+        }
+    return get_production_vad_parameters(sensitivity=sensitivity)
+
+
+def clean_trailing_repetitions(text: str, max_repeats: int = 2) -> str:
+    """Metin sonundaki tekrarlayan n-gram halüsinasyon döngülerini temizler.
+    
+    Örnek:
+    'Bir patates ... sekiz patates sekiz patates sekiz patates sekiz patates'
+    -> 'Bir patates ... sekiz patates sekiz patates'
+    """
+    if not text:
+        return ""
+    words = text.strip().split()
+    if len(words) <= 2:
+        return text.strip()
+
+    import re
+    def norm(w: str) -> str:
+        return re.sub(r'[^\w]', '', w.lower())
+
+    norm_words = [norm(w) for w in words]
+
+    # n-gram boyutunu 4'ten 1'e kadar dene
+    for k in (4, 3, 2, 1):
+        if len(norm_words) < k * 2:
+            continue
+        unit = norm_words[-k:]
+        if not any(unit):
+            continue
+        
+        repeats = 1
+        pos = len(norm_words) - k
+        while pos >= k:
+            prev_block = norm_words[pos - k : pos]
+            if prev_block == unit:
+                repeats += 1
+                pos -= k
+            else:
+                break
+        
+        if repeats > max_repeats:
+            keep_count = len(words) - (repeats - max_repeats) * k
+            words = words[:keep_count]
+            norm_words = norm_words[:keep_count]
+
+    return " ".join(words).strip()
+
+
 def calculate_compression_ratio(text: str) -> float:
     """Metnin zlib sıkıştırma oranını hesaplar.
     
@@ -71,12 +129,26 @@ def should_filter_segment(
     
     Kriterler:
     1. no_speech_prob > 0.6 VE avg_logprob < -1.0 (hayalet fısıltı / sessizlik gürültüsü)
-    2. Zlib sıkıştırma oranı > 2.4 (tekrarlama döngüsü)
+    2. Tamamen anlamsız kısa karakter döngüleri (örn. '. . . . . .')
     """
     if no_speech_prob > 0.6 and avg_logprob < -1.0:
         return True
-    if text and is_repetition_loop(text, threshold=threshold):
+    
+    stripped = text.strip() if text else ""
+    if not stripped:
         return True
+        
+    import re
+    cleaned_chars = [c for c in stripped if c.isalnum()]
+    if not cleaned_chars:
+        return True
+    if len(cleaned_chars) >= 10 and len(set(cleaned_chars)) == 1:
+        return True
+
+    words = stripped.split()
+    if len(words) >= 6 and len(set(re.sub(r'[^\w]', '', w.lower()) for w in words)) == 1:
+        return True
+
     return False
 
 
@@ -193,18 +265,22 @@ class WhisperTranscriber:
             progress_callback(0.10, "Gelişmiş Türkçe konuşma tanıma başlatılıyor...", None)
 
         start_time = time.time()
+        rms = float(np.sqrt(np.mean(audio_data ** 2))) if len(audio_data) > 0 else 0.0
 
         # VAD (Ses Etkinliği Tespiti) Ayarları (Üretim standardı Silero VAD)
         vad_params = get_production_vad_parameters(sensitivity=vad_sensitivity)
 
-        # Başlangıç istemi (Türkçe karakter ve noktalama doğruluğunu garantiler)
+        # Başlangıç istemi (Küçük modellerde istem tekrarını önlemek için sadeleştirilir)
         prompt_to_use = initial_prompt
         if prompt_to_use is None and (language == "tr" or language == "auto"):
-            prompt_to_use = DEFAULT_TURKISH_PROMPT
+            if "tiny" in self.model_size or "base" in self.model_size:
+                prompt_to_use = None
+            else:
+                prompt_to_use = DEFAULT_TURKISH_PROMPT
 
         # faster-whisper parametreleri:
         # beam_size=5 / best_of=5: Yüksek doğruluk
-        # condition_on_previous_text=False: Halüsinasyon döngülerini ve sonsuz tekrarları engeller
+        # condition_on_previous_text=False: Halüsinasyon döngülerini ve sonraki pencerelere sızmasını engeller
         # repetition_penalty=1.15: Tekrarlayan kelimeleri cezalandırır
         # no_repeat_ngram_size=3: 3'lü sözcük tekrarını önler
         # temperature=[0.0, 0.2, 0.4, 0.6]: Hatalı çözümlerde alternatif sıcaklıkları dener
@@ -235,14 +311,13 @@ class WhisperTranscriber:
                 None,
             )
 
-        rolling_context = ""
         collected_segments: List[Dict[str, Any]] = []
 
         for seg_idx, segment in enumerate(segments_generator):
             if cancel_event and cancel_event.is_set():
                 break
 
-            text_cleaned = segment.text.strip()
+            text_cleaned = clean_trailing_repetitions(segment.text.strip())
             if not text_cleaned:
                 continue
 
@@ -250,7 +325,7 @@ class WhisperTranscriber:
             no_speech_prob = float(getattr(segment, "no_speech_prob", 0.0) or 0.0)
             comp_ratio = float(getattr(segment, "compression_ratio", 0.0) or calculate_compression_ratio(text_cleaned))
 
-            # Güven ve tekrarlama filtreleme (Aşama 5)
+            # Güven ve tekrarlama filtreleme
             if should_filter_segment(avg_logprob, no_speech_prob, text=text_cleaned):
                 continue
 
@@ -276,11 +351,69 @@ class WhisperTranscriber:
             }
             collected_segments.append(seg_dict)
 
-            # İlerleme hesabı (toplam ses süresine göre %15 ile %75 arası STT aşamasıdır)
+            # İlerleme hesabı
             if audio_dur > 0 and progress_callback:
                 progress_fraction = min(0.75, 0.15 + (segment.end / audio_dur) * 0.60)
                 msg = f"Çözümleniyor: [{segment.end:.1f}s / {audio_dur:.1f}s] - \"{text_cleaned[:35]}...\""
                 progress_callback(progress_fraction, msg, seg_dict)
+
+        # VAD müzik/ritim nedeniyle konuşmayı yutmuşsa ve ses enerjisi varsa doğrudan çözümleme kurtarması
+        total_decoded_duration = sum(s["end"] - s["start"] for s in collected_segments) if collected_segments else 0.0
+        if (len(collected_segments) == 0 or total_decoded_duration < 0.05 * audio_dur) and rms > 0.015 and not (cancel_event and cancel_event.is_set()):
+            if progress_callback:
+                progress_callback(0.20, "Müzikli ses tespit edildi, doğrudan çözümleme moduna geçiliyor...", None)
+            
+            fallback_gen, _ = self.model.transcribe(
+                audio=audio_data,
+                language=language if language != "auto" else None,
+                task="transcribe",
+                beam_size=beam_size,
+                best_of=beam_size,
+                word_timestamps=True,
+                vad_filter=False,
+                initial_prompt=prompt_to_use,
+                condition_on_previous_text=False,
+                repetition_penalty=1.15,
+                no_repeat_ngram_size=3,
+                temperature=[0.0, 0.2, 0.4, 0.6],
+            )
+            fallback_segments: List[Dict[str, Any]] = []
+            for seg in fallback_gen:
+                if cancel_event and cancel_event.is_set():
+                    break
+                t_clean = clean_trailing_repetitions(seg.text.strip())
+                if not t_clean:
+                    continue
+                avg_lp = float(getattr(seg, "avg_logprob", 0.0) or 0.0)
+                nsp = float(getattr(seg, "no_speech_prob", 0.0) or 0.0)
+                c_ratio = float(getattr(seg, "compression_ratio", 0.0) or calculate_compression_ratio(t_clean))
+                if should_filter_segment(avg_lp, nsp, text=t_clean):
+                    continue
+                w_data = []
+                if seg.words:
+                    for w in seg.words:
+                        w_data.append({
+                            "word": w.word,
+                            "start": round(w.start, 2),
+                            "end": round(w.end, 2),
+                            "probability": round(w.probability, 2),
+                        })
+                s_dict = {
+                    "id": len(fallback_segments) + 1,
+                    "start": round(seg.start, 2),
+                    "end": round(seg.end, 2),
+                    "text": t_clean,
+                    "words": w_data,
+                    "avg_logprob": round(avg_lp, 3),
+                    "no_speech_prob": round(nsp, 3),
+                    "compression_ratio": round(c_ratio, 3),
+                }
+                fallback_segments.append(s_dict)
+                if audio_dur > 0 and progress_callback:
+                    p_frac = min(0.75, 0.20 + (seg.end / audio_dur) * 0.55)
+                    progress_callback(p_frac, f"Çözümleniyor: [{seg.end:.1f}s / {audio_dur:.1f}s] - \"{t_clean[:35]}...\"", s_dict)
+            if len(fallback_segments) > len(collected_segments):
+                collected_segments = fallback_segments
 
         # Çıktıya Türkçe son-işleme uygula (halüsinasyonları, ITN ve dolgu sözcükleri temizler)
         if apply_postprocessing and collected_segments:

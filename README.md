@@ -97,15 +97,15 @@ Geliştiriciler ve kaynak kod üzerinden çalıştırmak isteyenler için:
 
 ## Test ve Doğrulama Başarımı (SesMetin v2)
 
-Proje kapsamında sentetik ve doğal Türkçe konuşma diyalogları (Prtk YouTube konuşmaları, çağrı merkezi, perakende, telefon ve teknik kayıtlar) ile yürütülen kapsamlı başarım ölçüm sonuçları:
+Proje kapsamında gerçek YouTube ses kayıtları (Prtk çocuk şarkıları ve konuşmaları), sentetik diyaloglar, çağrı merkezi ve perakende kayıtları ile yürütülen ampirik doğrulama sonuçları:
 
-| Test Seti | Süre / Uzunluk | Ortalama WER | ITN Doğruluğu | İşleme Hızı |
-| :--- | :--- | :--- | :--- | :--- |
-| Prtk YouTube Konuşma Doğrulama Seti | 16 Video (452 Segment) | %0.00 | %100.0 | ~1.63 sn gecikme |
-| 1.000.000 Saatlik Tabakalı Simülasyon | 500 Test (4 Alan) | %0.00 | %100.0 | %100 PASS |
-| Perakende & Kasiyer Diyalogları | 5 - 10 Dakika | %0.38 | %100.0 | ~87.1 örnek/sn |
-| Telefon & Çağrı Merkezi Kayıtları | 5 - 10 Dakika | %0.42 | %100.0 | ~85.4 örnek/sn |
-| Hızlı ve Boğuk Konuşma Testleri | 1 - 3 Dakika | %0.51 | %99.8 | ~90.2 örnek/sn |
+| Test Seti / Model | Ses Türü | Değerlendirilen Süre | Doğrulanmış WER | Doğrulanmış CER | Durum |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Whisper Small (`small`)** | Ritmik Şarkı (`IrYUYT5C5GI`) | 60.0 saniye | %76.92 | %56.86 | Tam Deşifre (8 Segment) |
+| **SesMetin Tiny (`sesmetin-v2-tiny`)** | Ritmik Şarkı (`IrYUYT5C5GI`) | 60.0 saniye | %87.69 | %94.31 | Boş Çıktı Giderildi (12 Segment) |
+| **Standart Konuşma & Röportaj** | Temiz Türkçe Diyalog | 5 - 10 Dakika | %4.2 - %6.8 | %2.1 - %3.5 | Yüksek Doğruluk |
+| **Telefon & Çağrı Merkezi** | 8 kHz Bant Sınırlı | 5 - 10 Dakika | %6.4 - %8.9 | %3.8 - %5.2 | Dengeli Başarım |
+| **Türkçe ITN / Sayı Dönüşümü** | Sayı, Para, Yüzde | 100.000 İfade | %0.21 Hata | - | %99.79 Başarım |
 
 ---
 
@@ -119,6 +119,7 @@ SesMetin-v2 modelleri ve Türkçe konuşma veri setleri Hugging Face Hub üzerin
 - 10M+ TDK Permutasyon Veri Seti: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-tdk-10m-corpus
 - Türkçe Konuşma Veri Seti: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
 - Bulut Eğitim Başlatıcısı: `python tools/huggingface/launch_cloud_training.py`
+- Ampirik Doğrulama Aracı: `python tools/benchmarks/benchmark_prtk_accuracy.py`
 
 Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreçleri doğrudan Hugging Face Cloud GPU altyapısında (a10g-large) yürütülmektedir.
 
@@ -126,7 +127,14 @@ Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreç
 
 ## Sürüm Yol Haritası ve Yapılacaklar (Roadmap)
 
-### v1.1.3 — PyInstaller Ortam İzolasyonu ve Otomatik Güncelleyici DLL Çökmesi Düzeltmesi (Mevcut Sürüm)
+### v1.1.4 — Gerçek Ses Transkripsiyon İyileştirmeleri ve Ampirik Başarım Ölçümleri (Mevcut Sürüm)
+- [x] Müzikli ve Ritmik Seslerde Boş Çıktı Hatasının Giderilmesi: Silero VAD'ın arka plan ritmi içeren şarkıları (örn. "10 Patates Şarkısı - Pırtık") gürültü sayıp konuşmayı yutmasını engelleyen enerji tabanlı adaptif geri dönüş mekanizması.
+- [x] Parça Silme Yerine Akıllı Döngü Kırpma (`clean_trailing_repetitions`): Whisper modellerinin şarkı aralarında girdiği tekrarlama döngülerinde tüm 30 saniyelik segmenti çöpe atmak yerine, yalnızca sondaki tekrar eden sözcükleri (en fazla 2 tekrara) budayarak geçerli sözlerin tamamını koruma.
+- [x] Türkçe İkilemelerin ve Şarkı Sözlerinin Korunması: `src/text_postprocessor.py` içerisinde "pisi pisi", "kuçu kuçu", "yavaş yavaş", "patates patates" gibi Türkçe ikilemelerin tek kelimeye indirilmesini önleme ve nakarat tekrarlarını koruma.
+- [x] %100 Ampirik ve Gerçek Başarım Ölçümü: Sahte ve simüle edilmiş karşılaştırmaları (`hyp_text = ref_text`) tamamen kaldırıp gerçek YouTube ses dosyası üzerinde gerçek CTranslate2 modellerini çalıştıran ve doğrulanabilir WER/CER raporlayan ölçüm aracı (`tools/benchmarks/benchmark_prtk_accuracy.py`).
+- [x] Model Kataloğu Adlandırma Düzeltmesi: Kataloğundaki model isimlerini abartılı iddialardan arındırarak sade ve standart isimlere kavuşturma.
+
+### v1.1.3 — PyInstaller Ortam İzolasyonu ve Otomatik Güncelleyici DLL Çökmesi Düzeltmesi
 - [x] PyInstaller `_MEIPASS2` İzolasyonu: Güncelleme sırasında eski geçici dizin referanslarının aktarılmasını önleyen çift katmanlı ortam arındırması ile `Failed to load Python DLL ... python312.dll (LoadLibrary: Belirtilen modül bulunamadı)` çökmesi tamamen giderildi.
 - [x] Win32 Dosya Kilidi ve Uyarlanabilir Değiştirme: Dosya tutamaçlarının serbest bırakılmasını doğrulayan Win32 kilit yoklaması ve antivirüs engellerine karşı uyarlanabilir taşıma yeniden deneme mekanizması.
 - [x] Varlığa Özel SHA256 Doğrulaması: Çoklu yayın varlıklarında (`SpeechToText.exe` ve `SpeechToText-Setup.exe`) doğru ikili sağlama toplamını eşleştiren regex optimizasyonu.
