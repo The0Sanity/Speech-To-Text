@@ -3,6 +3,29 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.3] - 2026-10-18
+
+### Fixed / Duzeltmeler
+- **PyInstaller `_MEIPASS2` Child Process Leaks & Auto-Updater DLL Crash Fix / PyInstaller Ortam Degiskeni Sizintisi ve Guncelleyici DLL Cokmesi Duzeltmesi**:
+  - **Critical `python312.dll` Missing Error Resolved / Kritik `python312.dll` Bulunamadi Hatasi Cozuldu**:
+    - Fixed a critical crash where updating from an existing PyInstaller one-file executable failed with:
+      `Failed to load Python DLL '...\AppData\Local\Temp\_MEIxxxxxx\python312.dll'. LoadLibrary: Belirtilen modul bulunamadi.`
+    - **Root Cause Eliminated / Kok Neden Ortadan Kaldirildi**: When PyInstaller one-file executables launch, the C bootloader exports `_MEIPASS2` pointing to the temporary extraction directory. Spawning the background updater PowerShell script via `subprocess.Popen` caused child processes to inherit the stale `_MEIPASS2`. When PowerShell killed the old executable and launched the updated binary, the new PyInstaller bootloader detected `_MEIPASS2`, falsely assumed its libraries were already unpacked, and attempted to load `python312.dll` from the old (now deleted) temporary folder.
+    - **Double-Layer Environment Scrubbing / Cift Katmanli Ortam Degiskeni Temizligi**:
+      1. In `WindowsSelfUpdater.execute_in_place_update`, explicitly scrubbed `_MEIPASS2`, `_MEIPASS`, `PYTHONPATH`, `PYTHONHOME`, `PYTHONSTARTUP`, `PYTHONEXECUTABLE`, `PYTHONNOUSERSITE`, and `PYI_PARENT_PID` before spawning PowerShell via `subprocess.Popen(..., env=clean_env)`.
+      2. In `WindowsSelfUpdater.generate_powershell_script`, added explicit Step 0 and Step 5 environment purges executing `Remove-Item -Path "Env:\$v"` and `[System.Environment]::SetEnvironmentVariable($v, $null, [System.EnvironmentVariableTarget]::Process)` immediately before invoking the new application binary.
+  - **Win32 File Lock Verification & Adaptive Replacement / Win32 Dosya Kilidi Dogrulamasi ve Uyarlanabilir Degistirme**:
+    - Replaced blind sleeps with a non-blocking Win32 file lock probe using `[System.IO.File]::Open($CurExe, [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)` to verify 100% handle release by terminating parent processes before attempting filesystem replacement.
+    - Added an adaptive retry loop for moving the current executable to `.bak` and moving the updated binary into place, preventing transient `Access is denied (0x80070005)` antivirus or indexer locking errors.
+  - **Asset-Specific SHA256 Checksum Matching / Varliga Ozel SHA256 Saglama Toplami Eslestirmesi**:
+    - Enhanced `AutoUpdater.parse_release_payload` to prioritize regex patterns matching the exact executable name (`SpeechToText.exe: <hash>`) rather than capturing the first arbitrary 64-character hex string, ensuring zero checksum mismatch when both Portable and Setup executables are published together in release notes.
+  - **Dev-Mode Subprocess Sanitization / Gelistirici Kipi Surec Yalitim Guvenligi**:
+    - Sanitized child process environments and removed `shell=True` in non-frozen developer mode updates to guarantee clean process startup across all development workflows.
+
+### Added / Yenilikler
+- **Comprehensive Updater Test Suite / Kapsamli Guncelleyici Test Paketi**:
+  - Authored `tests/test_updater_env_isolation.py` strictly verifying environment variable sanitization, PowerShell removal directives, file lock retry loops, and multi-asset SHA256 parsing following the Test-First Superpowers methodology.
+
 ## [v1.1.2] - 2026-10-18
 
 ### Added / Yenilikler

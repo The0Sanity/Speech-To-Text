@@ -126,7 +126,13 @@ Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreç
 
 ## Sürüm Yol Haritası ve Yapılacaklar (Roadmap)
 
-### v1.1.2 — Arayüz Geri Bildirimleri, YouTube Prtk Veri Seti ve Model Senkronizasyonu (Mevcut Sürüm)
+### v1.1.3 — PyInstaller Ortam İzolasyonu ve Otomatik Güncelleyici DLL Çökmesi Düzeltmesi (Mevcut Sürüm)
+- [x] PyInstaller `_MEIPASS2` İzolasyonu: Güncelleme sırasında eski geçici dizin referanslarının aktarılmasını önleyen çift katmanlı ortam arındırması ile `Failed to load Python DLL ... python312.dll (LoadLibrary: Belirtilen modül bulunamadı)` çökmesi tamamen giderildi.
+- [x] Win32 Dosya Kilidi ve Uyarlanabilir Değiştirme: Dosya tutamaçlarının serbest bırakılmasını doğrulayan Win32 kilit yoklaması ve antivirüs engellerine karşı uyarlanabilir taşıma yeniden deneme mekanizması.
+- [x] Varlığa Özel SHA256 Doğrulaması: Çoklu yayın varlıklarında (`SpeechToText.exe` ve `SpeechToText-Setup.exe`) doğru ikili sağlama toplamını eşleştiren regex optimizasyonu.
+- [x] Geliştirici Kipi Süreç Güvenliği: Dondurulmamış Python çalışma kipinde arındırılmış alt süreç başlatma ve `shell=True` bağımlılığının kaldırılması.
+
+### v1.1.2 — Arayüz Geri Bildirimleri, YouTube Prtk Veri Seti ve Model Senkronizasyonu
 - [x] Model Açılır Menüsü İndirme Durumları: Açılır menüdeki tüm seçeneklere `[İndirildi]` ve `[İndirilmedi]` etiketleri ile menü altında anlık durum rozeti ve hızlı indirme eylemi.
 - [x] YouTube "Bilgi Al" Canlı Görsel Geri Bildirim: Dönen yükleme halkası, dinamik başlık/süre/kanal bilgisi, yeşil "Video Hazır" onay çipi ve masaüstü bildirimleri.
 - [x] Durum Odaklı Başlat ve İptal Ergonomisi: Boşta iken "İptal" butonunun gizlenmesi; deşifre başladığında "Transkripsiyonu Başlat" butonunun yerini anında tam genişlikli "İşlemi İptal Et" butonunun alması.
