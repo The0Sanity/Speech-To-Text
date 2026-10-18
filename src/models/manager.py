@@ -137,6 +137,10 @@ class ModelManager:
                     repo_or_name,
                     output_dir=str(target_dir),
                 )
+                # Model agirliklarinin (model.bin) dizinde veya alt dizinlerinde mevcut oldugunu dogrula
+                has_weights = (target_dir / "model.bin").exists() or bool(list(target_dir.glob("**/model.bin")))
+                if not has_weights:
+                    raise RuntimeError(f"Model deposunda ({repo_or_name}) ikili agirliklar (model.bin) bulunamadi.")
             except Exception as initial_err:
                 # Eger ozel model deposu uzakta bulunamazsa (401/404) ve fallback_repo_id tanimlanmissa
                 if getattr(spec, "fallback_repo_id", None):

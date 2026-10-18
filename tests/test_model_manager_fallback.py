@@ -65,6 +65,34 @@ class TestModelManagerProvisioning(unittest.TestCase):
         self.assertTrue((model_dir / "sesmetin_v2_config.json").exists())
         self.assertTrue(self.manager.is_model_installed("sesmetin-v2-turbo"))
 
+    @patch("faster_whisper.download_model")
+    def test_03_download_model_fallback_when_hf_repo_has_no_weights(self, mock_fw_download):
+        """When downloading proprietary model downloads only metadata/README without model.bin, fallback triggers."""
+        def mock_download_side_effect(repo_or_name, output_dir):
+            out_p = Path(output_dir)
+            out_p.mkdir(parents=True, exist_ok=True)
+            if "The0Sanity" in repo_or_name:
+                # Simulate remote repo that exists but only contains README/config, no model.bin
+                (out_p / "README.md").write_text("metadata only", encoding="utf-8")
+                return str(out_p)
+            # Fallback download delivers actual binary weights
+            (out_p / "model.bin").write_text("mock-binary-weights", encoding="utf-8")
+            (out_p / "config.json").write_text("{}", encoding="utf-8")
+            return str(out_p)
+
+        mock_fw_download.side_effect = mock_download_side_effect
+
+        success = self.manager.download_model("sesmetin-v2-tiny")
+        self.assertTrue(success)
+
+        # Must have fallen back to download base weights
+        self.assertGreaterEqual(mock_fw_download.call_count, 2)
+        model_dir = Path(self.temp_dir) / "sesmetin-v2-tiny"
+        self.assertTrue((model_dir / "model.bin").exists())
+        self.assertTrue((model_dir / "sesmetin_v2_config.json").exists())
+        self.assertTrue(self.manager.is_model_installed("sesmetin-v2-tiny"))
+
 
 if __name__ == "__main__":
     unittest.main()
+
