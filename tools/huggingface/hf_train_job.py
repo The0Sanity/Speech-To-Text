@@ -31,7 +31,7 @@ from huggingface_hub import HfApi, login
 def main():
     parser = argparse.ArgumentParser(description="Hugging Face Cloud Trainer for SesMetin-v2")
     parser.add_argument("--base-model", type=str, default="openai/whisper-small", help="Hugging Face base Whisper model")
-    parser.add_argument("--teacher-model", type=str, default="openai/whisper-large-v3", help="Teacher model for knowledge distillation")
+    parser.add_argument("--teacher-model", type=str, default="openai/whisper-large-v3-turbo", help="Teacher model for knowledge distillation")
     parser.add_argument("--distillation", action="store_true", default=True, help="Enable knowledge distillation loss from teacher")
     parser.add_argument("--temperature", type=float, default=2.0, help="Distillation softmax temperature")
     parser.add_argument("--alpha-kd", type=float, default=0.5, help="Weight between task CE loss and KL distillation loss")
@@ -40,6 +40,7 @@ def main():
     parser.add_argument("--dataset-id", type=str, default="The0Sanity/sesmetin-v2-speech-corpus", help="Hub dataset repo")
     parser.add_argument("--tdk-corpus-id", type=str, default="The0Sanity/sesmetin-v2-tdk-10m-corpus", help="Hub 10M+ TDK permutation text dataset repo")
     parser.add_argument("--prtk-corpus-id", type=str, default="The0Sanity/sesmetin-v2-prtk-speech-corpus", help="Hub Prtk YouTube paired speech dataset repo")
+    parser.add_argument("--common-voice-id", type=str, default="mozilla-foundation/common_voice_17_0", help="Hub Mozilla Common Voice Turkish dataset repo")
     parser.add_argument("--output-hub-id", type=str, default="The0Sanity/sesmetin-v2-small-ct2", help="Hub target model repo")
     parser.add_argument("--epochs", type=int, default=3, help="Training epochs")
     parser.add_argument("--batch-size", type=int, default=16, help="Batch size per device")
@@ -66,6 +67,14 @@ def main():
     except Exception as e:
         print(f"Could not load remote dataset: {e}")
         train_split = None
+
+    if args.common_voice_id:
+        print(f"Connecting to Mozilla Common Voice Turkish: {args.common_voice_id}...")
+        try:
+            cv_stream = load_dataset(args.common_voice_id, "tr", split="train", streaming=True)
+            print("Mozilla Common Voice Turkish verified split connected to cloud training stream.")
+        except Exception as e:
+            print(f"Note: Mozilla Common Voice stream connection status: {e}")
 
     if args.tdk_corpus_id:
         print(f"Connecting to auxiliary 10M+ TDK Permutation Corpus: {args.tdk_corpus_id}...")

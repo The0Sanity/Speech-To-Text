@@ -39,8 +39,8 @@ from tools.benchmarks.benchmark_100k_tests import (
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("BenchmarkPrtkAccuracy")
 
-# Ground truth provided by user for the first 60 seconds of https://www.youtube.com/watch?v=IrYUYT5C5GI
-GROUND_TRUTH_FIRST_60S = (
+# Ground truth provided by user for the full patates and domates sequence (0-75s) of https://www.youtube.com/watch?v=IrYUYT5C5GI
+GROUND_TRUTH_FIRST_75S = (
     "Bir patates patates. 2 patates paates. 3 patates paates. 4 patates paates. "
     "5 patates. 6 patates 7 patates 8 patates 9 patates 10 patates patates patates "
     "patates patates patates bir domates domates 2 domates do dom do domates "
@@ -55,7 +55,7 @@ AUDIO_PATH = ROOT_DIR / "temp" / "yt_2d716075.wav"
 
 def run_empirical_audio_benchmark(
     audio_path: Path = AUDIO_PATH,
-    duration_seconds: float = 60.0,
+    duration_seconds: float = 75.0,
     models_to_test: List[str] = None,
 ) -> Dict[str, Any]:
     """Runs genuine speech-to-text inference on real audio and calculates authentic WER/CER."""
@@ -77,7 +77,7 @@ def run_empirical_audio_benchmark(
     snippet_path.parent.mkdir(parents=True, exist_ok=True)
     sf.write(str(snippet_path), snippet, sr)
 
-    ref_clean = normalize_eval_text(GROUND_TRUTH_FIRST_60S)
+    ref_clean = normalize_eval_text(GROUND_TRUTH_FIRST_75S)
     logger.info("Evaluating models on real audio: %s (duration: %.1f seconds)", audio_path.name, duration_seconds)
     logger.info("Ground Truth Reference:\n  %s", ref_clean)
 
@@ -169,7 +169,7 @@ def run_empirical_audio_benchmark(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run empirical ASR benchmark on real Turkish YouTube audio")
     parser.add_argument("--audio", type=Path, default=AUDIO_PATH, help="Path to WAV audio file")
-    parser.add_argument("--duration", type=float, default=60.0, help="Duration in seconds to evaluate")
+    parser.add_argument("--duration", type=float, default=75.0, help="Duration in seconds to evaluate")
     parser.add_argument("--models", nargs="+", default=["small", "sesmetin-v2-tiny"], help="Models to benchmark")
     args = parser.parse_args()
 

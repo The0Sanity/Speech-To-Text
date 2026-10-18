@@ -245,6 +245,7 @@ class WhisperTranscriber:
         hotwords: Optional[str] = None,
         beam_size: int = 5,
         vad_sensitivity: str = "high",
+        vocal_isolation: bool = True,
         apply_postprocessing: bool = True,
         apply_itn: bool = True,
         clean_disfluencies: bool = True,
@@ -262,6 +263,7 @@ class WhisperTranscriber:
             hotwords: ASR çözücüye önceliklendirilecek anahtar kelimeler / ipuçları.
             beam_size: Işın arama genişliği (varsayılan 5).
             vad_sensitivity: Ses aktivite tespiti hassasiyeti ('high' veya 'normal').
+            vocal_isolation: Müzikli veya ritimli seslerde vokal ayrıştırma uygular.
             apply_postprocessing: Çıktıda Türkçe metin temizleme ve halüsinasyon filtresi.
             progress_callback: İlerleme fonksiyonu (yüzde, durum mesajı, son segment).
             
@@ -287,6 +289,15 @@ class WhisperTranscriber:
         start_time = time.time()
         rms = float(np.sqrt(np.mean(audio_data ** 2))) if len(audio_data) > 0 else 0.0
 
+        # İsteğe bağlı adaptif vokal ayrıştırma filtresi (HPSS)
+        audio_to_transcribe = audio_data
+        if vocal_isolation:
+            try:
+                from src.audio_processor import apply_hpss_vocal_filter
+                audio_to_transcribe = apply_hpss_vocal_filter(audio_data, sample_rate=16000, bypass_if_clean=True)
+            except Exception:
+                audio_to_transcribe = audio_data
+
         # VAD (Ses Etkinliği Tespiti) Ayarları (Üretim standardı Silero VAD)
         vad_params = get_production_vad_parameters(sensitivity=vad_sensitivity)
 
@@ -310,7 +321,7 @@ class WhisperTranscriber:
         # temperature=[0.0, 0.2, 0.4, 0.6]: Hatalı çözümlerde alternatif sıcaklıkları dener
         # hotwords: Türkçe alan sözlüğü ile sözcük doğruluğunu en üst düzeye çıkarır
         segments_generator, info = self.model.transcribe(
-            audio=audio_data,
+            audio=audio_to_transcribe,
             language=language if language != "auto" else None,
             task="transcribe",
             beam_size=beam_size,
@@ -385,12 +396,13 @@ class WhisperTranscriber:
 
         # VAD müzik/ritim nedeniyle konuşmayı yutmuşsa ve ses enerjisi varsa doğrudan çözümleme kurtarması
         total_decoded_duration = sum(s["end"] - s["start"] for s in collected_segments) if collected_segments else 0.0
-        if (len(collected_segments) == 0 or total_decoded_duration < 0.05 * audio_dur) and rms > 0.015 and not (cancel_event and cancel_event.is_set()):
+        vad_dropped_speech = (len(collected_segments) == 0) or (audio_dur >= 10.0 and total_decoded_duration < 0.35 * audio_dur)
+        if vad_dropped_speech and rms > 0.015 and not (cancel_event and cancel_event.is_set()):
             if progress_callback:
-                progress_callback(0.20, "Müzikli ses tespit edildi, akustik filtre ve doğrudan çözümleme moduna geçiliyor...", None)
+                progress_callback(0.20, "Müzikli ses tespit edildi, HPSS vokal ayrıştırma ve doğrudan çözümleme moduna geçiliyor...", None)
             
-            from src.audio_processor import apply_acoustic_music_filter
-            filtered_fallback_audio = apply_acoustic_music_filter(audio_data, sample_rate=16000)
+            from src.audio_processor import apply_hpss_vocal_filter
+            filtered_fallback_audio = apply_hpss_vocal_filter(audio_data, sample_rate=16000)
 
             fallback_gen, _ = self.model.transcribe(
                 audio=filtered_fallback_audio,
@@ -444,6 +456,17 @@ class WhisperTranscriber:
             total_fallback_dur = sum(s["end"] - s["start"] for s in fallback_segments)
             if total_fallback_dur > total_decoded_duration or len(fallback_segments) > len(collected_segments):
                 collected_segments = fallback_segments
+
+        # TDK Dil Modeli ve Fonetik Sözlük Düzeltmesi (Türkçe için)
+        if (language in ("tr", "auto")) and collected_segments:
+            try:
+                from src.language_model import TDKLanguageModelRescorer
+                rescorer = TDKLanguageModelRescorer()
+                for seg in collected_segments:
+                    if seg.get("text"):
+                        seg["text"] = rescorer.snap_sentence(seg["text"])
+            except Exception:
+                pass
 
         # Çıktıya Türkçe son-işleme uygula (halüsinasyonları, ITN ve dolgu sözcükleri temizler)
         if apply_postprocessing and collected_segments:

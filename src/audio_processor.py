@@ -290,3 +290,80 @@ def apply_acoustic_music_filter(
 
     return filtered.astype(np.float32)
 
+
+def apply_hpss_vocal_filter(
+    audio_data: Any,
+    sample_rate: int = 16000,
+    bypass_if_clean: bool = True,
+    percussive_ratio_threshold: float = 0.05,
+) -> Any:
+    """Harmonik ve Perküsif Ses Ayrıştırma (HPSS) uygulayarak vokal bileşenlerini izole eder.
+
+    Arka plan ritmi, bateri vuruşları ve enstrüman tıkırtılarını süzüp insan sesinin
+    harmonik formantlarını (temel frekans ve armonikler) güçlendirir.
+
+    Eğer kayıt zaten temiz bir monolog ise ve perküsif enerji eşik değerin altındaysa,
+    orijinal sinyali bozmamak için işlemi atlar (adaptive bypass).
+    """
+    import numpy as np
+
+    if not isinstance(audio_data, np.ndarray):
+        audio_data = np.asarray(audio_data, dtype=np.float32)
+
+    if len(audio_data) == 0:
+        return audio_data
+
+    # Sıfır veya aşırı düşük genlikli sessizlik kontrolü
+    energy = float(np.mean(audio_data ** 2))
+    if energy < 1e-7:
+        return audio_data.astype(np.float32)
+
+    # STFT parametreleri
+    n_fft = 512
+    hop_length = 128
+
+    try:
+        from scipy.signal import stft, istft
+        from scipy.ndimage import median_filter
+
+        _, _, Zxx = stft(audio_data, fs=sample_rate, nperseg=n_fft, noverlap=n_fft - hop_length)
+        magnitude = np.abs(Zxx)
+        phase = np.angle(Zxx)
+
+        # Zaman ekseni boyunca medyan filtre (harmonik / sürekli bileşenler - vokal formantları)
+        # Frekans ekseni boyunca medyan filtre (perküsif / anlık dikey transientler - bateri, alkış, tıkırtı)
+        H = median_filter(magnitude, size=(1, 15))
+        P = median_filter(magnitude, size=(15, 1))
+
+        total_p = float(np.sum(P))
+        total_h = float(np.sum(H)) + 1e-8
+        percussive_ratio = total_p / (total_p + total_h)
+
+        # Temiz konuşmada adaptif baypas
+        if bypass_if_clean and percussive_ratio < percussive_ratio_threshold:
+            return audio_data.astype(np.float32)
+
+        # Yumuşak maskeleme (Soft mask)
+        eps = 1e-6
+        mask_h = (H ** 2) / (H ** 2 + P ** 2 + eps)
+
+        Zxx_harmonic = magnitude * mask_h * np.exp(1j * phase)
+        _, filtered = istft(Zxx_harmonic, fs=sample_rate, nperseg=n_fft, noverlap=n_fft - hop_length)
+
+        # Uzunluk eşitleme
+        if len(filtered) > len(audio_data):
+            filtered = filtered[: len(audio_data)]
+        elif len(filtered) < len(audio_data):
+            filtered = np.pad(filtered, (0, len(audio_data) - len(filtered)))
+
+        # Normalizasyon ve tepe koruması
+        orig_peak = float(np.max(np.abs(audio_data)))
+        filt_peak = float(np.max(np.abs(filtered)))
+        if filt_peak > 1e-5 and orig_peak > 1e-5:
+            scale = min(1.0, orig_peak / filt_peak)
+            filtered = filtered * scale
+
+        return filtered.astype(np.float32)
+    except Exception:
+        return apply_acoustic_music_filter(audio_data, sample_rate=sample_rate)
+
