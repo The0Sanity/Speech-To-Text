@@ -142,7 +142,18 @@ def main():
     parser.add_argument("--output", type=str, default="./models/sesmetin-v2-small", help="Çıktı dizini")
     parser.add_argument("--epochs", type=int, default=3, help="Epoch sayısı")
     parser.add_argument("--lr", type=float, default=5e-4, help="Öğrenme oranı")
+    parser.add_argument("--allow-local-compute", action="store_true", help="Yerel makinede ağır eğitimi zorla çalıştır (önerilmez, Hugging Face Jobs tercih edilmelidir)")
     args = parser.parse_args()
+
+    if not args.allow_local_compute:
+        print("=" * 65)
+        print("Bilgilendirme: Yerel makinede ağır model eğitimi durduruldu.")
+        print("Eğitim Hugging Face bulut GPU altyapısında yürütülmelidir.")
+        print("Bulut eğitimini başlatmak için:")
+        print("  python tools/huggingface/launch_cloud_training.py")
+        print("Yerel çalıştırmak için '--allow-local-compute' bayrağını ekleyin.")
+        print("=" * 65)
+        return
 
     cfg = TrainingConfigV2(
         model_id=args.model_id,

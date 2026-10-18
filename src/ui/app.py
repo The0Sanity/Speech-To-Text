@@ -529,6 +529,7 @@ class FletSpeechToTextApp:
             padding=ft.Padding.all(10),
             auto_scroll=False,
         )
+        self.transcript_column = self.transcript_list
 
         # Dışa Aktarma Çubuğu
         self.lbl_total_turns = ft.Text(value="0 konuşma parçası", size=11, color=TEXT_MUTED)
@@ -1487,9 +1488,9 @@ class FletSpeechToTextApp:
         self.lbl_status.value = "İşlem başlatılıyor..."
 
         # İskelet (Skeleton) yükleme animasyonunu transkript alanına yerleştir
-        self.transcript_column.controls.clear()
-        self.transcript_column.controls.append(SkeletonLoader(count=3))
-        self._safe_update(self.transcript_column)
+        self.transcript_list.controls.clear()
+        self.transcript_list.controls.append(SkeletonLoader(count=3))
+        self._safe_update(self.transcript_list)
 
         self._safe_update(self.btn_start)
         self._safe_update(self.btn_cancel)
@@ -1655,6 +1656,8 @@ class FletSpeechToTextApp:
                 cleanup_temp_file(temp_wav)
             if enhanced_wav and enhanced_wav != self.active_wav_path:
                 cleanup_temp_file(enhanced_wav)
+            if not self.transcribed_data:
+                self._render_transcript_cards([])
             self.is_processing = False
             self.btn_start.disabled = False
             self.btn_cancel.disabled = True

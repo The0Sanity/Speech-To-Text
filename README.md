@@ -107,6 +107,17 @@ Proje kapsamında sentetik Türkçe çoklu konuşmacı diyalogları (kasiyer, m�
 
 ---
 
+## Hugging Face Model Merkezi ve Bulut Egitimi (SesMetin v2)
+
+SesMetin-v2 modelleri ve Türkçe konuşma veri setleri Hugging Face Hub üzerinde barındırılmaktadır:
+- Model Deposu: https://huggingface.co/The0Sanity/sesmetin-v2-tiny-ct2
+- Veri Seti Deposu: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
+- Bulut Egitim Baslaticisi: `python tools/huggingface/launch_cloud_training.py`
+
+Yerel makine kaynaklarını korumak amacıyla model ince ayar ve eğitim süreçleri doğrudan Hugging Face Cloud GPU altyapısında (a10g-large) yürütülmektedir.
+
+---
+
 ## Sürüm Yol Haritası ve Yapılacaklar (Roadmap)
 
 ### v1.0.9 — Sessiz PowerShell Güncelleyici ve Başarım İyileştirmeleri (Mevcut Sürüm)

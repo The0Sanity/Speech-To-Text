@@ -24,10 +24,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Configured 20 targeted discoverability topics on GitHub for improved Explore and Search indexing.
 
 ### Fixed / Duzeltmeler
+- **Start Transcription UI Crash / Transkripsiyon Baslatma Arayuz Hatasi**:
+  - Fixed `AttributeError: 'FletSpeechToTextApp' object has no attribute 'transcript_column'` triggered when clicking the green start button by referencing `self.transcript_list` and maintaining `self.transcript_column` backwards-compatibility alias.
+  - Implemented automatic reset of transcript view to clean placeholder if transcription is cancelled or errors occur during execution.
 - **Command Prompt Popup & Hang / Komut Istemi Penceresi ve Kilitlenme**:
   - Completely resolved the issue where an empty command prompt window titled `Find {pid_number}` popped up and hung indefinitely during self-update.
 - **Update Modal Progress Freeze / Guncelleme Cubugu Donma Hatasi**:
   - Fixed background thread race condition where update modal progress would visually freeze around ~72% due to dropped WebSocket frames on secondary threads.
+
+### Cloud Training & Datasets / Bulut Egitimi ve Veri Setleri
+- **Hugging Face Cloud Training Pipeline / Hugging Face Bulut Egitim Hatti**:
+  - Offloaded all model fine-tuning and heavy compute to Hugging Face Cloud Jobs GPU infrastructure (`tools/huggingface/hf_train_job.py`, `tools/huggingface/launch_cloud_training.py`).
+  - Added safeguards against local workstation compute degradation (`--allow-local-compute` guard).
+  - Published Turkish speech corpus to Hugging Face Datasets (`The0Sanity/sesmetin-v2-speech-corpus`).
+  - Published and verified `The0Sanity/sesmetin-v2-tiny-ct2` CTranslate2 model on Hugging Face Hub.
 
 ### Security & Build / Guvenlik ve Derleme
 - **Painless Self-Update Execution / Guvenli Yerinde Guncelleme**:

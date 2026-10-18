@@ -107,6 +107,17 @@ Evaluation results conducted on non-repeating Turkish multi-speaker dialogue dat
 
 ---
 
+## Hugging Face Model Hub & Cloud Training (SesMetin v2)
+
+SesMetin-v2 models and Turkish speech corpora are hosted on the Hugging Face Hub:
+- Model Repository: https://huggingface.co/The0Sanity/sesmetin-v2-tiny-ct2
+- Dataset Repository: https://huggingface.co/datasets/The0Sanity/sesmetin-v2-speech-corpus
+- Cloud Training Launcher: `python tools/huggingface/launch_cloud_training.py`
+
+To preserve local workstation performance and prevent hardware throttling, model training and fine-tuning pipelines run on Hugging Face Cloud GPU infrastructure (a10g-large).
+
+---
+
 ## Release Roadmap
 
 ### v1.0.9 — Silent PowerShell Updater & Performance Enhancements (Current Release)
