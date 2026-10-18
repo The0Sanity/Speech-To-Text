@@ -468,7 +468,58 @@ class TestAutoUpdater(unittest.TestCase):
         # Modal açıldığında veya indirme denenirken aktif transkripsiyon uyarısı kontrol edilmelidir
         self.assertTrue(any("devam ederken" in msg for msg, is_err in toasts) or hasattr(app, "_check_can_update"))
 
+    def test_19_powershell_self_updater_script_generation(self):
+        """Windows yerinde degistirme PowerShell betigi (.ps1) sessiz calisma, geri alma ve guvenli dongu icermelidir."""
+        from src.updater import WindowsSelfUpdater
+
+        new_exe = Path(r"C:\Users\Test User\AppData\Local\Temp\new_app.exe")
+        cur_exe = Path(r"C:\Program Files\SesMetin Pro\SpeechToText.exe")
+        pid = 12345
+
+        ps_script = WindowsSelfUpdater.generate_powershell_script(
+            downloaded_exe=new_exe,
+            current_exe=cur_exe,
+            pid=pid,
+        )
+
+        self.assertIn(f"$TargetPid = {pid}", ps_script)
+        self.assertIn("Wait-Process", ps_script)
+        self.assertIn("Stop-Process", ps_script)
+        self.assertIn("Move-Item", ps_script)
+        self.assertIn(".bak", ps_script, "Geri alma (.bak) mekanizmasi bulunmalidir!")
+        self.assertIn("Start-Process", ps_script)
+        self.assertIn("Remove-Item", ps_script)
+
+    def test_20_execute_in_place_update_uses_create_no_window(self):
+        """execute_in_place_update komutu CREATE_NO_WINDOW bayragi ve gizli pencere ile powershell calistirmalidir."""
+        from src.updater import WindowsSelfUpdater
+        import subprocess
+
+        new_exe = Path(r"C:\fake\new.exe")
+        cur_exe = Path(r"C:\fake\cur.exe")
+        pid = 9999
+
+        with patch("subprocess.Popen") as mock_popen:
+            success = WindowsSelfUpdater.execute_in_place_update(new_exe, cur_exe, pid)
+            self.assertTrue(success)
+            mock_popen.assert_called_once()
+            cmd_args = mock_popen.call_args[0][0]
+            kwargs = mock_popen.call_args[1]
+
+            # powershell cagrilmali
+            self.assertTrue(any("powershell" in str(arg).lower() for arg in cmd_args))
+            self.assertIn("-WindowStyle", cmd_args)
+            self.assertIn("Hidden", cmd_args)
+
+            # CREATE_NO_WINDOW (0x08000000) kontrolu
+            create_no_window = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+            self.assertEqual(kwargs.get("creationflags", 0) & create_no_window, create_no_window)
+            self.assertEqual(kwargs.get("stdin"), subprocess.DEVNULL)
+            self.assertEqual(kwargs.get("stdout"), subprocess.DEVNULL)
+            self.assertEqual(kwargs.get("stderr"), subprocess.DEVNULL)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

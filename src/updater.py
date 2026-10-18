@@ -352,24 +352,130 @@ exit /b 0
 """
         return script
 
+    @staticmethod
+    def generate_powershell_script(
+        downloaded_exe: Path,
+        current_exe: Path,
+        pid: int,
+        retries: int = 30
+    ) -> str:
+        """Geri alma (.bak) mekanizmasi ve guvenli dongulu yer degistirme PowerShell betigi uretir."""
+        new_path = str(downloaded_exe.resolve()).replace("'", "''")
+        cur_path = str(current_exe.resolve()).replace("'", "''")
+        bak_path = f"{cur_path}.bak"
+        cur_name = current_exe.name
+
+        script = f"""# SesMetin Pro - Silent In-Place Self Updater Engine
+$ErrorActionPreference = 'SilentlyContinue'
+$TargetPid = {pid}
+$NewExe = '{new_path}'
+$CurExe = '{cur_path}'
+$BackupExe = '{bak_path}'
+$TargetName = '{cur_name}'
+$MaxRetries = {retries}
+
+# 1. Hedef surecin kapanmasini bekle
+try {{
+    Wait-Process -Id $TargetPid -Timeout 8 -ErrorAction SilentlyContinue
+}} catch {{}}
+
+# Gerekirse zorla sonlandir (PyInstaller alt ve ana surecler dahil)
+try {{
+    Stop-Process -Id $TargetPid -Force -ErrorAction SilentlyContinue
+}} catch {{}}
+try {{
+    Get-Process -Name ([System.IO.Path]::GetFileNameWithoutExtension($TargetName)) | 
+        Where-Object {{ $_.Path -eq $CurExe }} | 
+        Stop-Process -Force -ErrorAction SilentlyContinue
+}} catch {{}}
+
+Start-Sleep -Milliseconds 600
+
+# 2. Mevcut exe dosyasini .bak olarak yedekle
+if (Test-Path -LiteralPath $BackupExe) {{
+    Remove-Item -LiteralPath $BackupExe -Force -ErrorAction SilentlyContinue
+}}
+if (Test-Path -LiteralPath $CurExe) {{
+    Move-Item -LiteralPath $CurExe -Destination $BackupExe -Force -ErrorAction SilentlyContinue
+}}
+
+# 3. Yeni surumu hedef konuma tasi (Dosya kilitleri icin guvenli dongu)
+$moveSuccess = $false
+for ($i = 0; $i -lt $MaxRetries; $i++) {{
+    try {{
+        if (Test-Path -LiteralPath $NewExe) {{
+            Move-Item -LiteralPath $NewExe -Destination $CurExe -Force -ErrorAction Stop
+        }} elseif (-not (Test-Path -LiteralPath $CurExe)) {{
+            Copy-Item -LiteralPath $NewExe -Destination $CurExe -Force -ErrorAction Stop
+        }}
+        if ((Test-Path -LiteralPath $CurExe) -and ((Get-Item -LiteralPath $CurExe).Length -gt 0)) {{
+            $moveSuccess = $true
+            break
+        }}
+    }} catch {{
+        Start-Sleep -Milliseconds 500
+    }}
+}}
+
+# 4. Basarisizlik kontrolu ve Geri Alma (Rollback)
+if (-not $moveSuccess -or -not (Test-Path -LiteralPath $CurExe)) {{
+    if (Test-Path -LiteralPath $BackupExe) {{
+        Move-Item -LiteralPath $BackupExe -Destination $CurExe -Force -ErrorAction SilentlyContinue
+    }}
+    Start-Process -FilePath $CurExe
+    Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
+    exit 1
+}}
+
+# 5. Guncellenmis yeni surumu baslat
+Start-Process -FilePath $CurExe
+
+# 6. Yedek ve calisan betik dosyasini temizle
+Start-Sleep -Seconds 2
+if (Test-Path -LiteralPath $BackupExe) {{
+    Remove-Item -LiteralPath $BackupExe -Force -ErrorAction SilentlyContinue
+}}
+Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
+exit 0
+"""
+        return script
+
     @classmethod
     def execute_in_place_update(cls, downloaded_exe: Path, current_exe: Path, pid: int) -> bool:
-        """Windows yerinde degistirme betigini calistirip uygulamayi sonlandirir."""
+        """Windows yerinde degistirme betigini sessizce calistirip uygulamayi sonlandirir."""
         try:
             TEMP_DIR.mkdir(parents=True, exist_ok=True)
-            batch_path = TEMP_DIR / f"updater_{uuid.uuid4().hex[:8]}.bat"
-            script_text = cls.generate_batch_script(downloaded_exe, current_exe, pid)
+            ps_path = TEMP_DIR / f"updater_{uuid.uuid4().hex[:8]}.ps1"
+            script_text = cls.generate_powershell_script(downloaded_exe, current_exe, pid)
 
-            with open(batch_path, "w", encoding="utf-8") as f:
+            with open(ps_path, "w", encoding="utf-8") as f:
                 f.write(script_text)
 
-            creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | getattr(
-                subprocess, "DETACHED_PROCESS", 0
+            create_no_window = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+            creationflags = (
+                create_no_window
+                | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
+                | getattr(subprocess, "DETACHED_PROCESS", 0x00000008)
             )
 
+            cmd_args = [
+                "powershell.exe",
+                "-NoProfile",
+                "-NonInteractive",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-WindowStyle",
+                "Hidden",
+                "-File",
+                str(ps_path),
+            ]
+
             subprocess.Popen(
-                ["cmd.exe", "/c", str(batch_path)],
+                cmd_args,
                 creationflags=creationflags,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 close_fds=True,
             )
             return True
@@ -592,6 +698,13 @@ class AutoUpdater:
                                 progress_callback(downloaded, total_size)
                             except Exception:
                                 pass
+
+                # Indirme dongusu tamamlandiginda son %100 durumunu bildir
+                if progress_callback and (total_size > 0 or downloaded > 0):
+                    try:
+                        progress_callback(downloaded, total_size if total_size > 0 else downloaded)
+                    except Exception:
+                        pass
 
             # 1. Dosya boyutu kontrolu
             if total_size > 0 and downloaded < total_size:

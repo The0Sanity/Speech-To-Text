@@ -2200,11 +2200,23 @@ class FletSpeechToTextApp:
             def _download_task():
                 target_exe = TEMP_DIR / f"SpeechToText_v{info.version}.exe"
 
+                def _dispatch_ui(fn):
+                    if self.page:
+                        if hasattr(self.page, "run_task"):
+                            import asyncio
+                            async def _coro():
+                                fn()
+                            self.page.run_task(_coro)
+                        else:
+                            fn()
+
                 def _ui_update(prog_val, status_text):
-                    progress_bar.value = prog_val
-                    lbl_status.value = status_text
-                    self._safe_update(progress_bar)
-                    self._safe_update(lbl_status)
+                    def _apply():
+                        progress_bar.value = prog_val
+                        lbl_status.value = status_text
+                        if self.page:
+                            self.page.update()
+                    _dispatch_ui(_apply)
 
                 smooth_prog = self._create_smooth_progress_handler(
                     total_bytes=info.asset_size or 0,
@@ -2221,51 +2233,49 @@ class FletSpeechToTextApp:
                 )
 
                 if cancel_event.is_set():
-                    btn_cancel_download.visible = False
-                    btn_update.visible = True
-                    btn_update.disabled = False
-                    btn_later.disabled = False
-                    progress_bar.visible = False
-                    lbl_status.value = "İndirme iptal edildi."
-                    lbl_status.color = TEXT_MUTED
-                    self._safe_update(btn_cancel_download)
-                    self._safe_update(btn_update)
-                    self._safe_update(btn_later)
-                    self._safe_update(progress_bar)
-                    self._safe_update(lbl_status)
+                    def _on_cancel():
+                        btn_cancel_download.visible = False
+                        btn_update.visible = True
+                        btn_update.disabled = False
+                        btn_later.disabled = False
+                        progress_bar.visible = False
+                        lbl_status.value = "İndirme iptal edildi."
+                        lbl_status.color = TEXT_MUTED
+                        if self.page:
+                            self.page.update()
+                    _dispatch_ui(_on_cancel)
                     return
 
                 if ok:
-                    btn_cancel_download.visible = False
-                    btn_update.visible = False
-                    btn_later.disabled = True
-                    progress_bar.value = 1.0
-                    lbl_status.value = "İndirme ve bütünlük doğrulaması tamamlandı. Güncelleme uygulanıyor ve yeniden başlatılıyor..."
-                    lbl_status.color = SUCCESS
-                    self._safe_update(btn_cancel_download)
-                    self._safe_update(btn_update)
-                    self._safe_update(btn_later)
-                    self._safe_update(progress_bar)
-                    self._safe_update(lbl_status)
+                    def _on_success():
+                        btn_cancel_download.visible = False
+                        btn_update.visible = False
+                        btn_later.disabled = True
+                        progress_bar.value = 1.0
+                        lbl_status.value = "İndirme ve bütünlük doğrulaması tamamlandı. Güncelleme uygulanıyor ve yeniden başlatılıyor..."
+                        lbl_status.color = SUCCESS
+                        if self.page:
+                            self.page.update()
+                    _dispatch_ui(_on_success)
+
                     # Bir sonraki açılışta gösterilmek üzere sürüm notlarını kaydet ve ertelenmiş güncellemeyi temizle
                     self.settings["pending_patch_notes"] = info.release_notes or ""
                     self.settings["postponed_update"] = None
                     save_settings(self.settings)
-                    time.sleep(1.2)
+                    time.sleep(1.5)
                     self.updater.apply_update(target_exe)
                 else:
-                    btn_cancel_download.visible = False
-                    btn_update.visible = True
-                    btn_update.disabled = False
-                    btn_later.disabled = False
-                    progress_bar.visible = False
-                    lbl_status.value = "İndirme veya doğrulama başarısız oldu. Lütfen tekrar deneyin."
-                    lbl_status.color = DANGER
-                    self._safe_update(btn_cancel_download)
-                    self._safe_update(btn_update)
-                    self._safe_update(btn_later)
-                    self._safe_update(progress_bar)
-                    self._safe_update(lbl_status)
+                    def _on_failed():
+                        btn_cancel_download.visible = False
+                        btn_update.visible = True
+                        btn_update.disabled = False
+                        btn_later.disabled = False
+                        progress_bar.visible = False
+                        lbl_status.value = "İndirme veya doğrulama başarısız oldu. Lütfen tekrar deneyin."
+                        lbl_status.color = DANGER
+                        if self.page:
+                            self.page.update()
+                    _dispatch_ui(_on_failed)
 
             threading.Thread(target=_download_task, daemon=True).start()
 
