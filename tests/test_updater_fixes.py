@@ -192,3 +192,51 @@ class TestChecksumMatchesItsOwnAsset(unittest.TestCase):
     def test_another_files_checksum_is_never_borrowed(self):
         only_portable = "- `SpeechToText.exe` (Portable): `" + "A" * 64 + "`\n"
         self.assertIsNone(self._sha(True, only_portable))
+
+
+class TestRelaunchEnvironment(unittest.TestCase):
+    """Found by a real update run: the relaunched exe hung with no window because it inherited
+    PyInstaller 6's _PYI_* variables from the old app."""
+
+    def test_child_env_drops_pyinstaller_markers(self):
+        from src.updater import clean_child_env
+
+        marked = {"_PYI_APPLICATION_HOME_DIR": "x", "_PYI_PARENT_PROCESS_LEVEL": "1", "_MEIPASS2": "y", "KEEP_ME": "z"}
+        with patch.dict("os.environ", marked):
+            env = clean_child_env()
+        self.assertNotIn("_PYI_APPLICATION_HOME_DIR", env)
+        self.assertNotIn("_PYI_PARENT_PROCESS_LEVEL", env)
+        self.assertNotIn("_MEIPASS2", env)
+        self.assertEqual(env["KEEP_ME"], "z")
+        self.assertEqual(env["PYINSTALLER_RESET_ENVIRONMENT"], "1")
+
+    def test_both_scripts_reset_the_environment_before_relaunch(self):
+        swap = WindowsSelfUpdater.generate_powershell_script(Path("C:/t/New.exe"), Path("C:/app/App.exe"), 1)
+        setup = WindowsSelfUpdater.generate_installer_script(Path("C:/t/Setup.exe"), Path("C:/app/App.exe"), 1)
+        for script in (swap, setup):
+            self.assertIn("_PYI_*", script)
+            self.assertIn("PYINSTALLER_RESET_ENVIRONMENT", script)
+            self.assertLess(script.index("PYINSTALLER_RESET_ENVIRONMENT"), script.rindex("Start-Process"))
+
+    def test_scrub_runs_in_real_powershell(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            (folder / "Old.exe").write_bytes(b"MZ_OLD")
+            (folder / "New.exe").write_bytes(b"MZ_NEW")
+            script = WindowsSelfUpdater.generate_powershell_script(
+                folder / "New.exe", folder / "Old.exe", 999999, retries=2, log_path=folder / "u.log"
+            )
+            probe = folder / "env.txt"
+            script = script.replace(
+                "Start-Process -FilePath $CurExe -WorkingDirectory $CurDir",
+                f"(Get-ChildItem Env: | ForEach-Object {{ $_.Name }}) -join ',' | Set-Content -LiteralPath '{probe}'",
+            )
+            (folder / "u.ps1").write_text(script, encoding="utf-8")
+            env = dict(__import__("os").environ, _PYI_APPLICATION_HOME_DIR="x", _PYI_PARENT_PROCESS_LEVEL="1")
+            subprocess.run(
+                ["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", str(folder / "u.ps1")],
+                capture_output=True, timeout=60, env=env,
+            )
+            names = probe.read_text(encoding="utf-8", errors="replace")
+            self.assertNotIn("_PYI_", names)
+            self.assertIn("PYINSTALLER_RESET_ENVIRONMENT", names)

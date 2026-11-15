@@ -318,6 +318,31 @@ def post_update_outcome(current_version: str, pending_version: Optional[str]) ->
 
 UPDATER_LOG = CONFIG_DIR / "updater.log"
 
+_PYTHON_ENV_VARS = (
+    "_MEIPASS2", "_MEIPASS", "PYTHONPATH", "PYTHONHOME", "PYTHONSTARTUP",
+    "PYTHONEXECUTABLE", "PYTHONNOUSERSITE", "PYI_PARENT_PID",
+)
+
+
+def clean_child_env() -> Dict[str, str]:
+    """Environment for a process that will start a fresh copy of the app.
+
+    PyInstaller 6 marks child processes with _PYI_* variables. A relaunched exe that inherits
+    them believes it is a child of the old app, looks for the old (already deleted) unpack
+    folder and hangs on a hidden error box. Drop them and ask the bootloader to start clean.
+    """
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("_PYI_") and k not in _PYTHON_ENV_VARS}
+    env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+    return env
+
+
+# Same scrub inside the script, in case the variables reach it by another route.
+_PS_SCRUB_ENV = """Get-ChildItem Env: | Where-Object { $_.Name -like '_PYI_*' -or $_.Name -like '_MEI*' } | ForEach-Object {
+    Remove-Item -Path ("Env:\\" + $_.Name) -ErrorAction SilentlyContinue
+}
+$env:PYINSTALLER_RESET_ENVIRONMENT = '1'
+"""
+
 _PS_LOG = """function Log($m) {
     Add-Content -LiteralPath $LogFile -Value ("{0} {1}" -f (Get-Date -Format s), $m) -Encoding UTF8
 }
@@ -435,6 +460,7 @@ $MaxRetries = {retries}
 $LogFile = '{log_file}'
 {_PS_LOG}
 {_PS_KILL_CHILDREN}
+{_PS_SCRUB_ENV}
 # 0. PyInstaller ve Python ortam degiskenlerini PowerShell surecinden temizle (_MEIPASS2 LoadLibrary hatasini onler)
 $pyVars = @('_MEIPASS2', '_MEIPASS', 'PYTHONPATH', 'PYTHONHOME', 'PYTHONSTARTUP', 'PYTHONEXECUTABLE', 'PYTHONNOUSERSITE', 'PYI_PARENT_PID')
 foreach ($v in $pyVars) {{
@@ -584,6 +610,7 @@ $AppDir = '{app_dir}'
 $LogFile = '{log_file}'
 {_PS_LOG}
 {_PS_KILL_CHILDREN}
+{_PS_SCRUB_ENV}
 $pyVars = @('_MEIPASS2', '_MEIPASS', 'PYTHONPATH', 'PYTHONHOME', 'PYTHONSTARTUP', 'PYTHONEXECUTABLE', 'PYTHONNOUSERSITE', 'PYI_PARENT_PID')
 foreach ($v in $pyVars) {{
     [System.Environment]::SetEnvironmentVariable($v, $null, [System.EnvironmentVariableTarget]::Process)
@@ -646,19 +673,7 @@ exit 0
                 str(ps_path),
             ]
 
-            # PyInstaller ve Python ortam degiskenlerini arindirarak cocuk surece sizmasini engelle
-            clean_env = os.environ.copy()
-            for v in [
-                "_MEIPASS2",
-                "_MEIPASS",
-                "PYTHONPATH",
-                "PYTHONHOME",
-                "PYTHONSTARTUP",
-                "PYTHONEXECUTABLE",
-                "PYTHONNOUSERSITE",
-                "PYI_PARENT_PID",
-            ]:
-                clean_env.pop(v, None)
+            clean_env = clean_child_env()
 
             subprocess.Popen(
                 cmd_args,
@@ -986,18 +1001,7 @@ class AutoUpdater:
                     import shutil
                     shutil.copy2(str(downloaded_exe), str(dest))
 
-                clean_env = os.environ.copy()
-                for v in [
-                    "_MEIPASS2",
-                    "_MEIPASS",
-                    "PYTHONPATH",
-                    "PYTHONHOME",
-                    "PYTHONSTARTUP",
-                    "PYTHONEXECUTABLE",
-                    "PYTHONNOUSERSITE",
-                    "PYI_PARENT_PID",
-                ]:
-                    clean_env.pop(v, None)
+                clean_env = clean_child_env()
 
                 subprocess.Popen([str(dest)], env=clean_env)
                 time.sleep(0.8)
