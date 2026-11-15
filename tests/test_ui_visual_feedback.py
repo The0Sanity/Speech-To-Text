@@ -40,13 +40,13 @@ class TestUIVisualFeedback(unittest.TestCase):
         """If an active model is not installed, Model Hub must show 'Indir' button and not claim it is active default."""
         from src.ui.app import resolve_model_card_state
 
-        spec = get_model_spec("sesmetin-v2-turbo")
+        spec = get_model_spec("large-v3-turbo")
         self.assertIsNotNone(spec)
 
         # Case A: Active in dropdown but NOT installed
         state_uninstalled_active = resolve_model_card_state(
             spec=spec,
-            current_active_model_id="sesmetin-v2-turbo",
+            current_active_model_id="large-v3-turbo",
             is_installed=False,
             is_downloading=False,
         )
@@ -57,7 +57,7 @@ class TestUIVisualFeedback(unittest.TestCase):
         # Case B: Active in dropdown AND installed
         state_installed_active = resolve_model_card_state(
             spec=spec,
-            current_active_model_id="sesmetin-v2-turbo",
+            current_active_model_id="large-v3-turbo",
             is_installed=True,
             is_downloading=False,
         )

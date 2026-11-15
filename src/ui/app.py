@@ -98,6 +98,7 @@ from src.models import (
     ModelSpecification,
     get_model_spec,
     list_available_models,
+    resolve_model_id,
 )
 
 
@@ -112,12 +113,6 @@ def parse_model_id_from_dropdown_value(value: Optional[str]) -> str:
 def build_model_dropdown_options(model_manager: Optional[ModelManager] = None) -> List[ft.dropdown.Option]:
     """Model kataloğundaki modelleri indirilme durum etiketleriyle ([İndirildi] / [İndirilmedi]) açılır menü seçeneklerine dönüştürür."""
     raw_specs = [
-        ("sesmetin-v2-turbo", "sesmetin-v2-turbo (Özel Türkçe v2 Turbo)"),
-        ("sesmetin-v2-small", "sesmetin-v2-small (Özel Türkçe v2 Dengeli)"),
-        ("sesmetin-v2-tiny", "sesmetin-v2-tiny (Özel Türkçe v2 Hızlı)"),
-        ("sesmetin-v1-turbo", "sesmetin-v1-turbo (Özel Türkçe Turbo)"),
-        ("sesmetin-v1-small", "sesmetin-v1-small (Özel Türkçe Dengeli)"),
-        ("sesmetin-v1-tiny", "sesmetin-v1-tiny (Özel Türkçe Ultra Hızlı)"),
         ("small", "small (Dengeli)"),
         ("medium", "medium (Yüksek Doğruluk)"),
         ("large-v3-turbo", "large-v3-turbo (En Yüksek Kalite)"),
@@ -371,8 +366,10 @@ class FletSpeechToTextApp:
         # 1. Sol Panel: Model ve Ayrıştırma Açılır Menüleri (Dropdown - Salt Okunur / Sadece Tıklanabilir)
         model_dropdown_options = build_model_dropdown_options(self.model_manager)
 
-        cfg_model = self.settings.get("model_size", "small")
-        init_val = model_dropdown_options[6].key
+        # Old settings may still name a model id that no longer exists; map it to the real model.
+        cfg_model = resolve_model_id(self.settings.get("model_size") or "small")
+        self.settings["model_size"] = cfg_model
+        init_val = model_dropdown_options[0].key
         for opt in model_dropdown_options:
             if parse_model_id_from_dropdown_value(opt.key) == cfg_model.lower():
                 init_val = opt.key
@@ -1559,50 +1556,9 @@ class FletSpeechToTextApp:
         # 3. Model Kartları
         cards = []
 
-        v2_models = [m for m in list_available_models(ModelCategory.SESMETIN) if m.version.startswith("2.")]
-        v1_models = [m for m in list_available_models(ModelCategory.SESMETIN) if m.version.startswith("1.")]
         whisper_models = list_available_models(ModelCategory.WHISPER)
 
-        # Bölüm A: SesMetin-v2 Sentetik Sesle Güçlendirilmiş Modeller
-        cards.append(
-            ft.Row(
-                controls=[
-                    ft.Icon(ft.Icons.AUTO_AWESOME, size=16, color=ACCENT_LIGHT),
-                    ft.Text("SesMetin-v2 Modelleri (Önerilen)", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
-                    ft.Container(
-                        content=ft.Text("Kokoro-82M Sentetik Sesle Güçlendirilmiş", size=10, color=ACCENT_LIGHT, weight=ft.FontWeight.W_600),
-                        bgcolor=INPUT_BG,
-                        border=ft.Border.all(1, ACCENT_PRIMARY),
-                        border_radius=4,
-                        padding=ft.Padding.symmetric(horizontal=8, vertical=2),
-                    ),
-                ],
-                spacing=8,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            )
-        )
-
-        for spec in v2_models:
-            cards.append(self._create_model_card(spec))
-
-        # Bölüm B: SesMetin-v1 Modelleri
-        cards.append(ft.Container(height=6))
-        cards.append(
-            ft.Row(
-                controls=[
-                    ft.Icon(ft.Icons.WORKSPACE_PREMIUM, size=16, color=TEXT_MUTED),
-                    ft.Text("SesMetin-v1 Modelleri", size=13, weight=ft.FontWeight.BOLD, color=TEXT_MAIN),
-                ],
-                spacing=8,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            )
-        )
-
-        for spec in v1_models:
-            cards.append(self._create_model_card(spec))
-
-        # Bölüm C: Standart Faster-Whisper Modelleri
-        cards.append(ft.Container(height=6))
+        # Standart Faster-Whisper Modelleri
         cards.append(
             ft.Row(
                 controls=[

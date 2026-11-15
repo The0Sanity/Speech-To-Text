@@ -138,9 +138,9 @@ class TestAppIntegration(unittest.TestCase):
     def test_11_model_hub_set_default_model(self):
         """Model Merkezi üzerinden varsayılan model değiştirildiğinde dropdown ve ayarların güncellenmesi."""
         self.app.build_layout()
-        self.app._set_default_model("sesmetin-v1-turbo")
-        self.assertIn("sesmetin-v1-turbo", self.app.cmb_model.value.lower())
-        self.assertEqual(self.app.settings.get("model_size"), "sesmetin-v1-turbo")
+        self.app._set_default_model("medium")
+        self.assertIn("medium", self.app.cmb_model.value.lower())
+        self.assertEqual(self.app.settings.get("model_size"), "medium")
 
 
 if __name__ == "__main__":

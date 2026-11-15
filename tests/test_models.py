@@ -30,15 +30,6 @@ class TestModelCatalogAndManager(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
-    def test_01_catalog_has_sesmetin_custom_models(self):
-        """Katalogda SesMetin özel modellerinin tanımlı olduğunu doğrula."""
-        custom_models = list_available_models(category=ModelCategory.SESMETIN)
-        self.assertGreaterEqual(len(custom_models), 3)
-
-        ids = [m.model_id for m in custom_models]
-        self.assertIn("sesmetin-v1-turbo", ids)
-        self.assertIn("sesmetin-v1-small", ids)
-        self.assertIn("sesmetin-v1-tiny", ids)
 
     def test_02_catalog_has_standard_whisper_models(self):
         """Katalogda standart Faster-Whisper modellerinin yer aldığını doğrula."""
@@ -53,11 +44,11 @@ class TestModelCatalogAndManager(unittest.TestCase):
 
     def test_03_get_model_spec(self):
         """Model kimliğiyle detaylı özellik sorgulama testi."""
-        turbo = get_model_spec("sesmetin-v1-turbo")
-        self.assertIsNotNone(turbo)
-        self.assertEqual(turbo.category, ModelCategory.SESMETIN)
-        self.assertEqual(turbo.version, "1.0.0")
-        self.assertTrue(turbo.is_proprietary)
+        small = get_model_spec("small")
+        self.assertIsNotNone(small)
+        self.assertEqual(small.category, ModelCategory.WHISPER)
+        self.assertEqual(small.version, "official")
+        self.assertFalse(small.is_proprietary)
 
         non_existent = get_model_spec("invalid-model-name")
         self.assertIsNone(non_existent)

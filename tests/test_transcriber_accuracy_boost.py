@@ -105,3 +105,30 @@ class TestNoLexiconSnapping(unittest.TestCase):
                     str(wav), language="tr", vocal_isolation=False, apply_postprocessing=False
                 )
         self.assertEqual(result[0]["text"], "Ben biz var")
+
+
+class TestHpssOffByDefault(unittest.TestCase):
+    def test_clean_speech_is_not_filtered_by_default(self):
+        """The HPSS vocal filter raised WER on FLEURS Turkish from 25.39% to 32.62% (Whisper small),
+        so it must only run when asked for or in the music fallback."""
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import MagicMock, patch
+
+        import numpy as np
+        import soundfile as sf
+
+        segment = MagicMock(text="Merhaba", start=0.0, end=1.0, words=[],
+                            avg_logprob=-0.1, no_speech_prob=0.0, compression_ratio=1.0)
+        with tempfile.TemporaryDirectory() as tmp:
+            wav = Path(tmp) / "a.wav"
+            sf.write(str(wav), np.zeros(16000, dtype="float32"), 16000)
+            transcriber = WhisperTranscriber(model_size="small")
+            transcriber.model = MagicMock()
+            transcriber.model.transcribe.return_value = (
+                iter([segment]),
+                MagicMock(language="tr", language_probability=0.99, duration=1.0),
+            )
+            with patch("src.audio_processor.apply_hpss_vocal_filter") as hpss:
+                transcriber.transcribe(str(wav), language="tr", apply_postprocessing=False)
+        hpss.assert_not_called()

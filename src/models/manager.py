@@ -8,7 +8,14 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from src.hardware import format_memory_size
-from src.models.catalog import MODEL_CATALOG, ModelSpecification, get_model_spec
+from src.models.catalog import (
+    LEGACY_MODEL_IDS,
+    LEGACY_REPO_IDS,
+    MODEL_CATALOG,
+    ModelSpecification,
+    get_model_spec,
+    resolve_model_id,
+)
 
 
 class ModelManager:
@@ -25,32 +32,33 @@ class ModelManager:
 
     def _get_candidate_paths(self, model_id: str) -> List[Path]:
         """Bir model kimliği için olası yerel depolama dizin yollarını döndürür."""
-        candidates = [self.models_dir / model_id]
+        model_id = resolve_model_id(model_id)
+        legacy_ids = [old for old, new in LEGACY_MODEL_IDS.items() if new == model_id]
+        candidates = [self.models_dir / name for name in [model_id, *legacy_ids]]
 
         spec = get_model_spec(model_id)
-        if spec and spec.repo_id:
+        repos = ([spec.repo_id] if spec and spec.repo_id else []) + LEGACY_REPO_IDS.get(model_id, [])
+        for repo in repos:
             # Hugging Face hub önbellek formatı (örn: models--Systran--faster-whisper-small)
-            hf_slug = f"models--{spec.repo_id.replace('/', '--')}"
-            candidates.append(self.models_dir / hf_slug)
+            candidates.append(self.models_dir / f"models--{repo.replace('/', '--')}")
 
         return candidates
 
+    def find_local_model_dir(self, model_id: str) -> Optional[Path]:
+        """The folder holding this model's model.bin, wherever a current or older version put it."""
+        for path in self._get_candidate_paths(model_id):
+            if not path.is_dir():
+                continue
+            if (path / "model.bin").exists():
+                return path
+            for snap in sorted((path / "snapshots").glob("*")):
+                if (snap / "model.bin").exists():
+                    return snap
+        return None
+
     def is_model_installed(self, model_id: str) -> bool:
         """Modelin yerel dizinde mevcut ve kullanıma hazır olup olmadığını denetler."""
-        for path in self._get_candidate_paths(model_id):
-            if path.exists() and path.is_dir():
-                # Dizin içinde model.bin veya snapshots alt dizininde model.bin ara
-                direct_bin = path / "model.bin"
-                if direct_bin.exists():
-                    return True
-
-                # HF snapshots araması
-                snapshots_dir = path / "snapshots"
-                if snapshots_dir.exists():
-                    for snap in snapshots_dir.glob("*"):
-                        if snap.is_dir() and (snap / "model.bin").exists():
-                            return True
-        return False
+        return self.find_local_model_dir(model_id) is not None
 
     def get_installed_models(self) -> List[str]:
         """Yerel olarak indirilmiş ve hazır olan tüm model kimliklerini döndürür."""
@@ -118,6 +126,7 @@ class ModelManager:
         if progress_callback:
             progress_callback(0.05, f"{spec.name} indirmesi başlatılıyor...")
 
+        model_id = spec.model_id
         target_dir = self.models_dir / model_id
         target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -131,55 +140,11 @@ class ModelManager:
             if progress_callback:
                 progress_callback(0.30, f"{spec.name} ağırlıkları indiriliyor...")
 
+            # No substitute model on failure: the error reaches the caller and the user sees it.
             repo_or_name = spec.repo_id if spec.repo_id else model_id
-            try:
-                fw_download_model(
-                    repo_or_name,
-                    output_dir=str(target_dir),
-                )
-                # Model agirliklarinin (model.bin) dizinde veya alt dizinlerinde mevcut oldugunu dogrula
-                has_weights = (target_dir / "model.bin").exists() or bool(list(target_dir.glob("**/model.bin")))
-                if not has_weights:
-                    raise RuntimeError(f"Model deposunda ({repo_or_name}) ikili agirliklar (model.bin) bulunamadi.")
-            except Exception as initial_err:
-                # Eger ozel model deposu uzakta bulunamazsa (401/404) ve fallback_repo_id tanimlanmissa
-                if getattr(spec, "fallback_repo_id", None):
-                    if progress_callback:
-                        progress_callback(0.40, f"{spec.name} temel agirliklari indiriliyor ve yapilandiriliyor...")
-                    
-                    fw_download_model(
-                        spec.fallback_repo_id,
-                        output_dir=str(target_dir),
-                    )
-
-                    # SesMetin-v2 ozel yapilandirmasini ve akustik kalibrasyon parametrelerini olustur
-                    import json
-                    config_data = {
-                        "model_id": spec.model_id,
-                        "name": spec.name,
-                        "version": spec.version,
-                        "base_model": spec.fallback_repo_id,
-                        "turkish_bias": True,
-                        "vad_parameters": {
-                            "threshold": 0.45,
-                            "min_speech_duration_ms": 250,
-                            "max_speech_duration_s": float("inf"),
-                            "min_silence_duration_ms": 1800,
-                            "speech_pad_ms": 400,
-                        },
-                        "itn_engine": "sesmetin-itn-v2.1",
-                        "acoustic_enhancement": {
-                            "bandpass_telephony_adapted": True,
-                            "noise_reduction_spectral_gate": True,
-                            "rms_normalization_db": -20.0,
-                        },
-                        "system_prompt": spec.system_prompt,
-                        "wer_turkish": spec.wer_turkish,
-                    }
-                    config_path = target_dir / "sesmetin_v2_config.json"
-                    config_path.write_text(json.dumps(config_data, indent=2, ensure_ascii=False), encoding="utf-8")
-                else:
-                    raise initial_err
+            fw_download_model(repo_or_name, output_dir=str(target_dir))
+            if not list(target_dir.glob("**/model.bin")):
+                raise RuntimeError(f"Model deposunda ({repo_or_name}) ikili agirliklar (model.bin) bulunamadi.")
 
             if progress_callback:
                 progress_callback(1.0, f"{spec.name} basariyla kuruldu ve hazir.")

@@ -6,6 +6,7 @@ from src.models.catalog import (
     ModelSpecification,
     get_model_spec,
     list_available_models,
+    resolve_model_id,
 )
 from src.models.manager import ModelManager
 
@@ -15,5 +16,6 @@ __all__ = [
     "ModelSpecification",
     "get_model_spec",
     "list_available_models",
+    "resolve_model_id",
     "ModelManager",
 ]

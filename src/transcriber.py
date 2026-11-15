@@ -212,18 +212,16 @@ class WhisperTranscriber:
             if status_callback:
                 status_callback(f"'{self.model_size}' modeli belleğe yükleniyor ({self.device.upper()} {self.compute_type})...")
 
+            from src.models.catalog import get_model_spec
+            from src.models.manager import ModelManager
+
+            # A model already on disk (under its current or an older name) is used as is;
+            # otherwise the catalog repository is downloaded. Unknown ids go to faster-whisper unchanged.
             model_path = self.model_size
-            try:
-                from src.models.catalog import get_model_spec
-                spec = get_model_spec(self.model_size)
-                if spec:
-                    local_dir = Path(self.download_root) / self.model_size
-                    if local_dir.exists() and (local_dir / "model.bin").exists():
-                        model_path = str(local_dir)
-                    elif spec.repo_id:
-                        model_path = spec.repo_id
-            except Exception:
-                pass
+            spec = get_model_spec(self.model_size)
+            if spec:
+                local_dir = ModelManager(Path(self.download_root)).find_local_model_dir(spec.model_id)
+                model_path = str(local_dir) if local_dir else (spec.repo_id or spec.model_id)
 
             self.model = WhisperModel(
                 model_size_or_path=model_path,
@@ -245,7 +243,7 @@ class WhisperTranscriber:
         hotwords: Optional[str] = None,
         beam_size: int = 5,
         vad_sensitivity: str = "high",
-        vocal_isolation: bool = True,
+        vocal_isolation: bool = False,
         apply_postprocessing: bool = True,
         apply_itn: bool = True,
         clean_disfluencies: bool = True,
@@ -263,7 +261,8 @@ class WhisperTranscriber:
             hotwords: ASR çözücüye önceliklendirilecek anahtar kelimeler / ipuçları.
             beam_size: Işın arama genişliği (varsayılan 5).
             vad_sensitivity: Ses aktivite tespiti hassasiyeti ('high' veya 'normal').
-            vocal_isolation: Müzikli veya ritimli seslerde vokal ayrıştırma uygular.
+            vocal_isolation: Müzikli seslerde vokal ayrıştırma (HPSS). Varsayılan kapalı: temiz konuşmada
+                WER'i 25.39'dan 32.62'ye çıkardı (docs/BENCHMARKS.md). Müzik yedeği bundan bağımsız çalışır.
             apply_postprocessing: Çıktıda Türkçe metin temizleme ve halüsinasyon filtresi.
             progress_callback: İlerleme fonksiyonu (yüzde, durum mesajı, son segment).
             
