@@ -84,7 +84,7 @@ class TestV110HardwareAndHUD(unittest.TestCase):
         iss_path = Path("packaging/installer.iss")
         self.assertTrue(iss_path.exists())
         content = iss_path.read_text(encoding="utf-8")
-        self.assertIn('#define MyAppVersion "1.1.1"', content)
+        self.assertIn("#ifndef MyAppVersion", content)  # version is passed by the build, never hardcoded
         self.assertIn("OutputBaseFilename=SpeechToText-Setup", content)
         self.assertIn("ArchitecturesAllowed=x64compatible", content)
 

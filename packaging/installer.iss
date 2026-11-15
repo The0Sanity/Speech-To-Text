@@ -2,7 +2,10 @@
 ; Produces SpeechToText-Setup.exe installer
 
 #define MyAppName "SesMetin Pro"
-#define MyAppVersion "1.1.1"
+; The version comes from the build: iscc /DMyAppVersion=1.2.3 packaging\installer.iss
+#ifndef MyAppVersion
+  #error MyAppVersion is not set. Pass /DMyAppVersion=x.y.z to iscc.
+#endif
 #define MyAppPublisher "The0Sanity"
 #define MyAppURL "https://github.com/The0Sanity/Speech-To-Text"
 #define MyAppExeName "SpeechToText.exe"

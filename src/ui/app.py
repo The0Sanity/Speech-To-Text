@@ -33,7 +33,14 @@ from src.config import (
     load_settings,
     save_settings,
 )
-from src.updater import AutoUpdater, CheckStatus, UpdateInfo, is_newer_version
+from src.updater import (
+    UPDATER_LOG,
+    AutoUpdater,
+    CheckStatus,
+    UpdateInfo,
+    is_newer_version,
+    post_update_outcome,
+)
 from src.exporter import (
     export_to_csv,
     export_to_json,
@@ -2715,6 +2722,9 @@ class FletSpeechToTextApp:
                 "asset_size": info.asset_size,
                 "has_exe_asset": info.has_exe_asset,
                 "html_url": info.html_url,
+                "expected_sha256": info.expected_sha256,
+                "use_installer": info.use_installer,
+                "silent_install": info.silent_install,
             }
             save_settings(self.settings)
         except Exception as e:
@@ -2743,6 +2753,9 @@ class FletSpeechToTextApp:
             asset_name=f"SpeechToText_v{postponed_ver}.exe",
             asset_size=postponed.get("asset_size"),
             has_exe_asset=postponed.get("has_exe_asset", True),
+            expected_sha256=postponed.get("expected_sha256"),
+            use_installer=postponed.get("use_installer", False),
+            silent_install=postponed.get("silent_install", True),
             is_update_available=True,
             status=CheckStatus.UPDATE_AVAILABLE,
         )
@@ -2753,6 +2766,19 @@ class FletSpeechToTextApp:
         """Guncelleme sonrasindaki ilk acilista yama notlarini gosterir."""
         last_seen = self.settings.get("last_seen_version", "0.0.0")
         pending_notes = self.settings.get("pending_patch_notes", "")
+
+        # The update was started but the old version is running again: say so instead of showing its notes.
+        pending_version = self.settings.get("pending_update_version")
+        if post_update_outcome(self.APP_VERSION, pending_version) == "failed":
+            self.settings["pending_update_version"] = None
+            self.settings["pending_patch_notes"] = ""
+            save_settings(self.settings)
+            self._show_toast(
+                f"v{pending_version} güncellemesi uygulanamadı, v{self.APP_VERSION} çalışıyor. Ayrıntı: {UPDATER_LOG}",
+                is_error=True,
+            )
+            return False
+        self.settings["pending_update_version"] = None
 
         has_newer = is_newer_version(last_seen, self.APP_VERSION)
         if has_newer or bool(pending_notes):
@@ -2899,7 +2925,8 @@ class FletSpeechToTextApp:
             self._safe_update(lbl_status)
 
             def _download_task():
-                target_exe = TEMP_DIR / f"SpeechToText_v{info.version}.exe"
+                kind = "Setup" if info.use_installer else "Portable"
+                target_exe = TEMP_DIR / f"SpeechToText_{kind}_v{info.version}.exe"
 
                 def _dispatch_ui(fn):
                     if self.page:
@@ -2925,12 +2952,11 @@ class FletSpeechToTextApp:
                     throttle_interval=0.08,
                 )
 
-                ok = self.updater.download_asset(
-                    info.download_url,
+                ok = self.updater.download_update(
+                    info,
                     target_exe,
                     progress_callback=smooth_prog,
                     cancel_event=cancel_event,
-                    verify_pe=True,
                 )
 
                 if cancel_event.is_set():
@@ -2961,14 +2987,25 @@ class FletSpeechToTextApp:
 
                     # Bir sonraki açılışta gösterilmek üzere sürüm notlarını kaydet ve ertelenmiş güncellemeyi temizle
                     self.settings["pending_patch_notes"] = info.release_notes or ""
+                    self.settings["pending_update_version"] = info.version
                     self.settings["postponed_update"] = None
                     save_settings(self.settings)
                     time.sleep(1.5)
                     apply_ok = False
                     try:
-                        apply_ok = self.updater.apply_update(target_exe)
-                    except Exception:
+                        apply_ok = self.updater.apply_update(
+                            target_exe,
+                            use_installer=info.use_installer,
+                            silent=info.silent_install,
+                        )
+                    except Exception as apply_err:
+                        print(f"Guncelleme uygulanamadi: {apply_err}")
                         apply_ok = False
+
+                    if not apply_ok:
+                        self.settings["pending_patch_notes"] = ""
+                        self.settings["pending_update_version"] = None
+                        save_settings(self.settings)
 
                     if not apply_ok:
                         def _on_apply_error():

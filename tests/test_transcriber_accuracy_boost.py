@@ -49,3 +49,29 @@ class TestTranscriberAccuracyBoost(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestNoDefaultHotwords(unittest.TestCase):
+    def test_transcribe_does_not_bias_toward_builtin_words(self):
+        """Without user terms the decoder must get no hotwords: the old default list
+        (patates, domates, pisi...) pushed every Turkish transcript toward nursery words."""
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import MagicMock
+
+        import numpy as np
+        import soundfile as sf
+
+        with tempfile.TemporaryDirectory() as tmp:
+            wav = Path(tmp) / "silence.wav"
+            sf.write(str(wav), np.zeros(16000, dtype="float32"), 16000)
+
+            transcriber = WhisperTranscriber(model_size="small")
+            transcriber.model = MagicMock()
+            transcriber.model.transcribe.return_value = (
+                iter([]),
+                MagicMock(language="tr", language_probability=0.99, duration=1.0),
+            )
+            transcriber.transcribe(str(wav), language="tr", vocal_isolation=False)
+
+        self.assertIsNone(transcriber.model.transcribe.call_args.kwargs["hotwords"])

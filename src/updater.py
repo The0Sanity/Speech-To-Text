@@ -27,6 +27,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from src.config import (
     APP_NAME,
     APP_VERSION,
+    CONFIG_DIR,
     GITHUB_RELEASES_URL,
     GITHUB_REPO_NAME,
     GITHUB_REPO_OWNER,
@@ -167,6 +168,8 @@ class UpdateInfo:
     rate_limit_reset: Optional[int] = None
     error_message: Optional[str] = None
     expected_sha256: Optional[str] = None
+    use_installer: bool = False
+    silent_install: bool = True
 
 
 def find_best_executable_asset(assets: List[Dict[str, Any]], app_name: str = "SpeechToText") -> Optional[Dict[str, Any]]:
@@ -282,6 +285,58 @@ def verify_checksum(file_path: Path, expected_hash: str, algorithm: str = "sha25
         return False
 
 
+def find_installer_asset(assets: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    """Returns the Setup/installer .exe asset of a release, if it has one."""
+    for asset in assets:
+        name = asset.get("name", "").lower()
+        if name.endswith(".exe") and ("setup" in name or "installer" in name):
+            return asset
+    return None
+
+
+def is_installed_copy(exe_path: Path) -> bool:
+    """True when the exe was put there by the Inno Setup installer (its uninstaller sits beside it)."""
+    return any(Path(exe_path).parent.glob("unins*.exe"))
+
+
+def _dir_writable(folder: Path) -> bool:
+    probe = Path(folder) / f".write_test_{uuid.uuid4().hex[:6]}"
+    try:
+        probe.touch()
+        probe.unlink()
+        return True
+    except OSError:
+        return False
+
+
+def post_update_outcome(current_version: str, pending_version: Optional[str]) -> Optional[str]:
+    """After a restart: 'updated' if the pending update is now running, 'failed' if the old version came back."""
+    if not pending_version:
+        return None
+    return "updated" if SemVer.parse(current_version) == SemVer.parse(pending_version) else "failed"
+
+
+UPDATER_LOG = CONFIG_DIR / "updater.log"
+
+_PS_LOG = """function Log($m) {
+    Add-Content -LiteralPath $LogFile -Value ("{0} {1}" -f (Get-Date -Format s), $m) -Encoding UTF8
+}
+Log "updater start, app pid=$TargetPid"
+"""
+
+# The app leaves with os._exit, so its child processes (the Flet window is one) are orphaned
+# and the window stays on screen frozen at 100%. Close them before anything else.
+_PS_KILL_CHILDREN = """$parents = @($TargetPid)
+for ($depth = 0; $depth -lt 3; $depth++) {
+    $kids = @(Get-CimInstance Win32_Process | Where-Object { ($parents -contains $_.ParentProcessId) -and ($_.ProcessId -ne $PID) } | ForEach-Object { $_.ProcessId })
+    if ($kids.Count -eq 0) { break }
+    foreach ($k in $kids) { Stop-Process -Id $k -Force -ErrorAction SilentlyContinue }
+    Log ("closed child processes: " + ($kids -join ','))
+    $parents = $kids
+}
+"""
+
+
 class WindowsSelfUpdater:
     """Windows uzerinde calisan bir .exe ikilisinin kilitlenmeden yerinde degistirilmesini yonetir."""
 
@@ -357,7 +412,8 @@ exit /b 0
         downloaded_exe: Path,
         current_exe: Path,
         pid: int,
-        retries: int = 30
+        retries: int = 30,
+        log_path: Optional[Path] = None,
     ) -> str:
         """Geri alma (.bak) mekanizmasi ve guvenli dongulu yer degistirme PowerShell betigi uretir."""
         new_path = str(downloaded_exe.resolve()).replace("'", "''")
@@ -365,6 +421,7 @@ exit /b 0
         bak_path = f"{cur_path}.bak"
         cur_name = current_exe.name
         cur_dir = str(current_exe.resolve().parent).replace("'", "''")
+        log_file = str(log_path or UPDATER_LOG).replace("'", "''")
 
         script = f"""# SesMetin Pro - Silent In-Place Self Updater Engine
 $ErrorActionPreference = 'SilentlyContinue'
@@ -375,7 +432,9 @@ $BackupExe = '{bak_path}'
 $TargetName = '{cur_name}'
 $CurDir = '{cur_dir}'
 $MaxRetries = {retries}
-
+$LogFile = '{log_file}'
+{_PS_LOG}
+{_PS_KILL_CHILDREN}
 # 0. PyInstaller ve Python ortam degiskenlerini PowerShell surecinden temizle (_MEIPASS2 LoadLibrary hatasini onler)
 $pyVars = @('_MEIPASS2', '_MEIPASS', 'PYTHONPATH', 'PYTHONHOME', 'PYTHONSTARTUP', 'PYTHONEXECUTABLE', 'PYTHONNOUSERSITE', 'PYI_PARENT_PID')
 foreach ($v in $pyVars) {{
@@ -462,6 +521,7 @@ for ($i = 0; $i -lt $MaxRetries; $i++) {{
 
 # 4. Basarisizlik kontrolu ve Geri Alma (Rollback)
 if (-not $copySuccess -or -not (Test-Path -LiteralPath $CurExe)) {{
+    Log "swap FAILED (backedUp=$backedUp): could not write $CurExe, old version restored"
     if (Test-Path -LiteralPath $BackupExe) {{
         Move-Item -LiteralPath $BackupExe -Destination $CurExe -Force -ErrorAction SilentlyContinue
     }}
@@ -473,6 +533,8 @@ if (-not $copySuccess -or -not (Test-Path -LiteralPath $CurExe)) {{
     Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
     exit 1
 }}
+
+Log "swap ok: $CurExe replaced"
 
 # 5. Guncellenmis yeni surumu baslatmadan once ortam degiskenlerinin tamamen temiz oldugundan emin ol
 foreach ($v in $pyVars) {{
@@ -491,13 +553,74 @@ exit 0
 """
         return script
 
+    @staticmethod
+    def generate_installer_script(
+        installer_exe: Path,
+        app_exe: Path,
+        pid: int,
+        silent: bool = True,
+        log_path: Optional[Path] = None,
+    ) -> str:
+        """Script for installed copies: close the app, run the Setup installer, start the app again.
+
+        The installer also rewrites the version Windows shows under installed apps,
+        which an in-place exe swap never did.
+        """
+        inst = str(installer_exe.resolve()).replace("'", "''")
+        app = str(app_exe.resolve()).replace("'", "''")
+        app_dir = str(app_exe.resolve().parent).replace("'", "''")
+        log_file = str(log_path or UPDATER_LOG).replace("'", "''")
+        # shortcut: a release with a new major version may ship a different installer whose silent
+        # flags are unknown here, so it runs with its normal wizard and starts the app itself.
+        args = " -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'" if silent else ""
+        relaunch = "Start-Process -FilePath $AppExe -WorkingDirectory $AppDir" if silent else ""
+
+        return f"""# SesMetin Pro - installer based updater
+$ErrorActionPreference = 'SilentlyContinue'
+$TargetPid = {pid}
+$Installer = '{inst}'
+$AppExe = '{app}'
+$AppDir = '{app_dir}'
+$LogFile = '{log_file}'
+{_PS_LOG}
+{_PS_KILL_CHILDREN}
+$pyVars = @('_MEIPASS2', '_MEIPASS', 'PYTHONPATH', 'PYTHONHOME', 'PYTHONSTARTUP', 'PYTHONEXECUTABLE', 'PYTHONNOUSERSITE', 'PYI_PARENT_PID')
+foreach ($v in $pyVars) {{
+    [System.Environment]::SetEnvironmentVariable($v, $null, [System.EnvironmentVariableTarget]::Process)
+}}
+
+Wait-Process -Id $TargetPid -Timeout 6 -ErrorAction SilentlyContinue
+Stop-Process -Id $TargetPid -Force -ErrorAction SilentlyContinue
+Get-CimInstance Win32_Process | Where-Object {{ $_.ExecutablePath -eq $AppExe }} | ForEach-Object {{
+    Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+}}
+
+Log "running installer $Installer"
+$proc = Start-Process -FilePath $Installer{args} -Wait -PassThru
+Log ("installer exit code: " + $proc.ExitCode)
+{relaunch}
+Remove-Item -LiteralPath $Installer -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
+exit 0
+"""
+
     @classmethod
-    def execute_in_place_update(cls, downloaded_exe: Path, current_exe: Path, pid: int) -> bool:
+    def execute_in_place_update(
+        cls,
+        downloaded_exe: Path,
+        current_exe: Path,
+        pid: int,
+        use_installer: bool = False,
+        silent: bool = True,
+    ) -> bool:
         """Windows yerinde degistirme betigini sessizce calistirip uygulamayi sonlandirir."""
         try:
             TEMP_DIR.mkdir(parents=True, exist_ok=True)
             ps_path = TEMP_DIR / f"updater_{uuid.uuid4().hex[:8]}.ps1"
-            script_text = cls.generate_powershell_script(downloaded_exe, current_exe, pid)
+            if use_installer:
+                script_text = cls.generate_installer_script(downloaded_exe, current_exe, pid, silent=silent)
+            else:
+                script_text = cls.generate_powershell_script(downloaded_exe, current_exe, pid)
 
             with open(ps_path, "w", encoding="utf-8") as f:
                 f.write(script_text)
@@ -566,6 +689,11 @@ class AutoUpdater:
         self.api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
         self._cached_etag: Optional[str] = None
         self._cached_info: Optional[UpdateInfo] = None
+        # An installed copy (or one in a folder we cannot write to) cannot be fixed by swapping the exe.
+        self.prefer_installer = False
+        if getattr(sys, "frozen", False):
+            exe = Path(sys.executable).resolve()
+            self.prefer_installer = is_installed_copy(exe) or not _dir_writable(exe.parent)
 
     def check_for_updates(self, timeout: int = 8, force: bool = False) -> Optional[UpdateInfo]:
         """GitHub Releases API uzerinden yeni yayinlari denetler.
@@ -693,6 +821,11 @@ class AutoUpdater:
 
         assets = payload.get("assets", [])
         best_exe = find_best_executable_asset(assets, app_name="SpeechToText")
+        major_bump = SemVer.parse(remote_version).major > SemVer.parse(self.current_version).major
+        installer = find_installer_asset(assets) if (self.prefer_installer or major_bump) else None
+        use_installer = installer is not None
+        if use_installer:
+            best_exe = installer
         has_exe = best_exe is not None
         asset_name = best_exe.get("name") if best_exe else None
         download_url = best_exe.get("browser_download_url") if best_exe else None
@@ -729,6 +862,25 @@ class AutoUpdater:
             has_exe_asset=has_exe,
             html_url=html_url,
             expected_sha256=expected_sha256,
+            use_installer=use_installer,
+            silent_install=not major_bump,
+        )
+
+    def download_update(
+        self,
+        info: UpdateInfo,
+        target_path: Path,
+        progress_callback: Optional[Callable[[int, int], None]] = None,
+        cancel_event: Optional[Any] = None,
+    ) -> bool:
+        """Downloads the asset chosen for this release and checks it against the release checksum."""
+        return self.download_asset(
+            info.download_url,
+            target_path,
+            progress_callback=progress_callback,
+            cancel_event=cancel_event,
+            verify_pe=True,
+            expected_hash=info.expected_sha256,
         )
 
     def download_asset(
@@ -814,7 +966,7 @@ class AutoUpdater:
                     pass
             return False
 
-    def apply_update(self, downloaded_exe_path: Path) -> bool:
+    def apply_update(self, downloaded_exe_path: Path, use_installer: bool = False, silent: bool = True) -> bool:
         """Indirilen .exe guncellemesini isletim sistemi ve calisma moduna gore uygular."""
         downloaded_exe = Path(downloaded_exe_path).resolve()
         if not downloaded_exe.is_file():
@@ -824,7 +976,9 @@ class AutoUpdater:
         if is_frozen:
             current_exe = Path(sys.executable).resolve()
             pid = os.getpid()
-            ok = WindowsSelfUpdater.execute_in_place_update(downloaded_exe, current_exe, pid)
+            ok = WindowsSelfUpdater.execute_in_place_update(
+                downloaded_exe, current_exe, pid, use_installer=use_installer, silent=silent
+            )
             if ok:
                 time.sleep(0.5)
                 # Sureci isletim sistemi duzeyinde derhal sonlandir (thread icinde sys.exit takilmasini onler)

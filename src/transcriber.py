@@ -309,9 +309,8 @@ class WhisperTranscriber:
             else:
                 prompt_to_use = DEFAULT_TURKISH_PROMPT
 
+        # Only terms the caller supplies. A built-in default list biased every transcript toward its words.
         hotwords_to_use = hotwords
-        if hotwords_to_use is None and (language == "tr" or language == "auto"):
-            hotwords_to_use = build_domain_hotwords()
 
         # faster-whisper parametreleri:
         # beam_size=5 / best_of=5: Yüksek doğruluk

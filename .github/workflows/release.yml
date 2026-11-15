@@ -28,6 +28,23 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      - name: Resolve Release Tag Name
+        id: resolve_tag
+        shell: pwsh
+        run: |
+          $tag = "${{ inputs.tag_name }}"
+          if (-not $tag) { $tag = "${{ github.ref_name }}" }
+          if ($tag -notmatch '^v\d+\.\d+\.\d+') { throw "Not a release tag: $tag" }
+          "release_tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Check the tag matches the version built into the app
+        id: app_version
+        shell: pwsh
+        run: |
+          $version = python scripts/check_version_sync.py --tag "${{ steps.resolve_tag.outputs.release_tag }}"
+          if ($LASTEXITCODE -ne 0) { throw "Version mismatch, see message above." }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
@@ -78,7 +95,7 @@ jobs:
       - name: Build Windows Installer with Inno Setup
         shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\iscc.exe" packaging\installer.iss
+          & "C:\Program Files (x86)\Inno Setup 6\iscc.exe" "/DMyAppVersion=${{ steps.app_version.outputs.version }}" packaging\installer.iss
           if (-not (Test-Path "dist\SpeechToText-Setup.exe")) {
             throw "dist\SpeechToText-Setup.exe was not created by Inno Setup."
           }
@@ -105,20 +122,6 @@ jobs:
           $hash_setup = (Get-FileHash -Algorithm SHA256 "dist\SpeechToText-Setup.exe").Hash
           Set-Content -Path "dist\SpeechToText-Setup.exe.sha256" -Value $hash_setup -Encoding utf8
           Write-Host "Generated Installer SHA256: $hash_setup"
-
-      - name: Resolve Release Tag Name
-        id: resolve_tag
-        shell: pwsh
-        run: |
-          $tag = "${{ inputs.tag_name }}"
-          if (-not $tag -or $tag -eq "") {
-            $tag = "${{ github.ref_name }}"
-          }
-          if ($tag -eq "main" -or $tag -eq "master") {
-            $tag = "v1.1.1"
-          }
-          Write-Host "Resolved release tag: $tag"
-          "release_tag=$tag" >> $env:GITHUB_OUTPUT
 
       - name: Generate Release Patch Notes
         shell: pwsh

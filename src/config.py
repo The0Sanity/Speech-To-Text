@@ -99,6 +99,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "last_seen_version": APP_VERSION,
     "postponed_update": None,
     "pending_patch_notes": "",
+    "pending_update_version": None,  # set before an update is applied, checked on the next start
 }
 
 
