@@ -1,0 +1,1691 @@
+[
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {},
+  "out": [
+   {
+    "end": 2.345,
+    "id": 1,
+    "start": 0.0,
+    "text": "Merhaba, bugün %25 indirim var."
+   },
+   {
+    "end": 5.0,
+    "id": 2,
+    "start": 2.5,
+    "text": "şey evet"
+   },
+   {
+    "end": 9.999,
+    "id": 3,
+    "start": 6.0,
+    "text": "İstanbul'da 350 TL ödedim."
+   },
+   {
+    "end": 12.0,
+    "id": 4,
+    "start": 10.0,
+    "text": "İstanbul'da 350 TL ödedim."
+   },
+   {
+    "end": 3725.004,
+    "id": 5,
+    "start": 3661.5,
+    "text": "1 saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "apply_itn": false
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "id": 1,
+    "start": 0.0,
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+   },
+   {
+    "end": 5.0,
+    "id": 2,
+    "start": 2.5,
+    "text": "şey evet"
+   },
+   {
+    "end": 9.999,
+    "id": 3,
+    "start": 6.0,
+    "text": "İstanbul'da üç yüz elli lira ödedim."
+   },
+   {
+    "end": 12.0,
+    "id": 4,
+    "start": 10.0,
+    "text": "İstanbul'da üç yüz elli lira ödedim."
+   },
+   {
+    "end": 3725.004,
+    "id": 5,
+    "start": 3661.5,
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "clean_disfluencies": false
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "id": 1,
+    "start": 0.0,
+    "text": "Merhaba, bugün %25 indirim var."
+   },
+   {
+    "end": 5.0,
+    "id": 2,
+    "start": 2.5,
+    "text": "Iıı şey evet"
+   },
+   {
+    "end": 9.999,
+    "id": 3,
+    "start": 6.0,
+    "text": "İstanbul'da 350 TL ödedim."
+   },
+   {
+    "end": 12.0,
+    "id": 4,
+    "start": 10.0,
+    "text": "İstanbul'da 350 TL ödedim."
+   },
+   {
+    "end": 3725.004,
+    "id": 5,
+    "start": 3661.5,
+    "text": "1 saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "remove_hallucinations": false
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "id": 1,
+    "start": 0.0,
+    "text": "Merhaba, bugün %25 indirim var."
+   },
+   {
+    "end": 5.0,
+    "id": 2,
+    "start": 2.5,
+    "text": "şey evet"
+   },
+   {
+    "end": 9.999,
+    "id": 3,
+    "start": 6.0,
+    "text": "İstanbul'da 350 TL ödedim."
+   },
+   {
+    "end": 12.0,
+    "id": 4,
+    "start": 10.0,
+    "text": "İstanbul'da 350 TL ödedim."
+   },
+   {
+    "end": 3725.004,
+    "id": 5,
+    "start": 3661.5,
+    "text": "1 saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    },
+    {
+     "end": 11.0,
+     "speaker": "X2",
+     "start": 5.1
+    },
+    {
+     "end": 14.0,
+     "speaker": "X1",
+     "start": 11.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": [
+   {
+    "end": 5.0,
+    "end_formatted": "00:05",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+    "timestamp_display": "[00:00 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 12.0,
+    "end_formatted": "00:12",
+    "id": 2,
+    "speaker": "X2",
+    "start": 5.2,
+    "start_formatted": "00:05",
+    "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:05 - 00:12]",
+    "words": []
+   },
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 3,
+    "speaker": "X1",
+    "start": 12.0,
+    "start_formatted": "00:12",
+    "text": "İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:12 - 00:14]",
+    "words": []
+   },
+   {
+    "end": 3725.004,
+    "end_formatted": "01:02:05",
+    "id": 4,
+    "speaker": "X1",
+    "start": 3661.5,
+    "start_formatted": "01:01:01",
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+    "timestamp_display": "[01:01:01 - 01:02:05]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    },
+    {
+     "end": 11.0,
+     "speaker": "X2",
+     "start": 5.1
+    },
+    {
+     "end": 14.0,
+     "speaker": "X1",
+     "start": 11.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   },
+   {
+    "end": 5.0,
+    "end_formatted": "00:05",
+    "id": 2,
+    "speaker": "X1",
+    "start": 2.5,
+    "start_formatted": "00:02",
+    "text": "ııı şey evet evet evet evet evet evet evet",
+    "timestamp_display": "[00:02 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 5.3,
+    "end_formatted": "00:05",
+    "id": 3,
+    "speaker": "X2",
+    "start": 5.2,
+    "start_formatted": "00:05",
+    "text": ".",
+    "timestamp_display": "[00:05 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 9.999,
+    "end_formatted": "00:09",
+    "id": 4,
+    "speaker": "X2",
+    "start": 6.0,
+    "start_formatted": "00:06",
+    "text": "İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:06 - 00:09]",
+    "words": []
+   },
+   {
+    "end": 12.0,
+    "end_formatted": "00:12",
+    "id": 5,
+    "speaker": "X2",
+    "start": 10.0,
+    "start_formatted": "00:10",
+    "text": "İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:10 - 00:12]",
+    "words": []
+   },
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 6,
+    "speaker": "X1",
+    "start": 12.0,
+    "start_formatted": "00:12",
+    "text": "İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:12 - 00:14]",
+    "words": []
+   },
+   {
+    "end": 3725.004,
+    "end_formatted": "01:02:05",
+    "id": 7,
+    "speaker": "X1",
+    "start": 3661.5,
+    "start_formatted": "01:01:01",
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+    "timestamp_display": "[01:01:01 - 01:02:05]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ],
+   []
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": [
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet . İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:00 - 00:14]",
+    "words": []
+   },
+   {
+    "end": 3725.004,
+    "end_formatted": "01:02:05",
+    "id": 2,
+    "speaker": "X1",
+    "start": 3661.5,
+    "start_formatted": "01:01:01",
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+    "timestamp_display": "[01:01:01 - 01:02:05]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ],
+   []
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   },
+   {
+    "end": 5.0,
+    "end_formatted": "00:05",
+    "id": 2,
+    "speaker": "X1",
+    "start": 2.5,
+    "start_formatted": "00:02",
+    "text": "ııı şey evet evet evet evet evet evet evet",
+    "timestamp_display": "[00:02 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 5.3,
+    "end_formatted": "00:05",
+    "id": 3,
+    "speaker": "X1",
+    "start": 5.2,
+    "start_formatted": "00:05",
+    "text": ".",
+    "timestamp_display": "[00:05 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 9.999,
+    "end_formatted": "00:09",
+    "id": 4,
+    "speaker": "X1",
+    "start": 6.0,
+    "start_formatted": "00:06",
+    "text": "İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:06 - 00:09]",
+    "words": []
+   },
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 5,
+    "speaker": "X1",
+    "start": 10.0,
+    "start_formatted": "00:10",
+    "text": "İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:10 - 00:14]",
+    "words": []
+   },
+   {
+    "end": 3725.004,
+    "end_formatted": "01:02:05",
+    "id": 6,
+    "speaker": "X1",
+    "start": 3661.5,
+    "start_formatted": "01:01:01",
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+    "timestamp_display": "[01:01:01 - 01:02:05]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": [
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet . İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:00 - 00:14]",
+    "words": []
+   },
+   {
+    "end": 3725.004,
+    "end_formatted": "01:02:05",
+    "id": 2,
+    "speaker": "X1",
+    "start": 3661.5,
+    "start_formatted": "01:01:01",
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+    "timestamp_display": "[01:01:01 - 01:02:05]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    },
+    {
+     "end": 5.0,
+     "id": 2,
+     "start": 2.5,
+     "text": "ııı şey evet evet evet evet evet evet evet"
+    },
+    {
+     "end": 5.3,
+     "id": 3,
+     "start": 5.2,
+     "text": "."
+    },
+    {
+     "end": 9.999,
+     "id": 4,
+     "start": 6.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 12.0,
+     "id": 5,
+     "start": 10.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 14.0,
+     "id": 6,
+     "start": 12.0,
+     "text": "İstanbul'da üç yüz elli lira ödedim."
+    },
+    {
+     "end": 3725.004,
+     "id": 7,
+     "start": 3661.5,
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir."
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   },
+   {
+    "end": 5.0,
+    "end_formatted": "00:05",
+    "id": 2,
+    "speaker": "X1",
+    "start": 2.5,
+    "start_formatted": "00:02",
+    "text": "ııı şey evet evet evet evet evet evet evet",
+    "timestamp_display": "[00:02 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 5.3,
+    "end_formatted": "00:05",
+    "id": 3,
+    "speaker": "X1",
+    "start": 5.2,
+    "start_formatted": "00:05",
+    "text": ".",
+    "timestamp_display": "[00:05 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 9.999,
+    "end_formatted": "00:09",
+    "id": 4,
+    "speaker": "X1",
+    "start": 6.0,
+    "start_formatted": "00:06",
+    "text": "İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:06 - 00:09]",
+    "words": []
+   },
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 5,
+    "speaker": "X1",
+    "start": 10.0,
+    "start_formatted": "00:10",
+    "text": "İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:10 - 00:14]",
+    "words": []
+   },
+   {
+    "end": 3725.004,
+    "end_formatted": "01:02:05",
+    "id": 6,
+    "speaker": "X1",
+    "start": 3661.5,
+    "start_formatted": "01:01:01",
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+    "timestamp_display": "[01:01:01 - 01:02:05]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {},
+  "out": []
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "apply_itn": false
+  },
+  "out": []
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "clean_disfluencies": false
+  },
+  "out": []
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "remove_hallucinations": false
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    },
+    {
+     "end": 11.0,
+     "speaker": "X2",
+     "start": 5.1
+    },
+    {
+     "end": 14.0,
+     "speaker": "X1",
+     "start": 11.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    },
+    {
+     "end": 11.0,
+     "speaker": "X2",
+     "start": 5.1
+    },
+    {
+     "end": 14.0,
+     "speaker": "X1",
+     "start": 11.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   []
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   []
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {},
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "apply_itn": false
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "clean_disfluencies": false
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "remove_hallucinations": false
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    },
+    {
+     "end": 11.0,
+     "speaker": "X2",
+     "start": 5.1
+    },
+    {
+     "end": 14.0,
+     "speaker": "X1",
+     "start": 11.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    },
+    {
+     "end": 11.0,
+     "speaker": "X2",
+     "start": 5.1
+    },
+    {
+     "end": 14.0,
+     "speaker": "X1",
+     "start": 11.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ],
+   []
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ],
+   []
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 0.0,
+     "id": 1,
+     "start": 0.0,
+     "text": ""
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": []
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {},
+  "out": [
+   {
+    "end": 2.345,
+    "id": 1,
+    "start": 0.0,
+    "text": "Merhaba, bugün %25 indirim var."
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "apply_itn": false
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "id": 1,
+    "start": 0.0,
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "clean_disfluencies": false
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "id": 1,
+    "start": 0.0,
+    "text": "Merhaba, bugün %25 indirim var."
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ]
+  ],
+  "fn": "text_postprocessor.postprocess_segments",
+  "kwargs": {
+   "remove_hallucinations": false
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "id": 1,
+    "start": 0.0,
+    "text": "Merhaba, bugün %25 indirim var."
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    },
+    {
+     "end": 11.0,
+     "speaker": "X2",
+     "start": 5.1
+    },
+    {
+     "end": 14.0,
+     "speaker": "X1",
+     "start": 11.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    },
+    {
+     "end": 11.0,
+     "speaker": "X2",
+     "start": 5.1
+    },
+    {
+     "end": 14.0,
+     "speaker": "X1",
+     "start": 11.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ],
+   []
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ],
+   []
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 1.5
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 2.345,
+     "id": 1,
+     "start": 0.0,
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var."
+    }
+   ],
+   [
+    {
+     "end": 5.1,
+     "speaker": "X1",
+     "start": 0.0
+    }
+   ]
+  ],
+  "fn": "aligner.align_transcription_and_diarization",
+  "kwargs": {
+   "auto_merge_gap": 0.0
+  },
+  "out": [
+   {
+    "end": 2.345,
+    "end_formatted": "00:02",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var.",
+    "timestamp_display": "[00:00 - 00:02]",
+    "words": []
+   }
+  ]
+ }
+]

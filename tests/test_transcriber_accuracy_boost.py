@@ -75,3 +75,33 @@ class TestNoDefaultHotwords(unittest.TestCase):
             transcriber.transcribe(str(wav), language="tr", vocal_isolation=False)
 
         self.assertIsNone(transcriber.model.transcribe.call_args.kwargs["hotwords"])
+
+
+class TestNoLexiconSnapping(unittest.TestCase):
+    def test_transcribe_keeps_ordinary_words(self):
+        """Lexicon snapping rewrote common words ('Ben biz var' -> 'Bes bir ver') whenever the
+        large lexicon file was absent, which is always the case in a shipped build."""
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import MagicMock, patch
+
+        import numpy as np
+        import soundfile as sf
+
+        segment = MagicMock(text="Ben biz var", start=0.0, end=1.0, words=[],
+                            avg_logprob=-0.1, no_speech_prob=0.0, compression_ratio=1.0)
+        with tempfile.TemporaryDirectory() as tmp:
+            wav = Path(tmp) / "a.wav"
+            sf.write(str(wav), np.zeros(16000, dtype="float32"), 16000)
+            transcriber = WhisperTranscriber(model_size="small")
+            transcriber.model = MagicMock()
+            transcriber.model.transcribe.return_value = (
+                iter([segment]),
+                MagicMock(language="tr", language_probability=0.99, duration=1.0),
+            )
+            # Same condition as a shipped exe: no dataset/tdk_lexicon_cache.json.
+            with patch("src.language_model.BASE_DIR", Path(tmp)):
+                result = transcriber.transcribe(
+                    str(wav), language="tr", vocal_isolation=False, apply_postprocessing=False
+                )
+        self.assertEqual(result[0]["text"], "Ben biz var")

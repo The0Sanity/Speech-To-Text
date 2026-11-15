@@ -1,0 +1,1135 @@
+[
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_txt",
+  "kwargs": {},
+  "out": "============================================================\r\nTÜRKÇE SES TRANSKRİPTİ VE KONUŞMACI RAPORU\r\n============================================================\r\nOluşturulma : 02.01.2026 03:04:05\r\n------------------------------------------------------------\r\n\r\n[00:00 - 00:05] X1: Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\r\n\r\n[00:05 - 00:14] X2: . İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\r\n\r\n[01:01:01 - 01:02:05] X2: Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.\r\n"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_txt",
+  "kwargs": {
+   "media_info": {
+    "duration": 3725.0,
+    "file_name": "görüşme.mp3",
+    "format": "mp3"
+   }
+  },
+  "out": "============================================================\r\nTÜRKÇE SES TRANSKRİPTİ VE KONUŞMACI RAPORU\r\n============================================================\r\nKaynak Dosya : görüşme.mp3\r\nToplam Süre  : 00:00\r\nDosya Boyutu : 0 MB\r\nOluşturulma : 02.01.2026 03:04:05\r\n------------------------------------------------------------\r\n\r\n[00:00 - 00:05] X1: Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\r\n\r\n[00:05 - 00:14] X2: . İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\r\n\r\n[01:01:01 - 01:02:05] X2: Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.\r\n"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_srt",
+  "kwargs": {},
+  "out": "1\r\n00:00:00,000 --> 00:00:05,000\r\n[X1] Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\r\n\r\n2\r\n00:00:05,200 --> 00:00:14,000\r\n[X2] . İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\r\n\r\n3\r\n01:01:01,500 --> 01:02:05,004\r\n[X2] Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.\r\n"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_srt",
+  "kwargs": {
+   "include_speaker": false
+  },
+  "out": "1\r\n00:00:00,000 --> 00:00:05,000\r\nMerhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\r\n\r\n2\r\n00:00:05,200 --> 00:00:14,000\r\n. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\r\n\r\n3\r\n01:01:01,500 --> 01:02:05,004\r\nBir saatten uzun kayıt, virgül ve \"tırnak\" içerir.\r\n"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_vtt",
+  "kwargs": {},
+  "out": "WEBVTT\r\n\r\n1\r\n00:00:00.000 --> 00:00:05.000\r\n<v X1> Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\r\n\r\n2\r\n00:00:05.200 --> 00:00:14.000\r\n<v X2> . İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\r\n\r\n3\r\n01:01:01.500 --> 01:02:05.004\r\n<v X2> Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.\r\n"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_markdown",
+  "kwargs": {},
+  "out": "# Ses Transkript Raporu\r\n\r\n## Konuşma Akışı\r\n\r\n> **[00:00 - 00:05]** **X1**: Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\r\n\r\n> **[00:05 - 00:14]** **X2**: . İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\r\n\r\n> **[01:01:01 - 01:02:05]** **X2**: Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.\r\n"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_markdown",
+  "kwargs": {
+   "media_info": {
+    "duration": 3725.0,
+    "file_name": "görüşme.mp3",
+    "format": "mp3"
+   }
+  },
+  "out": "# Ses Transkript Raporu\r\n\r\n| Alan | Değer |\r\n|---|---|\r\n| **Kaynak Dosya** | `görüşme.mp3` |\r\n| **Toplam Süre** | 00:00 |\r\n| **Dosya Boyutu** | 0 MB |\r\n| **Oluşturulma** | 02.01.2026 03:04:05 |\r\n\r\n---\r\n\r\n## Konuşma Akışı\r\n\r\n> **[00:00 - 00:05]** **X1**: Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\r\n\r\n> **[00:05 - 00:14]** **X2**: . İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\r\n\r\n> **[01:01:01 - 01:02:05]** **X2**: Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.\r\n"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_json",
+  "kwargs": {},
+  "out": "{\r\n    \"metadata\": {\r\n        \"created_at\": \"2026-01-02T03:04:05\",\r\n        \"media_info\": {},\r\n        \"total_segments\": 3\r\n    },\r\n    \"transcript\": [\r\n        {\r\n            \"speaker\": \"X1\",\r\n            \"start\": 0.0,\r\n            \"end\": 5.0,\r\n            \"text\": \"Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\",\r\n            \"words\": [],\r\n            \"id\": 1,\r\n            \"start_formatted\": \"00:00\",\r\n            \"end_formatted\": \"00:05\",\r\n            \"timestamp_display\": \"[00:00 - 00:05]\"\r\n        },\r\n        {\r\n            \"speaker\": \"X2\",\r\n            \"start\": 5.2,\r\n            \"end\": 14.0,\r\n            \"text\": \". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\",\r\n            \"words\": [],\r\n            \"id\": 2,\r\n            \"start_formatted\": \"00:05\",\r\n            \"end_formatted\": \"00:14\",\r\n            \"timestamp_display\": \"[00:05 - 00:14]\"\r\n        },\r\n        {\r\n            \"speaker\": \"X2\",\r\n            \"start\": 3661.5,\r\n            \"end\": 3725.004,\r\n            \"text\": \"Bir saatten uzun kayıt, virgül ve \\\"tırnak\\\" içerir.\",\r\n            \"words\": [],\r\n            \"id\": 3,\r\n            \"start_formatted\": \"01:01:01\",\r\n            \"end_formatted\": \"01:02:05\",\r\n            \"timestamp_display\": \"[01:01:01 - 01:02:05]\"\r\n        }\r\n    ]\r\n}"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "exporter.export_to_csv",
+  "kwargs": {},
+  "out": "﻿No,Başlangıç (sn),Bitiş (sn),Zaman,Konuşmacı,Metin\r\n1,0.0,5.0,[00:00 - 00:05],X1,\"Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet\"\r\n2,5.2,14.0,[00:05 - 00:14],X2,. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.\r\n3,3661.5,3725.004,[01:01:01 - 01:02:05],X2,\"Bir saatten uzun kayıt, virgül ve \"\"tırnak\"\" içerir.\"\r\n"
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "aligner.get_unique_speakers",
+  "kwargs": {},
+  "out": [
+   "X1",
+   "X2"
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ]
+  ],
+  "fn": "aligner.compute_transcript_statistics",
+  "kwargs": {},
+  "out": {
+   "speaker_speaking_times": {
+    "X1": 5.0,
+    "X2": 72.3
+   },
+   "speaker_turn_counts": {
+    "X1": 1,
+    "X2": 2
+   },
+   "speaking_duration_seconds": 77.3,
+   "total_turns": 3,
+   "total_words": 43,
+   "unique_speakers_count": 2,
+   "words_per_minute": 33.4
+  }
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ],
+   "X1",
+   "Ayşe"
+  ],
+  "fn": "aligner.rename_speaker_in_transcript",
+  "kwargs": {},
+  "out": [
+   {
+    "end": 5.0,
+    "end_formatted": "00:05",
+    "id": 1,
+    "speaker": "Ayşe",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+    "timestamp_display": "[00:00 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 2,
+    "speaker": "X2",
+    "start": 5.2,
+    "start_formatted": "00:05",
+    "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:05 - 00:14]",
+    "words": []
+   },
+   {
+    "end": 3725.004,
+    "end_formatted": "01:02:05",
+    "id": 3,
+    "speaker": "X2",
+    "start": 3661.5,
+    "start_formatted": "01:01:01",
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+    "timestamp_display": "[01:01:01 - 01:02:05]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ],
+   "İSTANBUL"
+  ],
+  "fn": "aligner.filter_transcript",
+  "kwargs": {},
+  "out": [
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 2,
+    "speaker": "X2",
+    "start": 5.2,
+    "start_formatted": "00:05",
+    "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:05 - 00:14]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ],
+   ""
+  ],
+  "fn": "aligner.filter_transcript",
+  "kwargs": {},
+  "out": [
+   {
+    "end": 5.0,
+    "end_formatted": "00:05",
+    "id": 1,
+    "speaker": "X1",
+    "start": 0.0,
+    "start_formatted": "00:00",
+    "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+    "timestamp_display": "[00:00 - 00:05]",
+    "words": []
+   },
+   {
+    "end": 14.0,
+    "end_formatted": "00:14",
+    "id": 2,
+    "speaker": "X2",
+    "start": 5.2,
+    "start_formatted": "00:05",
+    "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+    "timestamp_display": "[00:05 - 00:14]",
+    "words": []
+   },
+   {
+    "end": 3725.004,
+    "end_formatted": "01:02:05",
+    "id": 3,
+    "speaker": "X2",
+    "start": 3661.5,
+    "start_formatted": "01:01:01",
+    "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+    "timestamp_display": "[01:01:01 - 01:02:05]",
+    "words": []
+   }
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ],
+   "istanbul",
+   "Ankara"
+  ],
+  "fn": "aligner.find_and_replace_in_transcript",
+  "kwargs": {
+   "case_sensitive": false
+  },
+  "out": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". Ankara'da üç yüz elli lira ödedim. Ankara'da üç yüz elli lira ödedim. Ankara'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ],
+   3
+  ]
+ },
+ {
+  "args": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ],
+   "istanbul",
+   "Ankara"
+  ],
+  "fn": "aligner.find_and_replace_in_transcript",
+  "kwargs": {
+   "case_sensitive": true
+  },
+  "out": [
+   [
+    {
+     "end": 5.0,
+     "end_formatted": "00:05",
+     "id": 1,
+     "speaker": "X1",
+     "start": 0.0,
+     "start_formatted": "00:00",
+     "text": "Merhaba, bugün yüzde yirmi beş indirim var. ııı şey evet evet evet evet evet evet evet",
+     "timestamp_display": "[00:00 - 00:05]",
+     "words": []
+    },
+    {
+     "end": 14.0,
+     "end_formatted": "00:14",
+     "id": 2,
+     "speaker": "X2",
+     "start": 5.2,
+     "start_formatted": "00:05",
+     "text": ". İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim. İstanbul'da üç yüz elli lira ödedim.",
+     "timestamp_display": "[00:05 - 00:14]",
+     "words": []
+    },
+    {
+     "end": 3725.004,
+     "end_formatted": "01:02:05",
+     "id": 3,
+     "speaker": "X2",
+     "start": 3661.5,
+     "start_formatted": "01:01:01",
+     "text": "Bir saatten uzun kayıt, virgül ve \"tırnak\" içerir.",
+     "timestamp_display": "[01:01:01 - 01:02:05]",
+     "words": []
+    }
+   ],
+   0
+  ]
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_txt",
+  "kwargs": {},
+  "out": "============================================================\r\nTÜRKÇE SES TRANSKRİPTİ VE KONUŞMACI RAPORU\r\n============================================================\r\nOluşturulma : 02.01.2026 03:04:05\r\n------------------------------------------------------------\r\n"
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_txt",
+  "kwargs": {
+   "media_info": {
+    "duration": 3725.0,
+    "file_name": "görüşme.mp3",
+    "format": "mp3"
+   }
+  },
+  "out": "============================================================\r\nTÜRKÇE SES TRANSKRİPTİ VE KONUŞMACI RAPORU\r\n============================================================\r\nKaynak Dosya : görüşme.mp3\r\nToplam Süre  : 00:00\r\nDosya Boyutu : 0 MB\r\nOluşturulma : 02.01.2026 03:04:05\r\n------------------------------------------------------------\r\n"
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_srt",
+  "kwargs": {},
+  "out": ""
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_srt",
+  "kwargs": {
+   "include_speaker": false
+  },
+  "out": ""
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_vtt",
+  "kwargs": {},
+  "out": "WEBVTT\r\n"
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_markdown",
+  "kwargs": {},
+  "out": "# Ses Transkript Raporu\r\n\r\n## Konuşma Akışı\r\n"
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_markdown",
+  "kwargs": {
+   "media_info": {
+    "duration": 3725.0,
+    "file_name": "görüşme.mp3",
+    "format": "mp3"
+   }
+  },
+  "out": "# Ses Transkript Raporu\r\n\r\n| Alan | Değer |\r\n|---|---|\r\n| **Kaynak Dosya** | `görüşme.mp3` |\r\n| **Toplam Süre** | 00:00 |\r\n| **Dosya Boyutu** | 0 MB |\r\n| **Oluşturulma** | 02.01.2026 03:04:05 |\r\n\r\n---\r\n\r\n## Konuşma Akışı\r\n"
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_json",
+  "kwargs": {},
+  "out": "{\r\n    \"metadata\": {\r\n        \"created_at\": \"2026-01-02T03:04:05\",\r\n        \"media_info\": {},\r\n        \"total_segments\": 0\r\n    },\r\n    \"transcript\": []\r\n}"
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "exporter.export_to_csv",
+  "kwargs": {},
+  "out": "﻿No,Başlangıç (sn),Bitiş (sn),Zaman,Konuşmacı,Metin\r\n"
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "aligner.get_unique_speakers",
+  "kwargs": {},
+  "out": []
+ },
+ {
+  "args": [
+   []
+  ],
+  "fn": "aligner.compute_transcript_statistics",
+  "kwargs": {},
+  "out": {
+   "speaker_speaking_times": {},
+   "speaker_turn_counts": {},
+   "speaking_duration_seconds": 0.0,
+   "total_turns": 0,
+   "total_words": 0,
+   "unique_speakers_count": 0,
+   "words_per_minute": 0.0
+  }
+ },
+ {
+  "args": [
+   [],
+   "X1",
+   "Ayşe"
+  ],
+  "fn": "aligner.rename_speaker_in_transcript",
+  "kwargs": {},
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   "İSTANBUL"
+  ],
+  "fn": "aligner.filter_transcript",
+  "kwargs": {},
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   ""
+  ],
+  "fn": "aligner.filter_transcript",
+  "kwargs": {},
+  "out": []
+ },
+ {
+  "args": [
+   [],
+   "istanbul",
+   "Ankara"
+  ],
+  "fn": "aligner.find_and_replace_in_transcript",
+  "kwargs": {
+   "case_sensitive": false
+  },
+  "out": [
+   [],
+   0
+  ]
+ },
+ {
+  "args": [
+   [],
+   "istanbul",
+   "Ankara"
+  ],
+  "fn": "aligner.find_and_replace_in_transcript",
+  "kwargs": {
+   "case_sensitive": true
+  },
+  "out": [
+   [],
+   0
+  ]
+ },
+ {
+  "args": [
+   0.0
+  ],
+  "fn": "exporter.to_srt_timestamp",
+  "kwargs": {},
+  "out": "00:00:00,000"
+ },
+ {
+  "args": [
+   0.0
+  ],
+  "fn": "exporter.to_vtt_timestamp",
+  "kwargs": {},
+  "out": "00:00:00.000"
+ },
+ {
+  "args": [
+   0.0005
+  ],
+  "fn": "exporter.to_srt_timestamp",
+  "kwargs": {},
+  "out": "00:00:00,000"
+ },
+ {
+  "args": [
+   0.0005
+  ],
+  "fn": "exporter.to_vtt_timestamp",
+  "kwargs": {},
+  "out": "00:00:00.000"
+ },
+ {
+  "args": [
+   59.9996
+  ],
+  "fn": "exporter.to_srt_timestamp",
+  "kwargs": {},
+  "out": "00:00:59,999"
+ },
+ {
+  "args": [
+   59.9996
+  ],
+  "fn": "exporter.to_vtt_timestamp",
+  "kwargs": {},
+  "out": "00:00:59.999"
+ },
+ {
+  "args": [
+   3599.9999
+  ],
+  "fn": "exporter.to_srt_timestamp",
+  "kwargs": {},
+  "out": "00:59:59,999"
+ },
+ {
+  "args": [
+   3599.9999
+  ],
+  "fn": "exporter.to_vtt_timestamp",
+  "kwargs": {},
+  "out": "00:59:59.999"
+ },
+ {
+  "args": [
+   3661.5
+  ],
+  "fn": "exporter.to_srt_timestamp",
+  "kwargs": {},
+  "out": "01:01:01,500"
+ },
+ {
+  "args": [
+   3661.5
+  ],
+  "fn": "exporter.to_vtt_timestamp",
+  "kwargs": {},
+  "out": "01:01:01.500"
+ },
+ {
+  "args": [
+   86399.999
+  ],
+  "fn": "exporter.to_srt_timestamp",
+  "kwargs": {},
+  "out": "23:59:59,999"
+ },
+ {
+  "args": [
+   86399.999
+  ],
+  "fn": "exporter.to_vtt_timestamp",
+  "kwargs": {},
+  "out": "23:59:59.999"
+ }
+]

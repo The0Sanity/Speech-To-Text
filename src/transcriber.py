@@ -456,16 +456,8 @@ class WhisperTranscriber:
             if total_fallback_dur > total_decoded_duration or len(fallback_segments) > len(collected_segments):
                 collected_segments = fallback_segments
 
-        # TDK Dil Modeli ve Fonetik Sözlük Düzeltmesi (Türkçe için)
-        if (language in ("tr", "auto")) and collected_segments:
-            try:
-                from src.language_model import TDKLanguageModelRescorer
-                rescorer = TDKLanguageModelRescorer()
-                for seg in collected_segments:
-                    if seg.get("text"):
-                        seg["text"] = rescorer.snap_sentence(seg["text"])
-            except Exception:
-                pass
+        # Lexicon snapping (src/language_model.py) is deliberately not applied here: without the large
+        # lexicon file, which a shipped build never has, it rewrote ordinary words ("Ben" -> "Bes").
 
         # Çıktıya Türkçe son-işleme uygula (halüsinasyonları, ITN ve dolgu sözcükleri temizler)
         if apply_postprocessing and collected_segments:
