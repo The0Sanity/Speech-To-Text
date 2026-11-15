@@ -3,6 +3,38 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.6] - 2026-11-16
+
+Last feature release of the Python app: accuracy and updater fixes, an honest model list, measured benchmarks. / Python uygulamasinin son ozellik surumu: dogruluk ve guncelleyici duzeltmeleri, durust model listesi, olculmus basarim.
+
+### Fixed / Duzeltmeler
+- **Accuracy / Dogruluk**: Word error rate on FLEURS Turkish (150 clips) drops from 32.62% to 15.18% with Whisper Small and from 67.38% to 41.07% with Whisper Tiny. Details in `docs/BENCHMARKS.md`. / FLEURS Turkce (150 kayit) kelime hata orani Whisper Small ile %32,62'den %15,18'e, Whisper Tiny ile %67,38'den %41,07'ye dustu. Ayrintilar `docs/BENCHMARKS.md` belgesinde.
+  - Removed lexicon snapping. A shipped build only had an 85-word list and rewrote ordinary words ("Ben biz var" became "Bes bir ver"). / Sozluk yakinlastirma adimi kaldirildi. Dagitilan surumde yalnizca 85 kelimelik liste vardi ve siradan kelimeleri degistiriyordu.
+  - The HPSS vocal filter is off by default; it still runs in the music fallback. / HPSS vokal filtresi varsayilan olarak kapali; muzik yedek yolunda calismaya devam eder.
+  - The built-in hotword list is no longer sent to the decoder. / Dahili anahtar sozcuk listesi artik cozucuye gonderilmiyor.
+- **Auto-updater / Otomatik guncelleyici**:
+  - The window no longer stays frozen at 100%: the update script closes the app's window process first. / Pencere artik %100'de donmus kalmiyor: guncelleme betigi once uygulamanin pencere surecini kapatiyor.
+  - Installed copies, and copies in folders that cannot be written to, update through the Setup installer instead of an exe swap that rolled back silently. / Kurulu kopyalar ve yazilamayan klasorlerdeki kopyalar, sessizce geri alinan exe degisimi yerine Kurulum dosyasi ile guncellenir.
+  - The installer reported version 1.1.1 in every release since v1.1.1; it now takes the version from the build. / Kurulum dosyasi v1.1.1'den beri her surumde 1.1.1 gosteriyordu; artik surumu derlemeden aliyor.
+  - A release cannot be published when its tag and the version built into the app disagree (the cause of the same update being offered repeatedly). / Etiket ile uygulamaya gomulu surum uyusmadiginda yayin yapilamaz (ayni guncellemenin tekrar tekrar onerilmesinin nedeni).
+  - The download is checked against the SHA-256 in the release notes; it was never checked before. / Indirilen dosya yayin notlarindaki SHA-256 ile dogrulanir; daha once hic dogrulanmiyordu.
+  - A failed update is reported on the next start and logged to `%APPDATA%\SesMetinPro\updater.log`. / Basarisiz guncelleme sonraki acilista bildirilir ve `%APPDATA%\SesMetinPro\updater.log` dosyasina yazilir.
+- **Models / Modeller**:
+  - `large-v3-turbo` could not be downloaded: the catalog pointed at a repository that does not exist. / `large-v3-turbo` indirilemiyordu: katalog var olmayan bir depoyu gosteriyordu.
+  - A failed model download now shows an error instead of installing a different model under the requested name. / Basarisiz model indirmesi artik istenen ad altinda baska bir model kurmak yerine hata gosterir.
+
+### Changed / Degisiklikler
+- **The six "SesMetin" models are removed from the model list. / Alti "SesMetin" modeli model listesinden kaldirildi.** The three v2 model files are byte-identical to stock Whisper (same SHA-256) and the three v1 repositories do not exist. Settings that name them use the matching Whisper model, and files already downloaded are reused. / Uc v2 model dosyasi standart Whisper ile bayt bayt aynidir (ayni SHA-256) ve uc v1 deposu mevcut degildir. Bu adlari iceren ayarlar karsilik gelen Whisper modelini kullanir ve indirilmis dosyalar yeniden kullanilir.
+- Word error rates in the model list are measured values or "Olculmedi" (not measured). / Model listesindeki hata oranlari olculmus degerlerdir veya "Olculmedi" yazar.
+- README rewritten in Turkish and English; unsupported accuracy and code-signing claims removed. / README Turkce ve Ingilizce olarak yeniden yazildi; dayanaksiz dogruluk ve kod imzalama iddialari kaldirildi.
+
+### Added / Yenilikler
+- `docs/BENCHMARKS.md`, `docs/PARITY.md`, `docs/ARCHITECTURE.md`, `docs/adr/0001-rewrite-app-in-rust.md`.
+- `tools/benchmarks/benchmark_fleurs.py` (reproducible accuracy measurement) and `tools/parity/dump_fixtures.py` with `fixtures/` (18,749 frozen cases for the Rust rewrite).
+
+### Upgrade note / Yukseltme notu
+- The updater in v1.1.5 and older is the one fixed here, so it cannot be relied on to install this release. Download v1.1.6 by hand once. / v1.1.5 ve onceki surumlerdeki guncelleyici burada duzeltilen guncelleyicidir; bu surumu kurmasi icin ona guvenilemez. v1.1.6'yi bir kez elle indirin.
+
 ## [v1.1.5] - 2026-10-18
 
 ### Fixed / Duzeltmeler

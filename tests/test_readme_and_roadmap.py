@@ -27,20 +27,21 @@ class TestReadmeAndRoadmap(unittest.TestCase):
             self.assertIn("Türkçe", content, f"{name} must contain 'Türkçe' language label")
             self.assertIn("English", content, f"{name} must contain 'English' language label")
 
-    def test_roadmap_contains_versions_up_to_v200(self):
-        """Verify roadmap sections exist for v1.0.3, v1.0.4, v1.1.0, v1.2.0, v1.3.0, v1.4.0, and v2.0.0 in READMEs and docs."""
-        roadmap_doc = self.root_dir / "docs" / "NEXT_VERSIONS_ROADMAP.md"
-        versions = ["v1.0.4", "v1.1.0", "v1.2.0", "v1.3.0", "v1.4.0", "v2.0.0"]
-
-        for path, name in [(self.readme_tr, "README.md"), (self.readme_en, "README.en.md"), (roadmap_doc, "NEXT_VERSIONS_ROADMAP.md")]:
-            self.assertTrue(path.exists(), f"{name} must exist")
+    def test_readmes_point_to_measured_results_and_the_plan(self):
+        """Both READMEs name the current and the next version and link the documents behind their claims."""
+        for path, name in [(self.readme_tr, "README.md"), (self.readme_en, "README.en.md")]:
             content = path.read_text(encoding="utf-8")
-            for v in versions:
-                self.assertIn(v, content, f"{name} must document {v}")
-            if name.startswith("README"):
-                self.assertIn("v1.0.7", content, f"{name} must document current version v1.0.7")
-                self.assertIn("- [x]", content, f"{name} must use completed markdown checklist items")
-                self.assertIn("- [ ]", content, f"{name} must use pending markdown checklist items")
+            for needed in ("v1.1.6", "v2.0.0", "docs/BENCHMARKS.md", "docs/PARITY.md", "- [x]", "- [ ]"):
+                self.assertIn(needed, content, f"{name} must contain {needed}")
+            for doc in ("docs/BENCHMARKS.md", "docs/PARITY.md", "docs/adr/0001-rewrite-app-in-rust.md"):
+                self.assertTrue((self.root_dir / doc).is_file(), f"{doc} is linked from {name} and must exist")
+
+    def test_readmes_make_no_unmeasured_accuracy_or_signing_claims(self):
+        """Claims that were in the README without evidence must not come back."""
+        for path in (self.readme_tr, self.readme_en):
+            content = path.read_text(encoding="utf-8")
+            for banned in ("Authenticode", "0.000%", "1,000,000", "99.79", "%4.2"):
+                self.assertNotIn(banned, content, f"{path.name} contains unsupported claim: {banned}")
 
     def test_no_low_level_test_commands(self):
         """Verify user-facing README does not clutter with unit test discovery commands."""

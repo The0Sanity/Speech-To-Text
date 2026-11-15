@@ -831,22 +831,14 @@ class AutoUpdater:
         download_url = best_exe.get("browser_download_url") if best_exe else None
         asset_size = int(best_exe.get("size", 0)) if best_exe else 0
 
-        # Saglama toplami (checksum) varligi ara
+        # The checksum must sit on the line that names this exact asset. A hash that belongs to
+        # another file (the portable exe's, for the installer) would fail every download.
         expected_sha256 = None
         if asset_name:
-            # Oncelik 1: Varlik dosya adi veya dosya kok adiyla iliskili hash (orn: `SpeechToText.exe`: `...`)
-            escaped_name = re.escape(asset_name)
-            escaped_stem = re.escape(Path(asset_name).stem)
-            pattern = rf"(?:{escaped_name}|{escaped_stem})[`\"\s:*]+([a-fA-F0-9]{{64}})"
+            pattern = rf"(?<![\w.-]){re.escape(asset_name)}(?![\w.-])[^\n]*?\b([a-fA-F0-9]{{64}})\b"
             match = re.search(pattern, body, re.IGNORECASE)
             if match:
                 expected_sha256 = match.group(1).lower()
-
-        # Oncelik 2: Genel 64 karakterli hex hash arama (tek hash varsa)
-        if not expected_sha256:
-            hash_match = re.search(r"\b([a-fA-F0-9]{64})\b", body)
-            if hash_match:
-                expected_sha256 = hash_match.group(1).lower()
 
         return UpdateInfo(
             version=remote_version,

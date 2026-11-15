@@ -164,3 +164,31 @@ class TestReleasePipelineVersions(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestChecksumMatchesItsOwnAsset(unittest.TestCase):
+    """Release notes as scripts/generate_patch_notes.py writes them."""
+
+    NOTES = (
+        "### Checksum Verification (SHA-256)\n"
+        "- `SpeechToText.exe` (Portable): `" + "A" * 64 + "`\n"
+        "- `SpeechToText-Setup.exe` (Installer): `" + "B" * 64 + "`\n"
+    )
+
+    def _sha(self, prefer_installer, body):
+        updater = AutoUpdater(current_version="1.1.5")
+        updater.prefer_installer = prefer_installer
+        return updater.parse_release_payload({"tag_name": "v1.1.6", "assets": ASSETS, "body": body}).expected_sha256
+
+    def test_each_asset_gets_its_own_checksum(self):
+        self.assertEqual(self._sha(False, self.NOTES), "a" * 64)
+        self.assertEqual(self._sha(True, self.NOTES), "b" * 64)
+
+    def test_order_of_lines_does_not_matter(self):
+        swapped = "\n".join(reversed(self.NOTES.strip().split("\n")))
+        self.assertEqual(self._sha(False, swapped), "a" * 64)
+        self.assertEqual(self._sha(True, swapped), "b" * 64)
+
+    def test_another_files_checksum_is_never_borrowed(self):
+        only_portable = "- `SpeechToText.exe` (Portable): `" + "A" * 64 + "`\n"
+        self.assertIsNone(self._sha(True, only_portable))

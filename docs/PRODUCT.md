@@ -20,17 +20,17 @@ Zero-configuration, 100% private, and local-first Turkish transcription and spea
 
 ## Operating Context
 
-Desktop application on Windows (CustomTkinter) used for processing local media files or YouTube links, reviewing and correcting transcripts, and exporting to subtitles, documents, or data tables.
+Desktop application on Windows (Flet in v1.x, Tauri planned for v2) used for processing local media files or YouTube links, reviewing and correcting transcripts, and exporting to subtitles, documents, or data tables.
 
 ## Capabilities and Constraints
 
-- Local CPU INT8 Faster-Whisper inference (tiny, base, small, medium, large-v3-turbo).
-- Acoustic speaker clustering (local) and optional Pyannote pipeline.
+- Local Faster-Whisper inference, CPU INT8 or NVIDIA GPU (tiny, base, small, medium, large-v3, large-v3-turbo). Measured accuracy: docs/BENCHMARKS.md.
+- Acoustic speaker clustering, fully local. Its accuracy has not been measured.
 - Audio pre-filtering: 80Hz high-pass filter, noise gate, peak normalization.
 - Text post-processing: Turkish punctuation, character normalization, hallucination filtering.
 - Multi-format exports: TXT, SRT, VTT, JSON, CSV, Markdown.
 - Design constraint: Windows 11 Fluent Design (Mica-inspired elevated surfaces, subtle 1px borders, native Segoe UI Variable typography, Per-Monitor v2 DPI scaling), strictly zero emojis, balanced 4-column metric ribbon, unified neutral command bar exports.
-- Architecture: Python + CTranslate2 (C++ CPU INT8 engine). Retains mature Pyannote diarization, Turkish NLP normalization, and zero-friction execution while delivering native desktop visual fidelity.
+- Architecture: v1.x is Python + CTranslate2, packaged with PyInstaller. v2 is a Rust rewrite (docs/adr/0001-rewrite-app-in-rust.md, docs/ARCHITECTURE.md).
 
 ## Product Principles
 
