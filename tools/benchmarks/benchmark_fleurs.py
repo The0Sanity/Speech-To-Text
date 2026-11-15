@@ -6,7 +6,7 @@ Answers two questions with numbers instead of claims:
      enhancement, the old built-in hotwords) lower or raise the error rate?
 
 Each run is the v1.1.5 default pipeline (HPSS on) with exactly one thing changed.
-Lexicon snapping was removed from the code in v1.1.6, so the snapping rows in
+Lexicon snapping was removed from the code in v1.1.7, so the snapping rows in
 docs/BENCHMARKS.md can only be reproduced on the v1.1.5 tag.
 Results are cached per run in dataset/fleurs_tr/results.json, so the script
 can be stopped and restarted.
@@ -46,9 +46,9 @@ RUNS: Dict[str, Tuple[str, str]] = {
     "small-no-postprocess": ("small", "no_postprocess"),
     "small-no-enhance": ("small", "no_enhance"),
     "small-old-hotwords": ("small", "old_hotwords"),
-    # The pipeline as released in v1.1.6: no lexicon snapping (removed from the code), HPSS off.
-    "tiny-v1.1.6": ("tiny", "no_hpss"),
-    "small-v1.1.6": ("small", "no_hpss"),
+    # The pipeline as released in v1.1.7: no lexicon snapping (removed from the code), HPSS off.
+    "tiny-v1.1.7": ("tiny", "no_hpss"),
+    "small-v1.1.7": ("small", "no_hpss"),
 }
 
 

@@ -17,9 +17,9 @@ on real audio. Nothing is simulated or estimated.
 - **Reproduce:** `python tools/benchmarks/benchmark_fleurs.py --samples 150`
   (downloads about 465 MB into the git-ignored `dataset/` folder).
 
-## What v1.1.6 delivers
+## What v1.1.7 delivers
 
-| Model | v1.1.5 | v1.1.6 | Word errors (v1.1.6) |
+| Model | v1.1.5 | v1.1.7 | Word errors (v1.1.7) |
 |---|---|---|---|
 | Whisper Tiny | 67.38% | 41.07% | 1,074 of 2,615 |
 | Whisper Small | 32.62% | 15.18% | 397 of 2,615 |
@@ -66,7 +66,7 @@ Decisions taken from this table:
 
 The three v2 model files are copies of the stock Whisper models, and the v1
 repositories do not exist, so older versions installed stock Whisper under
-those names. v1.1.6 removes all six from the catalog. Old settings that name
+those names. v1.1.7 removes all six from the catalog. Old settings that name
 them are mapped to the matching stock model, and files already downloaded
 under the old names are reused.
 

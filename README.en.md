@@ -51,7 +51,7 @@ for a new version.
 Word error rate on 150 clips of the FLEURS Turkish test set, measured through
 the app's own pipeline. Lower is better.
 
-| Model | v1.1.5 | v1.1.6 |
+| Model | v1.1.5 | v1.1.7 |
 | :--- | :--- | :--- |
 | Whisper Tiny | 67.38% | 41.07% |
 | Whisper Small | 32.62% | 15.18% |
@@ -74,9 +74,10 @@ method, every run and the limits are in [docs/BENCHMARKS.md](docs/BENCHMARKS.md)
 > lists the SHA-256 of both files so you can check your download.
 
 > [!IMPORTANT]
-> **Updating from v1.1.5 or older:** the built-in updater in those versions
-> does not work reliably. Download v1.1.6 or newer by hand once; after that,
-> in-app updates work.
+> **Updating from any earlier release:** the built-in updater in those
+> versions does not work reliably. Download v1.1.7 or newer by hand once;
+> after that, in-app updates work. This includes the release published as
+> v1.1.6, which was built from v1.1.5 source and reports itself as 1.1.5.
 
 ### Running from source
 
@@ -96,7 +97,7 @@ Tests: `python -m pytest tests`.
 Versions up to v1.1.5 offered six "SesMetin" models. The three v2 model files
 are byte-identical to the stock Whisper models (same SHA-256), and the three
 v1 repositories do not exist, so those versions were running stock Whisper
-under another name. v1.1.6 removes them from the model list. If your settings
+under another name. v1.1.7 removes them from the model list. If your settings
 name one of them, the matching Whisper model is used and files you already
 downloaded are reused.
 
@@ -114,7 +115,7 @@ The training and publishing scripts are in `tools/`.
 - [x] v1.0.4: first stable release.
 - [x] v1.0.7: settings stored in `%APPDATA%\SesMetinPro`.
 - [x] v1.1.0: model manager, hardware detection, installer.
-- [x] v1.1.6: accuracy fixes, working updater, honest model list, measured
+- [x] v1.1.7: accuracy fixes, working updater, honest model list, measured
   benchmarks. Last feature release of the Python app.
 
 ### Next

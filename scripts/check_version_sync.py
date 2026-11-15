@@ -3,7 +3,7 @@
 A mismatch ships an exe that reports an older version than its release, so the
 app offers the same update forever. Prints the app version on success.
 
-Usage: python scripts/check_version_sync.py --tag v1.1.6
+Usage: python scripts/check_version_sync.py --tag v1.1.7
 """
 
 import argparse

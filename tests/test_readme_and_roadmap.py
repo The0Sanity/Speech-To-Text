@@ -31,7 +31,7 @@ class TestReadmeAndRoadmap(unittest.TestCase):
         """Both READMEs name the current and the next version and link the documents behind their claims."""
         for path, name in [(self.readme_tr, "README.md"), (self.readme_en, "README.en.md")]:
             content = path.read_text(encoding="utf-8")
-            for needed in ("v1.1.6", "v2.0.0", "docs/BENCHMARKS.md", "docs/PARITY.md", "- [x]", "- [ ]"):
+            for needed in ("v1.1.7", "v2.0.0", "docs/BENCHMARKS.md", "docs/PARITY.md", "- [x]", "- [ ]"):
                 self.assertIn(needed, content, f"{name} must contain {needed}")
             for doc in ("docs/BENCHMARKS.md", "docs/PARITY.md", "docs/adr/0001-rewrite-app-in-rust.md"):
                 self.assertTrue((self.root_dir / doc).is_file(), f"{doc} is linked from {name} and must exist")

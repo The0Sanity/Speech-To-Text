@@ -17,7 +17,7 @@ with PyInstaller and Inno Setup). Two kinds of problem kept recurring:
   rate, see `docs/BENCHMARKS.md`), a module could not run at all, and the
   model list offered stock Whisper under another name.
 
-The second kind was fixed in Python in v1.1.6. The first kind comes from the
+The second kind was fixed in Python in v1.1.7. The first kind comes from the
 toolchain and returns with every dependency upgrade.
 
 ## Decision
@@ -31,7 +31,7 @@ Python bindings.
 - The Rust core is built first as a command-line program and proven against
   the Python app, then the interface is built on top of it.
 - Bug fixes and porting never share a commit. Python behaviour was fixed and
-  frozen in v1.1.6; the port copies it. The definition of done is
+  frozen in v1.1.7; the port copies it. The definition of done is
   `docs/PARITY.md`.
 - First Rust release: Windows 10/11, CPU only, Turkish interface, with
   speaker separation, YouTube import and a one-click updater.
@@ -53,4 +53,4 @@ Python bindings.
   from v1.x.
 - Until cut-over there are two implementations in the repository. Python gets
   critical fixes only.
-- v1.1.6 must be able to hand users over to v2 through its updater.
+- v1.1.7 must be able to hand users over to v2 through its updater.

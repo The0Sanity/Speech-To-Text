@@ -3,7 +3,7 @@
 All notable changes to the **SesMetin Pro (Speech-To-Text)** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.1.6] - 2026-11-16
+## [v1.1.7] - 2026-11-16
 
 Last feature release of the Python app: accuracy and updater fixes, an honest model list, measured benchmarks. / Python uygulamasinin son ozellik surumu: dogruluk ve guncelleyici duzeltmeleri, durust model listesi, olculmus basarim.
 
@@ -33,7 +33,8 @@ Last feature release of the Python app: accuracy and updater fixes, an honest mo
 - `tools/benchmarks/benchmark_fleurs.py` (reproducible accuracy measurement) and `tools/parity/dump_fixtures.py` with `fixtures/` (18,749 frozen cases for the Rust rewrite).
 
 ### Upgrade note / Yukseltme notu
-- The updater in v1.1.5 and older is the one fixed here, so it cannot be relied on to install this release. Download v1.1.6 by hand once. / v1.1.5 ve onceki surumlerdeki guncelleyici burada duzeltilen guncelleyicidir; bu surumu kurmasi icin ona guvenilemez. v1.1.6'yi bir kez elle indirin.
+- The updater in every earlier release is the one fixed here, so it cannot be relied on to install this release. Download v1.1.7 by hand once. / Onceki tum surumlerdeki guncelleyici burada duzeltilen guncelleyicidir; bu surumu kurmasi icin ona guvenilemez. v1.1.7'yi bir kez elle indirin.
+- The release published as v1.1.6 on 2026-10-18 was built from v1.1.5 source: its app reports 1.1.5 and keeps offering the same update. It contains none of the changes listed here. v1.1.7 replaces it. / 2026-10-18'de v1.1.6 olarak yayinlanan surum v1.1.5 kaynagindan derlenmisti: uygulama 1.1.5 gosterir ve ayni guncellemeyi onermeye devam eder. Burada listelenen degisikliklerin hicbirini icermez. v1.1.7 onun yerini alir.
 
 ## [v1.1.5] - 2026-10-18
 

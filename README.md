@@ -51,7 +51,7 @@ denetimi.
 FLEURS Türkçe test kümesinden 150 kayıtta, uygulamanın kendi işlem hattıyla
 ölçülen kelime hata oranı (WER). Düşük olan daha iyidir.
 
-| Model | v1.1.5 | v1.1.6 |
+| Model | v1.1.5 | v1.1.7 |
 | :--- | :--- | :--- |
 | Whisper Tiny | %67,38 | %41,07 |
 | Whisper Small | %32,62 | %15,18 |
@@ -76,9 +76,11 @@ oluşur; röportaj, telefon sesi ve müzikte sonuçlar farklı olur. Yöntem, t�
 > doğrulayabilmeniz için her yayında iki dosyanın SHA-256 değeri yer alır.
 
 > [!IMPORTANT]
-> **v1.1.5 veya daha eski sürümden güncelleme:** bu sürümlerdeki dahili
-> güncelleyici güvenilir çalışmıyor. v1.1.6 veya daha yeni bir sürümü bir
-> kez elle indirin; sonrasında uygulama içi güncelleme çalışır.
+> **Önceki herhangi bir sürümden güncelleme:** bu sürümlerdeki dahili
+> güncelleyici güvenilir çalışmıyor. v1.1.7 veya daha yeni bir sürümü bir
+> kez elle indirin; sonrasında uygulama içi güncelleme çalışır. v1.1.6 olarak
+> yayınlanan sürüm de buna dahildir: v1.1.5 kaynağından derlenmiştir ve
+> kendini 1.1.5 olarak gösterir.
 
 ### Kaynak koddan çalıştırma
 
@@ -98,7 +100,7 @@ Testler: `python -m pytest tests`.
 v1.1.5'e kadar olan sürümler altı "SesMetin" modeli sunuyordu. Üç v2 model
 dosyası, standart Whisper modelleriyle bayt bayt aynıdır (aynı SHA-256) ve üç
 v1 deposu mevcut değildir; yani bu sürümler standart Whisper'ı başka bir adla
-çalıştırıyordu. v1.1.6 bunları model listesinden kaldırır. Ayarlarınızda bu
+çalıştırıyordu. v1.1.7 bunları model listesinden kaldırır. Ayarlarınızda bu
 adlardan biri varsa karşılık gelen Whisper modeli kullanılır ve daha önce
 indirdiğiniz dosyalar yeniden kullanılır.
 
@@ -116,7 +118,7 @@ Eğitim ve yayınlama betikleri `tools/` klasöründedir.
 - [x] v1.0.4: ilk kararlı sürüm.
 - [x] v1.0.7: ayarlar `%APPDATA%\SesMetinPro` altında saklanır.
 - [x] v1.1.0: model yöneticisi, donanım algılama, kurulum sihirbazı.
-- [x] v1.1.6: doğruluk düzeltmeleri, çalışan güncelleyici, dürüst model
+- [x] v1.1.7: doğruluk düzeltmeleri, çalışan güncelleyici, dürüst model
   listesi, ölçülmüş başarım. Python uygulamasının son özellik sürümü.
 
 ### Sırada

@@ -65,8 +65,8 @@ recogniser itself is never compared exactly.
 |---|---|
 | `src/diarizer.py` (pitch and mel clustering) | Replaced by an offline speaker-embedding model. Speaker labels are therefore not compared with Python. |
 | Pyannote mode and the Hugging Face token setting | Never worked in a released build (`pyannote` is not a dependency). |
-| `src/language_model.py` lexicon snapping | Removed from the pipeline in v1.1.6: with the 85-word built-in list it rewrote ordinary words ("Ben biz var" became "Bes bir ver"). |
-| Built-in default hotword list | Removed in v1.1.6: it biased every transcript toward nursery words. |
+| `src/language_model.py` lexicon snapping | Removed from the pipeline in v1.1.7: with the 85-word built-in list it rewrote ordinary words ("Ben biz var" became "Bes bir ver"). |
+| Built-in default hotword list | Removed in v1.1.7: it biased every transcript toward nursery words. |
 | `src/updater.py`, `src/bootstrapper.py`, PyInstaller and Flet workarounds in `main.py` | Replaced by the Tauri updater and bundler. |
 | `src/ui/` | The interface is redesigned, not ported. |
 | `src/tts/`, `src/transcription/engine.py`, `src/ui_flet/` | Not used by the app. |
